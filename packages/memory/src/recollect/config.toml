@@ -1,0 +1,117 @@
+# Memory SDK Configuration
+# Human-like memory system with natural forgetting and cognitive constraints
+
+[database]
+url = "postgresql://localhost:5432/memory_sdk"
+
+[memory]
+initial_strength = 0.3          # Starting strength for new traces
+consolidation_threshold = 0.5   # Minimum strength to survive consolidation
+decay_rate = 0.1                # Exponential decay rate (halves every ~7 hours)
+
+[working_memory]
+capacity = 7                    # Miller's Law: 7 +/- 2
+min_capacity = 5
+max_capacity = 9
+
+[activation]
+activation_decay = 0.7          # Per-hop decay in spreading activation
+activation_threshold = 0.1      # Stop spreading below this level
+max_spread_depth = 2            # Maximum hops from seed trace
+spread_weight_factor = 0.1     # Weight multiplier for activated candidates in merge
+
+[retrieval]
+activation_boost = 0.01         # Strength multiplier for activation-only (x1.01)
+retrieval_boost = 0.1           # Strength multiplier for retrieval (x1.1)
+wm_retrieval_boost = 0.2        # Strength multiplier for working memory retrieval (x1.2)
+max_retrievals = 7              # Attention bottleneck (matches working memory capacity)
+selection_threshold = 0.1       # Minimum strength to be retrievable
+search_limit = 10              # Max candidates from storage search
+spread_seed_count = 3          # Top candidates used as spread activation seeds
+wm_similarity_threshold = 0.3  # Min cosine similarity for working memory matches
+entity_similarity_threshold = 0.3  # pg_trgm threshold for entity matching
+entity_match_bonus = 0.1       # Additive bonus for entity-matched traces
+significance_weight = 0.15     # Boost weight for trace significance (0.95 allergy -> +0.14)
+valence_weight = 0.05          # Boost weight for emotional intensity (|valence| * weight)
+concept_attention_weight = 0.70  # Concept-primary blend alpha (0.7*concept + 0.3*base)
+min_trace_slots = 2             # Guaranteed trace slots (facts cannot exceed max_retrievals - this)
+
+[strengthening]
+rehearsal_factor = 1.05         # Per-rehearsal multiplier
+max_strength = 1.0              # Ceiling
+consolidation_boost = 1.2       # Boost when consolidated
+
+[forgetting]
+displacement_decay = 0.8        # When pushed out of working memory (x0.8)
+forget_decay = 0.5              # When failing consolidation (x0.5)
+grace_period_hours = 24         # Buffer before time decay applies
+
+[consolidation]
+batch_size = 50                # Max traces per consolidation pass
+
+[associations]
+temporal_weight = 0.5
+entity_weight = 0.7
+concept_weight = 0.4
+max_links_per_entity = 5     # Max existing traces to link per shared entity
+
+[persona]
+auto_extract = true
+confidence_threshold = 0.6
+predicate_similarity_threshold = 0.8  # Embedding similarity for predicate synonym detection
+ranking_strategy = "hybrid"  # pinned | relevance | hybrid
+max_facts_per_query = 5
+similarity_threshold = 0.3  # Minimum cosine similarity for fact retrieval
+
+[decay]
+significance_reduction = 0.7  # sig=1.0 reduces decay by 70%
+valence_reduction = 0.5       # abs(valence)=1.0 reduces decay by 50%
+
+[extraction]
+pydantic_ai_model = ""                     # pydantic-ai model string (e.g. "anthropic:claude-haiku-4-5-20251001", "ollama:ministral-3")
+max_tokens = 8192               # Reasoning models consume thinking tokens before output; 8192 covers most cases
+timeout = 120                   # Seconds; reasoning models over network need headroom
+max_concepts = 5
+max_relations = 3
+instructions = """
+Entity types: person, organization, place, food, cuisine, product, event, skill, condition.
+Concepts: abstract lowercase noun phrases that could recur across memories.
+Category must be the most specific match: health (allergies, conditions, phobias), \
+dietary (food restrictions, aversions, diet), constraint (limitations, requirements), \
+identity (career, education, beliefs), relationship (family, friends, social ties), \
+preference (likes, interests, hobbies), schedule (routines, plans, appointments), \
+general (anything else). Safety-critical categories (health, dietary, constraint) \
+are always surfaced during retrieval. \
+DISAMBIGUATION: food restrictions are ALWAYS 'dietary' regardless of motivation -- \
+vegetarian for ethics, kosher for religion, gluten-free by choice are all 'dietary'. \
+The downstream pipeline uses this category to surface facts during food-related queries."""
+
+[embedding]
+model = "nomic-ai/nomic-embed-text-v1.5-Q"
+dimensions = 768
+
+[server]
+host = "localhost"
+port = 8000
+user_id = ""
+
+[session]
+summary_strength = 0.8
+summary_significance = 0.7
+summary_decay_rate = 0.02
+summary_max_tokens = 1024
+
+[recall_tokens]
+enabled = true                  # Enable write-time token stamping and query-time activation
+write_time_top_k = 5            # Max related traces to consider for token assessment
+write_time_threshold = 0.42     # Min cosine similarity to consider a trace as related
+strength_threshold = 0.1        # Min token strength to activate at query time
+reinforce_boost = 0.1           # Strength increment on token activation (capped at 1.0)
+decay_factor = 0.9              # Multiply inactive token strength by this during consolidation
+hop_decay = 0.85                # Signal attenuation per token hop in propagation
+propagation_blend = 0.50        # Weight of propagated signal in additive blend
+iter_max_rounds = 3             # Max re-seeding iterations (3 default, configurable for tuning)
+iter_stability_threshold = 0.95 # Top-K overlap fraction to stop iterating early
+iter_top_seeds = 3              # Token-discovered traces used as seeds per re-seeding round
+assessment_system_prompt = ""   # Override system prompt for token assessment (empty = built-in default)
+assessment_user_prompt = ""     # Override user prompt for token assessment (empty = built-in default)
