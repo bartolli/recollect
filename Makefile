@@ -220,7 +220,7 @@ help:
 	@echo "  make probe-situational           Reset + run situational/baseline.toml (Haiku)"
 	@echo "  make probe-situational-sonnet    Reset + run situational/sonnet.toml"
 	@echo "  make probe-situational-gemma     Reset + run situational/gemma.toml"
-	@echo "  make probe-situational-openrouter Reset + run situational/openrouter.toml (deepseek-v4-flash)"
+	@echo "  make probe-situational-openrouter Reset + run situational/openrouter.toml (gemini-3-flash + reasoning)"
 	@echo ""
 	@echo "POC Experiments:      (ARGS= for extra flags)"
 	@echo "  make poc-hebbian          Hebbian recall tokens benchmark"

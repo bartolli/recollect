@@ -184,3 +184,30 @@ class TestAssessSituationalBypassesEnabledFlag:
         result = await mem.assess_situational(trace)
         assert result is not None
         assert result.assessment.action == "none"
+
+
+class TestAssessSituationalPromptAnnotation:
+    async def test_lone_trace_annotated(
+        self, mem, mock_storage, mock_extractor, trace
+    ):
+        _wire(mock_storage, mock_extractor, TokenAssessment(action="none"))
+        await mem.assess_situational(trace)
+        user_prompt = mock_extractor._provider.complete_structured.await_args.args[0][
+            1
+        ].content
+        assert "1. [lone] seed trace" in user_prompt
+
+    async def test_grouped_trace_annotated(
+        self, mem, mock_storage, mock_extractor, trace
+    ):
+        _wire(
+            mock_storage,
+            mock_extractor,
+            TokenAssessment(action="extend", group_number=1, implication="x"),
+            groups=_GROUP,
+        )
+        await mem.assess_situational(trace)
+        user_prompt = mock_extractor._provider.complete_structured.await_args.args[0][
+            1
+        ].content
+        assert "1. [in G1] seed trace" in user_prompt

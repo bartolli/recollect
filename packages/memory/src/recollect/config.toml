@@ -129,3 +129,4 @@ iter_top_seeds = 3              # Token-discovered traces used as seeds per re-s
 assessment_system_prompt = ""   # Override system prompt for token assessment (empty = built-in default)
 assessment_user_prompt = ""     # Override user prompt for token assessment (empty = built-in default)
 assessment_max_tokens = 8192    # Token budget for situational assessment LLM call; thinking models consume budget before output
+assessment_template_path = ""   # Path to override situational prompt (.md with `## System Prompt` / `## User Prompt`). Empty = packaged default.

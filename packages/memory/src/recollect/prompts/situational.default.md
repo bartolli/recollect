@@ -1,4 +1,4 @@
-# version: 1.0.0
+# version: 1.1.0
 # applies-to: situational
 # placeholders: new_content, numbered_list, existing_groups
 
@@ -25,7 +25,13 @@ Good: "renovation structural risk"
 Bad:  "the observatory telescope needs recalibration before the eclipse"
 Good: "equipment readiness deadline"
 
-TEMPORAL REJECTION (apply FIRST, before any other analysis):
+ANNOTATION LEGEND:
+Each related memory carries a binding annotation: `[lone]` (not in any group) or `[in Gn]` (member of group Gn). Read this before classifying.
+
+LONE-FACT PROPERTY MUTATION (apply FIRST, before any other analysis):
+If every related memory matched by the new memory carries `[lone]` and the new memory only mutates a property of one of those facts (date, day, scope, count, deadline, status, location), return action="none". Lone facts do not form groups via self-update; the new value is implicit in the updated fact. A property mutation is only `revise` when the mutated fact carries `[in Gn]` AND the mutation supersedes the group's grounding situation.
+
+TEMPORAL REJECTION (apply SECOND):
 "Would this group make sense if the events were months apart?" If NO, it is temporal proximity, not a situational group. Return action="none".
 
 COUNTERFACTUAL DEPENDENCY TEST:
@@ -62,7 +68,7 @@ Step 1 -- First memory, nothing to link to:
 Step 2 -- Second memory recognizes causal implication, creates group:
   Memory stored: "Planning to knock out the garage north wall for a wider door opening"
   Related memories:
-    1. The structural report says the north garage wall is load-bearing
+    1. [lone] The structural report says the north garage wall is load-bearing
   Existing groups: None
   -> action=create, person_ref=household, situation=load-bearing garage wall,
      implication=renovation structural risk, significance=0.7,
@@ -72,8 +78,8 @@ Step 2 -- Second memory recognizes causal implication, creates group:
 Step 3 -- Third memory belongs to existing group, extends it:
   Memory stored: "The building permit office requires a structural engineer sign-off for load-bearing changes"
   Related memories:
-    1. The structural report says the north garage wall is load-bearing
-    2. Planning to knock out the garage north wall for a wider door opening
+    1. [in G1] The structural report says the north garage wall is load-bearing
+    2. [in G1] Planning to knock out the garage north wall for a wider door opening
   Existing groups:
     G1: household | load-bearing garage wall | renovation structural risk (memories: 1, 2)
   -> action=extend, group_number=1, implication=permit engineering requirement,
@@ -85,9 +91,9 @@ This shows: (1) lone memory gets action=none, (2) second memory recognizes concr
 Step 4 -- Fourth memory revises the group (situation resolved):
   Memory stored: "The structural engineer certified the north wall reinforcement is complete"
   Related memories:
-    1. The structural report says the north garage wall is load-bearing
-    2. Planning to knock out the garage north wall for a wider door opening
-    3. The building permit office requires a structural engineer sign-off for load-bearing changes
+    1. [in G1] The structural report says the north garage wall is load-bearing
+    2. [in G1] Planning to knock out the garage north wall for a wider door opening
+    3. [in G1] The building permit office requires a structural engineer sign-off for load-bearing changes
   Existing groups:
     G1: household | load-bearing garage wall | renovation structural risk, permit engineering requirement (memories: 1, 2, 3, significance: 0.7)
   -> action=revise, group_number=1, situation=load-bearing garage wall,
@@ -95,6 +101,15 @@ Step 4 -- Fourth memory revises the group (situation resolved):
   [Group revised: household | load-bearing garage wall | reinforcement certified safe]
 
 This shows: the wall is still load-bearing (situation unchanged), but the risk is resolved. The old implications (structural risk, permit requirement) are superseded. Significance drops because the actionable risk is gone.
+
+Step 5 -- Property mutation on a [lone] fact (no group, no causal mechanism):
+  Memory stored: "Upgraded our home internet to the 1 Gbps tier last week"
+  Related memories:
+    1. [lone] We have the 500 Mbps home internet plan
+  Existing groups: None
+  -> action=none
+
+The fact updates in place (500 Mbps -> 1 Gbps). No third party depends on the new value; no causal mechanism activates. The same predicate applies across domains -- subscription tiers, account balances, calendar shifts, inventory counts, deadlines, statuses, locations -- whenever a single related [lone] fact has only a property change in the new memory, the action is none. Match the structural shape (lone + property mutation), not the example's surface domain.
 
 --- CREATE criteria (ALL must be true) ---
 1. A specific, concrete mechanism connects the new memory to one or more existing memories

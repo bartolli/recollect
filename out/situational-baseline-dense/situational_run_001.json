@@ -1,7 +1,7 @@
 {
-  "arm_name": "situational-openrouter",
+  "arm_name": "situational-baseline-dense",
   "run_index": 1,
-  "model": "openrouter:google/gemini-3-flash-preview",
+  "model": "anthropic:claude-haiku-4-5-20251001",
   "seed_groups_restored": 5,
   "seed_traces_ingested": 20,
   "eval_results": [
@@ -13,22 +13,22 @@
       "actual_action": "extend",
       "actual_group_id": "G1",
       "actual_linked_trace_ids": [],
-      "actual_implication": "guest list reduction resistance",
-      "actual_significance": 0.6,
+      "actual_implication": "family refusal complicates reduction",
+      "actual_significance": 0.7,
       "related_trace_ids": [
-        "d6716ee8-6fc4-4248-b1c6-9cb6227876c5",
-        "4072ac13-0646-4cd2-9d7d-8ad147e26584",
-        "f65b0f9b-d025-43c1-a073-b856f647f6a6",
-        "145c0dfc-4ad6-42bc-9256-6726b246dea7"
+        "72587200-2600-4695-8550-1ab8e2b779c3",
+        "fb8f926e-1fbb-4196-9a4f-46ada214f411",
+        "e95fbb64-a166-4bb2-bbb2-03e840a3ef54",
+        "d78a7266-8b82-4c12-8a87-a4424753858b"
       ],
       "candidate_token_ids": [
-        "45a83023-6e63-480b-a4e2-9639f1ba6c23",
-        "014a9f5a-86b0-47d4-add3-dde7aecfe508",
-        "90bf76b1-19dc-4028-97d9-5accb5f4558d"
+        "a802e4c8-bfac-49ed-a5ef-a1e375bb2af2",
+        "6031eab8-dcb7-42a6-a590-a13751d9d629",
+        "a5e522af-2073-4744-9acb-747b7251ea89"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 12521.2266669987
+      "latency_ms": 4725.044165999861
     },
     {
       "entry_id": "c1.e2",
@@ -38,20 +38,20 @@
       "actual_action": "revise",
       "actual_group_id": "G1",
       "actual_linked_trace_ids": [],
-      "actual_implication": "capacity conflict resolved",
-      "actual_significance": 0.4,
+      "actual_implication": "venue capacity resolved, deposit recovered",
+      "actual_significance": 0.7,
       "related_trace_ids": [
-        "ccc6d8d8-ee8b-46ee-9361-9e4210e2f649",
-        "4072ac13-0646-4cd2-9d7d-8ad147e26584",
-        "d6716ee8-6fc4-4248-b1c6-9cb6227876c5",
-        "956a7804-bcc9-4777-b9e3-cca577ad9f55"
+        "727ad9c4-27e2-4ad0-aadb-11cf0fd063f4",
+        "fb8f926e-1fbb-4196-9a4f-46ada214f411",
+        "72587200-2600-4695-8550-1ab8e2b779c3",
+        "d017e76d-a567-4a4b-b137-aca9270aacd6"
       ],
       "candidate_token_ids": [
-        "90bf76b1-19dc-4028-97d9-5accb5f4558d"
+        "a5e522af-2073-4744-9acb-747b7251ea89"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 16236.795417004032
+      "latency_ms": 4920.402916002786
     },
     {
       "entry_id": "c1.e3",
@@ -64,17 +64,17 @@
       "actual_implication": "",
       "actual_significance": 0.5,
       "related_trace_ids": [
-        "ae611387-b1c3-46b4-a2ac-f7436303c1a9",
-        "ce349496-3644-4ba5-8e6e-0efcc2f32f37",
-        "145c0dfc-4ad6-42bc-9256-6726b246dea7",
-        "66562a8a-0548-493c-80c9-7a58f0dc9020"
+        "ea317521-fdce-4211-a5e1-bb2d05ed1195",
+        "1bfdfd43-9a3d-4dd3-922b-95b611f7e222",
+        "d78a7266-8b82-4c12-8a87-a4424753858b",
+        "0c1a6fe6-863f-482e-92c3-d5da3b4cf566"
       ],
       "candidate_token_ids": [
-        "45a83023-6e63-480b-a4e2-9639f1ba6c23"
+        "6031eab8-dcb7-42a6-a590-a13751d9d629"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 8733.859667001525
+      "latency_ms": 6186.206250000396
     },
     {
       "entry_id": "c2.e1",
@@ -84,46 +84,46 @@
       "actual_action": "extend",
       "actual_group_id": "G2",
       "actual_linked_trace_ids": [],
-      "actual_implication": "offer negotiation status",
-      "actual_significance": 0.5,
+      "actual_implication": "offer negotiation equity terms",
+      "actual_significance": 0.7,
       "related_trace_ids": [
-        "d20aa6f2-4349-4486-95e8-de58d851e38d",
-        "e5294dff-d393-4d16-a2f0-160c5fe17610",
-        "aaa5643a-858c-42d1-9278-8ac46797f949",
-        "145c0dfc-4ad6-42bc-9256-6726b246dea7"
+        "f8eb4e59-e422-4eb2-8d66-9b8cbd28bdee",
+        "2ba94160-3332-4978-b682-3eeea6f7fa07",
+        "696b1381-c1f2-4660-ad99-d467f80601a4",
+        "d78a7266-8b82-4c12-8a87-a4424753858b"
       ],
       "candidate_token_ids": [
-        "45a83023-6e63-480b-a4e2-9639f1ba6c23",
-        "feb70cf4-2a8a-443d-96ea-082ded8ec36b"
+        "6031eab8-dcb7-42a6-a590-a13751d9d629",
+        "40d2f31b-f47f-4ec6-8f61-c0fe97aeddc2"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 13563.54991599801
+      "latency_ms": 5559.577540989267
     },
     {
       "entry_id": "c2.e2",
       "expected_action": "extend",
       "expected_group_id": "G3",
       "expected_linked_trace_ids": [],
-      "actual_action": "extend",
+      "actual_action": "revise",
       "actual_group_id": "G3",
       "actual_linked_trace_ids": [],
-      "actual_implication": "pickup day schedule shift",
+      "actual_implication": "sitter schedule shift Wednesday, rate and pickup logistics",
       "actual_significance": 0.6,
       "related_trace_ids": [
-        "145c0dfc-4ad6-42bc-9256-6726b246dea7",
-        "4a1fce3f-796b-4dd4-995a-3a6ac8fba78b",
-        "e5294dff-d393-4d16-a2f0-160c5fe17610",
-        "b90ec412-7773-4774-a320-d2292ba21b75"
+        "d78a7266-8b82-4c12-8a87-a4424753858b",
+        "dc47d52b-8eca-4ee8-b833-40373f96c853",
+        "2ba94160-3332-4978-b682-3eeea6f7fa07",
+        "98c2048f-8c00-4412-8100-4fc5dfd9defe"
       ],
       "candidate_token_ids": [
-        "45a83023-6e63-480b-a4e2-9639f1ba6c23",
-        "014a9f5a-86b0-47d4-add3-dde7aecfe508",
-        "feb70cf4-2a8a-443d-96ea-082ded8ec36b"
+        "a802e4c8-bfac-49ed-a5ef-a1e375bb2af2",
+        "6031eab8-dcb7-42a6-a590-a13751d9d629",
+        "40d2f31b-f47f-4ec6-8f61-c0fe97aeddc2"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 35193.00050000311
+      "latency_ms": 10477.461917005712
     },
     {
       "entry_id": "c2.e3",
@@ -136,18 +136,18 @@
       "actual_implication": "",
       "actual_significance": 0.5,
       "related_trace_ids": [
-        "e5294dff-d393-4d16-a2f0-160c5fe17610",
-        "145c0dfc-4ad6-42bc-9256-6726b246dea7",
-        "aaa5643a-858c-42d1-9278-8ac46797f949",
-        "4a1fce3f-796b-4dd4-995a-3a6ac8fba78b"
+        "2ba94160-3332-4978-b682-3eeea6f7fa07",
+        "d78a7266-8b82-4c12-8a87-a4424753858b",
+        "696b1381-c1f2-4660-ad99-d467f80601a4",
+        "dc47d52b-8eca-4ee8-b833-40373f96c853"
       ],
       "candidate_token_ids": [
-        "feb70cf4-2a8a-443d-96ea-082ded8ec36b",
-        "45a83023-6e63-480b-a4e2-9639f1ba6c23"
+        "6031eab8-dcb7-42a6-a590-a13751d9d629",
+        "40d2f31b-f47f-4ec6-8f61-c0fe97aeddc2"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 11429.10845798906
+      "latency_ms": 5343.065332999686
     },
     {
       "entry_id": "c3.e1",
@@ -157,20 +157,20 @@
       "actual_action": "extend",
       "actual_group_id": "G4",
       "actual_linked_trace_ids": [],
-      "actual_implication": "safety monitoring requirement",
+      "actual_implication": "monitoring potassium safety",
       "actual_significance": 0.9,
       "related_trace_ids": [
-        "f52f8e20-fa82-4c36-8f8a-8b8f910c4b99",
-        "72d011f0-5c9e-41a3-8716-97893785d031",
-        "5fcdf05b-a085-4adb-ae5d-5b502b078324",
-        "956a7804-bcc9-4777-b9e3-cca577ad9f55"
+        "59cc0fc3-8936-47a6-bc49-208c9ca7745e",
+        "52325136-95c1-4faa-a4b7-737442791db8",
+        "8556a661-ce72-45c4-a01c-dfdc4e524e2c",
+        "d017e76d-a567-4a4b-b137-aca9270aacd6"
       ],
       "candidate_token_ids": [
-        "51b4fd5c-8d27-48ee-b6eb-88f6dbd47efc"
+        "6e90babc-b25c-40c9-8cc8-6300ebf50ee5"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 9284.754291002173
+      "latency_ms": 11425.587709003594
     },
     {
       "entry_id": "c3.e2",
@@ -180,43 +180,43 @@
       "actual_action": "revise",
       "actual_group_id": "G4",
       "actual_linked_trace_ids": [],
-      "actual_implication": "potassium-sparing interaction resolved",
-      "actual_significance": 0.6,
+      "actual_implication": "potassium-wasting diuretic substitution",
+      "actual_significance": 0.9,
       "related_trace_ids": [
-        "72d011f0-5c9e-41a3-8716-97893785d031",
-        "5fcdf05b-a085-4adb-ae5d-5b502b078324",
-        "f52f8e20-fa82-4c36-8f8a-8b8f910c4b99",
-        "1eed606d-c669-4059-8543-78bfa2c96d20"
+        "52325136-95c1-4faa-a4b7-737442791db8",
+        "8556a661-ce72-45c4-a01c-dfdc4e524e2c",
+        "59cc0fc3-8936-47a6-bc49-208c9ca7745e",
+        "b1ffe053-7694-4315-9539-52c836d30b0d"
       ],
       "candidate_token_ids": [
-        "51b4fd5c-8d27-48ee-b6eb-88f6dbd47efc"
+        "6e90babc-b25c-40c9-8cc8-6300ebf50ee5"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 20237.35250000027
+      "latency_ms": 6479.704666999169
     },
     {
       "entry_id": "c3.e3",
       "expected_action": "none",
       "expected_group_id": null,
       "expected_linked_trace_ids": [],
-      "actual_action": "none",
-      "actual_group_id": null,
+      "actual_action": "extend",
+      "actual_group_id": "G4",
       "actual_linked_trace_ids": [],
-      "actual_implication": "",
-      "actual_significance": 0.5,
+      "actual_implication": "dietary potassium intake risk",
+      "actual_significance": 0.85,
       "related_trace_ids": [
-        "72d011f0-5c9e-41a3-8716-97893785d031",
-        "1eed606d-c669-4059-8543-78bfa2c96d20",
-        "5fcdf05b-a085-4adb-ae5d-5b502b078324",
-        "3f5d9d5b-9307-48ef-bd02-51a0469f7a92"
+        "52325136-95c1-4faa-a4b7-737442791db8",
+        "b1ffe053-7694-4315-9539-52c836d30b0d",
+        "8556a661-ce72-45c4-a01c-dfdc4e524e2c",
+        "ae129d39-f3e2-4ada-b76d-6dfc90fcb328"
       ],
       "candidate_token_ids": [
-        "51b4fd5c-8d27-48ee-b6eb-88f6dbd47efc"
+        "6e90babc-b25c-40c9-8cc8-6300ebf50ee5"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 25526.71991600073
+      "latency_ms": 6181.898750000983
     },
     {
       "entry_id": "c4.e1",
@@ -226,21 +226,21 @@
       "actual_action": "extend",
       "actual_group_id": "G5",
       "actual_linked_trace_ids": [],
-      "actual_implication": "weekly board reporting requirement",
-      "actual_significance": 0.7,
+      "actual_implication": "weekly board status reporting",
+      "actual_significance": 0.75,
       "related_trace_ids": [
-        "b90ec412-7773-4774-a320-d2292ba21b75",
-        "ea34ada0-2a99-47d2-8ba7-b1581a0df28b",
-        "f65b0f9b-d025-43c1-a073-b856f647f6a6",
-        "145c0dfc-4ad6-42bc-9256-6726b246dea7"
+        "98c2048f-8c00-4412-8100-4fc5dfd9defe",
+        "9708b4b7-bdee-44fb-b640-245c607b1312",
+        "e95fbb64-a166-4bb2-bbb2-03e840a3ef54",
+        "d78a7266-8b82-4c12-8a87-a4424753858b"
       ],
       "candidate_token_ids": [
-        "45a83023-6e63-480b-a4e2-9639f1ba6c23",
-        "014a9f5a-86b0-47d4-add3-dde7aecfe508"
+        "a802e4c8-bfac-49ed-a5ef-a1e375bb2af2",
+        "6031eab8-dcb7-42a6-a590-a13751d9d629"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 9849.299624998821
+      "latency_ms": 5052.117250001174
     },
     {
       "entry_id": "c4.e2",
@@ -250,20 +250,20 @@
       "actual_action": "revise",
       "actual_group_id": "G5",
       "actual_linked_trace_ids": [],
-      "actual_implication": "citation blocker resolved",
+      "actual_implication": "vendor SOC2 citations now complete",
       "actual_significance": 0.7,
       "related_trace_ids": [
-        "f65b0f9b-d025-43c1-a073-b856f647f6a6",
-        "ea34ada0-2a99-47d2-8ba7-b1581a0df28b",
-        "b90ec412-7773-4774-a320-d2292ba21b75",
-        "ce349496-3644-4ba5-8e6e-0efcc2f32f37"
+        "e95fbb64-a166-4bb2-bbb2-03e840a3ef54",
+        "9708b4b7-bdee-44fb-b640-245c607b1312",
+        "98c2048f-8c00-4412-8100-4fc5dfd9defe",
+        "1bfdfd43-9a3d-4dd3-922b-95b611f7e222"
       ],
       "candidate_token_ids": [
-        "014a9f5a-86b0-47d4-add3-dde7aecfe508"
+        "a802e4c8-bfac-49ed-a5ef-a1e375bb2af2"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 15557.869249998475
+      "latency_ms": 5206.062583005405
     },
     {
       "entry_id": "c4.e3",
@@ -276,17 +276,17 @@
       "actual_implication": "",
       "actual_significance": 0.5,
       "related_trace_ids": [
-        "ae611387-b1c3-46b4-a2ac-f7436303c1a9",
-        "ce349496-3644-4ba5-8e6e-0efcc2f32f37",
-        "72d011f0-5c9e-41a3-8716-97893785d031",
-        "956a7804-bcc9-4777-b9e3-cca577ad9f55"
+        "ea317521-fdce-4211-a5e1-bb2d05ed1195",
+        "1bfdfd43-9a3d-4dd3-922b-95b611f7e222",
+        "52325136-95c1-4faa-a4b7-737442791db8",
+        "d017e76d-a567-4a4b-b137-aca9270aacd6"
       ],
       "candidate_token_ids": [
-        "51b4fd5c-8d27-48ee-b6eb-88f6dbd47efc"
+        "6e90babc-b25c-40c9-8cc8-6300ebf50ee5"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 9243.004875010229
+      "latency_ms": 3845.583208996686
     },
     {
       "entry_id": "c5.e1",
@@ -295,25 +295,23 @@
       "expected_linked_trace_ids": [
         "c5.u1"
       ],
-      "actual_action": "create",
-      "actual_group_id": null,
-      "actual_linked_trace_ids": [
-        "c5.u1"
-      ],
-      "actual_implication": "appointment coverage conflict",
-      "actual_significance": 0.7,
+      "actual_action": "revise",
+      "actual_group_id": "G4",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "HMO plan change requires medication review",
+      "actual_significance": 0.9,
       "related_trace_ids": [
-        "956a7804-bcc9-4777-b9e3-cca577ad9f55",
-        "1eed606d-c669-4059-8543-78bfa2c96d20",
-        "72d011f0-5c9e-41a3-8716-97893785d031",
-        "5fcdf05b-a085-4adb-ae5d-5b502b078324"
+        "d017e76d-a567-4a4b-b137-aca9270aacd6",
+        "b1ffe053-7694-4315-9539-52c836d30b0d",
+        "52325136-95c1-4faa-a4b7-737442791db8",
+        "8556a661-ce72-45c4-a01c-dfdc4e524e2c"
       ],
       "candidate_token_ids": [
-        "51b4fd5c-8d27-48ee-b6eb-88f6dbd47efc"
+        "6e90babc-b25c-40c9-8cc8-6300ebf50ee5"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 16859.8753749975
+      "latency_ms": 5349.298000000999
     },
     {
       "entry_id": "c5.e2",
@@ -326,18 +324,18 @@
       "actual_implication": "",
       "actual_significance": 0.5,
       "related_trace_ids": [
-        "1eed606d-c669-4059-8543-78bfa2c96d20",
-        "145c0dfc-4ad6-42bc-9256-6726b246dea7",
-        "956a7804-bcc9-4777-b9e3-cca577ad9f55",
-        "b90ec412-7773-4774-a320-d2292ba21b75"
+        "b1ffe053-7694-4315-9539-52c836d30b0d",
+        "d78a7266-8b82-4c12-8a87-a4424753858b",
+        "d017e76d-a567-4a4b-b137-aca9270aacd6",
+        "98c2048f-8c00-4412-8100-4fc5dfd9defe"
       ],
       "candidate_token_ids": [
-        "45a83023-6e63-480b-a4e2-9639f1ba6c23",
-        "014a9f5a-86b0-47d4-add3-dde7aecfe508"
+        "a802e4c8-bfac-49ed-a5ef-a1e375bb2af2",
+        "6031eab8-dcb7-42a6-a590-a13751d9d629"
       ],
       "success": true,
       "error": "",
-      "latency_ms": 10791.68662498705
+      "latency_ms": 3900.7934580004076
     },
     {
       "entry_id": "c5.e3",
@@ -350,15 +348,15 @@
       "actual_implication": "",
       "actual_significance": 0.5,
       "related_trace_ids": [
-        "ae611387-b1c3-46b4-a2ac-f7436303c1a9",
-        "ce349496-3644-4ba5-8e6e-0efcc2f32f37",
-        "956a7804-bcc9-4777-b9e3-cca577ad9f55",
-        "1eed606d-c669-4059-8543-78bfa2c96d20"
+        "ea317521-fdce-4211-a5e1-bb2d05ed1195",
+        "1bfdfd43-9a3d-4dd3-922b-95b611f7e222",
+        "d017e76d-a567-4a4b-b137-aca9270aacd6",
+        "b1ffe053-7694-4315-9539-52c836d30b0d"
       ],
       "candidate_token_ids": [],
       "success": true,
       "error": "",
-      "latency_ms": 8495.977207989199
+      "latency_ms": 4215.677208005218
     }
   ]
 }

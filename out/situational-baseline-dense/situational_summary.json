@@ -1,13 +1,13 @@
 {
-  "arm_name": "situational-sonnet",
-  "model": "anthropic:claude-sonnet-4-6",
+  "arm_name": "situational-baseline-dense",
+  "model": "anthropic:claude-haiku-4-5-20251001",
   "runs": 3,
   "eval_count": 15,
-  "action_accuracy_mean": 0.9777777777777779,
-  "action_accuracy_std": 0.03849001794597504,
+  "action_accuracy_mean": 0.8000000000000002,
+  "action_accuracy_std": 1.3597399555105182e-16,
   "extension_target_accuracy_mean": 1.0,
   "extension_target_accuracy_std": 0.0,
-  "none_rate_actual_mean": 0.4000000000000001,
+  "none_rate_actual_mean": 0.3333333333333333,
   "none_rate_expected": 0.4,
   "expected_distribution": {
     "create": 1,

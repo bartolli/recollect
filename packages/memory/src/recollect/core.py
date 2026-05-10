@@ -18,6 +18,7 @@ from recollect.datetime_utils import memory_timestamp_for_comparison, now_utc
 from recollect.embeddings import FastEmbedProvider
 from recollect.exceptions import (
     ExtractionError,
+    PromptValidationError,
     SessionNotFoundError,
     StorageError,
     TraceNotFoundError,
@@ -51,7 +52,7 @@ from recollect.models import (
     apply_retrieval_boost,
     apply_time_decay,
 )
-from recollect.prompts import LoadedPrompt, load_packaged_default
+from recollect.prompts import LoadedPrompt, load_packaged_default, load_prompt_file
 from recollect.storage_context import StorageContext, create_storage_context
 
 logger = logging.getLogger(__name__)
@@ -306,13 +307,24 @@ class CognitiveMemory:
         self._situational_default: LoadedPrompt | None = None
 
     def _situational_defaults(self) -> tuple[str, str]:
-        """Lazy-load packaged situational prompt; cache on instance."""
         if self._situational_default is None:
-            self._situational_default = load_packaged_default("situational.default.md")
+            path = str(
+                self._config.get("recall_tokens.assessment_template_path", "") or ""
+            ).strip()
+            if path:
+                loaded = load_prompt_file(path)
+                if loaded.applies_to != "situational":
+                    raise PromptValidationError(
+                        f"{path}: applies-to must be 'situational', "
+                        f"got '{loaded.applies_to}'"
+                    )
+            else:
+                loaded = load_packaged_default("situational.default.md")
+            self._situational_default = loaded
             logger.info(
                 "Situational template loaded: version=%s source=%s",
-                self._situational_default.version,
-                self._situational_default.source,
+                loaded.version,
+                loaded.source,
             )
         return self._situational_default.system, self._situational_default.user
 
@@ -1259,9 +1271,17 @@ class CognitiveMemory:
     ) -> TokenAssessment:
         """Call LLM to assess situational group action for a new memory."""
         assert self._extractor is not None  # Guarded by caller
-        numbered_list = "\n".join(
-            f"{i + 1}. {t.content}" for i, (t, _) in enumerate(related)
-        )
+        # expose [in Gn] / [lone] to prompt: structural signal vs semantic inference.
+        id_to_group_labels: dict[str, list[str]] = {}
+        for gi, g in enumerate(existing_groups, 1):
+            for tid in cast(list[str], g.get("stamped_trace_ids", [])):
+                id_to_group_labels.setdefault(tid, []).append(f"G{gi}")
+        numbered_lines = []
+        for i, (t, _) in enumerate(related):
+            bindings = id_to_group_labels.get(t.id)
+            tag = f"[in {', '.join(bindings)}]" if bindings else "[lone]"
+            numbered_lines.append(f"{i + 1}. {tag} {t.content}")
+        numbered_list = "\n".join(numbered_lines)
         groups_str = self._format_existing_groups(related, existing_groups)
         default_system, default_user = self._situational_defaults()
         system_prompt = self._config.recall_token_system_prompt or default_system

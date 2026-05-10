@@ -136,6 +136,7 @@ class MemoryConfig:
                 "assessment_system_prompt": "",
                 "assessment_user_prompt": "",
                 "assessment_max_tokens": 8192,
+                "assessment_template_path": "",
             },
         }
 
