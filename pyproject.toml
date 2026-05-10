@@ -3,6 +3,9 @@ name = "memory-workspace"
 version = "0.0.0"
 description = "Memory SDK workspace"
 requires-python = ">=3.12.4"
+dependencies = [
+    "pydantic-ai>=1.93",
+]
 
 [tool.uv.workspace]
 members = ["packages/*"]
@@ -10,11 +13,13 @@ members = ["packages/*"]
 [tool.uv.sources]
 recollect = { workspace = true }
 recollect-mcp = { workspace = true }
+recollect-probe = { workspace = true }
 
 [dependency-groups]
 dev = [
     "recollect",
     "recollect-mcp",
+    "recollect-probe",
     "asyncpg-stubs>=0.31.2",
     "hypothesis>=6.151.9",
     "mypy>=1.19.1",
@@ -73,6 +78,8 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "examples/*" = ["T201", "BLE001", "S110"]
+"packages/probe-cli/src/probe_cli/__main__.py" = ["T201"]
+"packages/probe-cli/tests/*" = ["S108"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10  # Enforce low complexity
@@ -80,8 +87,12 @@ max-complexity = 10  # Enforce low complexity
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra -q --strict-markers -m 'not slow'"
-testpaths = ["tests"]
-pythonpath = ["packages/memory/src", "packages/memory-mcp/src"]
+testpaths = ["tests", "packages/probe-cli/tests"]
+pythonpath = [
+    "packages/memory/src",
+    "packages/memory-mcp/src",
+    "packages/probe-cli/src",
+]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [

@@ -23,7 +23,12 @@ from recollect.exceptions import (
     TraceNotFoundError,
 )
 from recollect.extraction import PatternExtractor
-from recollect.llm.types import ExtractionResult, Message, TokenAssessment
+from recollect.llm.types import (
+    ExtractionResult,
+    Message,
+    SituationalAssessment,
+    TokenAssessment,
+)
 from recollect.models import (
     Association,
     ConceptEmbedding,
@@ -46,6 +51,7 @@ from recollect.models import (
     apply_retrieval_boost,
     apply_time_decay,
 )
+from recollect.prompts import LoadedPrompt, load_packaged_default
 from recollect.storage_context import StorageContext, create_storage_context
 
 logger = logging.getLogger(__name__)
@@ -117,20 +123,6 @@ def _canonicalize_predicate(predicate: str) -> str:
     return _PREDICATE_ALIASES.get(predicate, predicate)
 
 
-_VALID_CATEGORIES: frozenset[str] = frozenset(
-    {
-        "health",
-        "dietary",
-        "identity",
-        "relationship",
-        "preference",
-        "schedule",
-        "constraint",
-        "general",
-    }
-)
-
-
 _CATEGORY_SCOPE_MAP: dict[str, str] = {
     "health": "health/safety",
     "dietary": "health/safety",
@@ -188,6 +180,31 @@ def _find_exact_duplicate(
         if canonical_existing == canonical_new and fact.object == new_fact.object:
             return fact
     return None
+
+
+def _collect_concept_phrases(
+    result: ExtractionResult, *, include_relation_tags: bool
+) -> list[str]:
+    # Order-preserving case-insensitive dedupe across concepts and (optionally)
+    # per-relation context_tags. Tags broaden the trace's MaxSim surface symmetric
+    # with how persona facts already do via _embed_fact_tags.
+    seen: set[str] = set()
+    out: list[str] = []
+    sources: list[list[str]] = [list(result.concepts)]
+    if include_relation_tags:
+        for rel in result.relations:
+            sources.append(list(rel.context_tags))
+    for src in sources:
+        for phrase in src:
+            cleaned = phrase.strip()
+            if not cleaned:
+                continue
+            key = cleaned.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(cleaned)
+    return out
 
 
 _QUERY_STOP_WORDS = frozenset(
@@ -264,189 +281,6 @@ _QUERY_STOP_WORDS = frozenset(
     }
 )
 
-_SITUATIONAL_ASSESSMENT_SYSTEM = (
-    "You manage SITUATIONAL AWARENESS GROUPS in personal memories. Each group "
-    "clusters memories around a concrete real-world situation that affects "
-    "what someone must know or do.\n\n"
-    "Every group has three layers:\n"
-    "- person_ref: WHO this is about. When two people share the same name, "
-    "anchor each to their closest unique relationship: "
-    '"Nadia (Jordan\'s mother)" vs "Nadia (Elliot\'s colleague)". '
-    "Use the shortest path that uniquely identifies the person. When the same "
-    "person appears in multiple groups, use the same anchor consistently. "
-    "For shared or household situations, use \"household\" or \"family\".\n"
-    "- situation: The core grounding FACT. This is the stable anchor of the "
-    "group -- it does not change when new memories join.\n"
-    "- implication: WHAT concepts this memory activates. Use a 3-5 word "
-    "concept phrase, NOT a sentence. The memories speak for themselves -- "
-    "the token is an activation signal, not a summary. Each memory that "
-    "joins adds its own implication phrase.\n"
-    "- significance: HOW IMPORTANT is this situation in the real world? "
-    "Rate 0.0 to 1.0. Health, safety, allergies, medical = 0.8-1.0. "
-    "Logistics, scheduling, travel = 0.5-0.7. Hobbies, preferences, "
-    "trivia = 0.2-0.4. Default 0.5 if unsure.\n\n"
-    "Four actions:\n"
-    "- extend: The new memory belongs to an EXISTING group. Person and "
-    "situation match. The memory adds a new implication.\n"
-    "- revise: The new memory CHANGES the factual basis of an existing "
-    "group. The situation evolved, a fact was superseded, or a risk was "
-    "resolved. The token label is rewritten to reflect current reality.\n"
-    "- create: The new memory and some existing memories form a NEW group "
-    "not yet captured by any existing group.\n"
-    "- none: No situational connection. This is the DEFAULT. Most memories "
-    "should get action=\"none\".\n\n"
-    "TOKEN LABELS ARE SIGNALS, NOT SUMMARIES:\n"
-    "Implications must be 3-5 word concept phrases. Do NOT write sentences, "
-    "explanations, or narrative descriptions. The memories already contain "
-    "the details. The token is a retrieval activation key, not a retelling.\n"
-    'Bad:  "wall removal plan requires structural engineering approval"\n'
-    'Good: "renovation structural risk"\n'
-    'Bad:  "the observatory telescope needs recalibration before the eclipse"\n'
-    'Good: "equipment readiness deadline"\n\n'
-    "TEMPORAL REJECTION (apply FIRST, before any other analysis):\n"
-    '"Would this group make sense if the events were months apart?" If NO, '
-    "it is temporal proximity, not a situational group. Return action=\"none\".\n\n"
-    "COUNTERFACTUAL DEPENDENCY TEST:\n"
-    "Before choosing create or extend, ask: \"If memory A did not exist, would "
-    "the new memory require different real-world action?\" If the answer is no, "
-    "there is no situational dependency. Return action=\"none\".\n\n"
-    "EXTEND OVER CREATE:\n"
-    "If the new memory's relevance depends on a situation already captured by "
-    "an existing group, extend that group. Create is reserved for genuinely "
-    "new situations with no existing group coverage. When uncertain between "
-    "extend and create, prefer extend.\n\n"
-    "BASE RATE:\n"
-    "Situational dependencies are rare. Most memories are independent facts. "
-    "Expect action=\"none\" for the large majority of assessments.\n\n"
-    "Respond with structured output only."
-)
-
-_SITUATIONAL_ASSESSMENT_USER = (
-    'New memory: "{new_content}"\n\n'
-    "Related existing memories:\n{numbered_list}\n\n"
-    "Existing situational groups:\n{existing_groups}\n\n"
-    "TASK: Determine if the new memory extends an existing group, revises "
-    "an existing group, starts a new group with some of the existing "
-    "memories, or has no situational connection.\n\n"
-    "--- HOW A GROUP GROWS (walkthrough) ---\n\n"
-    "Step 1 -- First memory, nothing to link to:\n"
-    '  Memory stored: "The structural report says the north garage wall '
-    'is load-bearing"\n'
-    "  Related memories: (none relevant)\n"
-    "  Existing groups: None\n"
-    "  -> action=none (nothing to connect to yet)\n\n"
-    "Step 2 -- Second memory recognizes causal implication, creates group:\n"
-    '  Memory stored: "Planning to knock out the garage north wall for a '
-    'wider door opening"\n'
-    "  Related memories:\n"
-    "    1. The structural report says the north garage wall is load-bearing\n"
-    "  Existing groups: None\n"
-    "  -> action=create, person_ref=household, situation=load-bearing garage "
-    "wall,\n"
-    "     implication=renovation structural risk, significance=0.7,\n"
-    "     linked_indices=[1]\n"
-    "  [Group created: household | load-bearing garage wall | renovation "
-    "structural risk]\n\n"
-    "Step 3 -- Third memory belongs to existing group, extends it:\n"
-    '  Memory stored: "The building permit office requires a structural '
-    'engineer sign-off for load-bearing changes"\n'
-    "  Related memories:\n"
-    "    1. The structural report says the north garage wall is load-bearing\n"
-    "    2. Planning to knock out the garage north wall for a wider door "
-    "opening\n"
-    "  Existing groups:\n"
-    "    G1: household | load-bearing garage wall | renovation structural "
-    "risk (memories: 1, 2)\n"
-    "  -> action=extend, group_number=1, implication=permit engineering "
-    "requirement,\n"
-    "     significance=0.7\n"
-    "  [Group updated with new implication: permit engineering requirement]\n\n"
-    "This shows: (1) lone memory gets action=none, (2) second memory "
-    "recognizes concrete consequence and creates a group, (3) third memory "
-    "joins the existing group and adds its own implication, (4) fourth "
-    "memory revises the group when the situation evolves.\n\n"
-    "Step 4 -- Fourth memory revises the group (situation resolved):\n"
-    '  Memory stored: "The structural engineer certified the north wall '
-    'reinforcement is complete"\n'
-    "  Related memories:\n"
-    "    1. The structural report says the north garage wall is load-bearing\n"
-    "    2. Planning to knock out the garage north wall for a wider door "
-    "opening\n"
-    "    3. The building permit office requires a structural engineer "
-    "sign-off for load-bearing changes\n"
-    "  Existing groups:\n"
-    "    G1: household | load-bearing garage wall | renovation structural "
-    "risk, permit engineering requirement (memories: 1, 2, 3, "
-    "significance: 0.7)\n"
-    "  -> action=revise, group_number=1, situation=load-bearing garage wall,\n"
-    "     implication=reinforcement certified safe, significance=0.3\n"
-    "  [Group revised: household | load-bearing garage wall | reinforcement "
-    "certified safe]\n\n"
-    "This shows: the wall is still load-bearing (situation unchanged), but "
-    "the risk is resolved. The old implications (structural risk, permit "
-    "requirement) are superseded. Significance drops because the actionable "
-    "risk is gone.\n\n"
-    "--- CREATE criteria (ALL must be true) ---\n"
-    "1. A specific, concrete mechanism connects the new memory to one or "
-    "more existing memories\n"
-    "2. One memory changes what someone must know, do, or avoid in the "
-    "situation described by another\n"
-    "3. The connection is NOT merely topical (\"both about gardening\") or "
-    "temporal (\"same week\")\n"
-    "4. The connection would hold if the events were months apart\n"
-    "5. No existing group already captures this situation\n\n"
-    "--- EXTEND criteria (ALL must be true) ---\n"
-    "1. An existing group's person_ref and situation match the new memory\n"
-    "2. The new memory adds a genuinely new implication (not a restatement)\n"
-    "3. Only set: action=\"extend\", group_number=N, implication=\"new "
-    "downstream concept\"\n"
-    "4. Do NOT repeat person_ref or situation -- they are inherited from "
-    "the group\n\n"
-    "--- REVISE criteria (ALL must be true) ---\n"
-    "1. An existing group's situation is directly affected by the new memory\n"
-    "2. The new memory supersedes, resolves, or materially changes an "
-    "existing implication\n"
-    "3. The old label no longer reflects current reality\n"
-    "4. Only set: action=\"revise\", group_number=N, situation=\"updated or "
-    "same\",\n"
-    "   implication=\"new current-state punchline\", significance=adjusted\n"
-    "5. Rewrite the implication to reflect the CURRENT state, not append "
-    "to old\n\n"
-    "--- DO NOT GROUP (return action=\"none\") ---\n"
-    '- Generic topical overlap: "Started learning classical guitar" + "The '
-    "concert hall has great acoustics\" -- both music-related, but learning "
-    "guitar has no concrete consequence for the venue.\n"
-    '- Temporal coincidence: "The boat launch is scheduled for Saturday" + '
-    "\"Choir rehearsal moved to Saturday\" -- same day, but the boat has no "
-    "causal effect on the rehearsal. If the rehearsal were on a different "
-    "day, there would be no connection at all.\n"
-    '- Background character: "Marco said the soil pH is too low for '
-    "blueberries\" + \"Marco prefers morning rehearsals\" -- both mention "
-    "Marco, but soil chemistry has no situational link to rehearsal timing.\n"
-    '- Vague thematic: "The garden soil needs agricultural lime" + "Bought '
-    "a new wheelbarrow\" -- both gardening, no specific dependency.\n"
-    '- Shared subject without mechanism: "Replaced the mainsheet on the '
-    "dinghy\" + \"The harbor master raised mooring fees\" -- both boating, "
-    "but one does not constrain or change the other.\n"
-    '- Narrative similarity: Two memories about the same topic that don\'t '
-    "change what someone must know or do. \"Signed up for a pottery class\" "
-    "+ \"The community center has free parking\" -- both about the class "
-    "venue, but parking availability has no causal dependency on the class.\n\n"
-    "--- OUTPUT FORMAT ---\n\n"
-    "For action=\"create\":\n"
-    "  action, person_ref, situation, implication, significance (0.0-1.0), "
-    "linked_indices (1-based positions in the numbered memory list)\n\n"
-    "For action=\"extend\":\n"
-    "  action, group_number (1-based, which existing group), implication, "
-    "significance (0.0-1.0)\n\n"
-    "For action=\"revise\":\n"
-    "  action, group_number (1-based, which existing group), situation "
-    "(updated or same as existing), implication (rewritten punchline), "
-    "significance (0.0-1.0, adjusted to reflect current state)\n\n"
-    "For action=\"none\":\n"
-    '  action="none" (all other fields empty/default)'
-)
-
 
 class CognitiveMemory:
     """Human-like memory system with cognitive model.
@@ -469,8 +303,24 @@ class CognitiveMemory:
         self._extractor = extractor
         self._buffer = WorkingMemory(self._config.working_memory_capacity)
         self._connected = False
+        self._situational_default: LoadedPrompt | None = None
+
+    def _situational_defaults(self) -> tuple[str, str]:
+        """Lazy-load packaged situational prompt; cache on instance."""
+        if self._situational_default is None:
+            self._situational_default = load_packaged_default("situational.default.md")
+            logger.info(
+                "Situational template loaded: version=%s source=%s",
+                self._situational_default.version,
+                self._situational_default.source,
+            )
+        return self._situational_default.system, self._situational_default.user
 
     # -- Lifecycle --
+
+    @property
+    def storage(self) -> StorageContext:
+        return self._storage
 
     async def connect(self, db_url: str | None = None) -> None:
         """Initialize storage connection and schema."""
@@ -520,7 +370,9 @@ class CognitiveMemory:
             raise ValueError("Content must be a non-empty string")
 
         result = await self._extract_pattern(content)
-        embedding = await self._embeddings.generate_embedding(content)
+        embedding = await self._embeddings.generate_embedding(
+            content, task="search_document"
+        )
 
         decay_rate = _compute_decay_rate(
             base_rate=float(self._config.get("memory.decay_rate", 0.1)),
@@ -598,7 +450,9 @@ class CognitiveMemory:
         if token_budget <= 0:
             raise ValueError("Token budget must be positive")
 
-        query_embedding = await self._embeddings.generate_embedding(query)
+        query_embedding = await self._embeddings.generate_embedding(
+            query, task="search_query"
+        )
 
         search_limit = int(self._config.get("retrieval.search_limit", 10))
         wm_candidates = self._search_working_memory(query_embedding)
@@ -764,12 +618,19 @@ class CognitiveMemory:
         """Explicitly forget a memory trace and its derived facts."""
         if not trace_id:
             raise ValueError("Trace ID must be a non-empty string")
-        deleted = await self._storage.traces.delete_trace(trace_id)
+        deleted = await self._delete_trace_with_buffer_evict(trace_id)
         if not deleted:
             raise TraceNotFoundError(f"Trace {trace_id} not found")
         await self._cleanup_trace_facts(trace_id)
         logger.debug("Forgot trace: %s", trace_id[:8])
         return True
+
+    async def _delete_trace_with_buffer_evict(self, trace_id: str) -> bool:
+        # Buffer ⊆ memory_traces invariant: dangling refs FK-violate temporal assoc.
+        deleted = await self._storage.traces.delete_trace(trace_id)
+        if deleted:
+            self._buffer.evict(trace_id)
+        return deleted
 
     async def _cleanup_trace_facts(self, trace_id: str) -> None:
         """Remove persona facts and entity relations linked to a trace."""
@@ -909,7 +770,9 @@ class CognitiveMemory:
             raise ValueError(f"Session {session_id} has no traces")
 
         summary_text = await self._generate_session_summary(traces, session)
-        embedding = await self._embeddings.generate_embedding(summary_text)
+        embedding = await self._embeddings.generate_embedding(
+            summary_text, task="search_document"
+        )
         result = await self._extract_pattern(summary_text)
 
         summary_trace = MemoryTrace(
@@ -1083,11 +946,21 @@ class CognitiveMemory:
         trace: MemoryTrace,
         result: ExtractionResult,
     ) -> None:
-        """Embed each extracted concept individually for concept attention."""
-        if not result.concepts:
+        # Persona facts already MaxSim their context_tags (_embed_fact_tags).
+        # Traces that don't promote lose that surface unless we embed here too.
+        # Flag-gated: opt-in via extraction.embed_relation_tags.
+        phrases = _collect_concept_phrases(
+            result,
+            include_relation_tags=bool(
+                self._config.get("extraction.embed_relation_tags", False)
+            ),
+        )
+        if not phrases:
             return
         try:
-            vectors = await self._embeddings.generate_embeddings_batch(result.concepts)
+            vectors = await self._embeddings.generate_embeddings_batch(
+                phrases, task="search_document"
+            )
             embeddings = [
                 ConceptEmbedding(
                     concept=c,
@@ -1095,7 +968,7 @@ class CognitiveMemory:
                     owner_id=trace.id,
                     embedding=v,
                 )
-                for c, v in zip(result.concepts, vectors, strict=True)
+                for c, v in zip(phrases, vectors, strict=True)
             ]
             await self._storage.concept_embeddings.store_concept_embeddings(embeddings)
         except (StorageError, OSError):
@@ -1107,7 +980,7 @@ class CognitiveMemory:
             return
         try:
             vectors = await self._embeddings.generate_embeddings_batch(
-                fact.context_tags
+                fact.context_tags, task="search_document"
             )
             embeddings = [
                 ConceptEmbedding(
@@ -1198,11 +1071,7 @@ class CognitiveMemory:
         for rel in result.relations:
             if rel.confidence < threshold:
                 continue
-            raw_cat = rel.category if hasattr(rel, "category") else "general"
-            category: FactCategory = cast(
-                FactCategory,
-                raw_cat if raw_cat in _VALID_CATEGORIES else "general",
-            )
+            category: FactCategory = rel.category
             status: FactStatus = (
                 "promoted"
                 if _should_fast_track(category, rel.confidence)
@@ -1210,7 +1079,9 @@ class CognitiveMemory:
             )
             content = rel.context or f"{rel.source} {rel.relation} {rel.target}"
             try:
-                fact_embedding = await self._embeddings.generate_embedding(content)
+                fact_embedding = await self._embeddings.generate_embedding(
+                    content, task="search_document"
+                )
             except (ValueError, RuntimeError, OSError):
                 fact_embedding = None
             fact = PersonaFact(
@@ -1273,8 +1144,12 @@ class CognitiveMemory:
         threshold = float(
             self._config.get("persona.predicate_similarity_threshold", 0.8)
         )
-        emb_a = await self._embeddings.generate_embedding(old_fact.predicate)
-        emb_b = await self._embeddings.generate_embedding(new_fact.predicate)
+        emb_a = await self._embeddings.generate_embedding(
+            old_fact.predicate, task="clustering"
+        )
+        emb_b = await self._embeddings.generate_embedding(
+            new_fact.predicate, task="clustering"
+        )
         if _cosine_similarity(emb_a, emb_b) >= threshold:
             await self._storage.facts.supersede_persona_fact(old_fact.id, new_fact)
         else:
@@ -1306,22 +1181,49 @@ class CognitiveMemory:
 
     # -- Private: recall token helpers --
 
+    async def assess_situational(
+        self, trace: MemoryTrace
+    ) -> SituationalAssessment | None:
+        """Assessment-only surface for measurement; bypasses recall_tokens.enabled."""
+        if self._extractor is None or trace.embedding is None:
+            return None
+        related, existing_groups = await self._collect_assessment_inputs(trace)
+        if not related:
+            return None
+        assessment = await self._call_token_assessment(
+            trace, related, existing_groups
+        )
+        return SituationalAssessment(
+            assessment=assessment,
+            related_trace_ids=[t.id for t, _ in related],
+            candidate_token_ids=[str(g["token_id"]) for g in existing_groups],
+        )
+
+    async def _collect_assessment_inputs(
+        self, trace: MemoryTrace
+    ) -> tuple[list[tuple[MemoryTrace, float]], list[dict[str, object]]]:
+        assert trace.embedding is not None  # Guarded by callers
+        top_k = int(self._config.get("recall_tokens.write_time_top_k", 5))
+        threshold = float(self._config.get("recall_tokens.write_time_threshold", 0.42))
+        related = await self._find_related_for_tokens(
+            trace.embedding, trace.id, top_k, threshold
+        )
+        if not related:
+            return [], []
+        related_ids = [t.id for t, _ in related]
+        existing_groups = await self._storage.recall_tokens.find_groups_for_traces(
+            related_ids, include_archived=True
+        )
+        return related, existing_groups
+
     async def _assess_recall_tokens(self, trace: MemoryTrace) -> None:
         """Write-time assessment: find related, find groups, ask LLM, apply."""
         if self._extractor is None or trace.embedding is None:
             return
-        top_k = int(self._config.get("recall_tokens.write_time_top_k", 5))
-        threshold = float(self._config.get("recall_tokens.write_time_threshold", 0.42))
         try:
-            related = await self._find_related_for_tokens(
-                trace.embedding, trace.id, top_k, threshold
-            )
+            related, existing_groups = await self._collect_assessment_inputs(trace)
             if not related:
                 return
-            related_ids = [t.id for t, _ in related]
-            existing_groups = await self._storage.recall_tokens.find_groups_for_traces(
-                related_ids, include_archived=True
-            )
             assessment = await self._call_token_assessment(
                 trace, related, existing_groups
             )
@@ -1361,12 +1263,9 @@ class CognitiveMemory:
             f"{i + 1}. {t.content}" for i, (t, _) in enumerate(related)
         )
         groups_str = self._format_existing_groups(related, existing_groups)
-        system_prompt = (
-            self._config.recall_token_system_prompt or _SITUATIONAL_ASSESSMENT_SYSTEM
-        )
-        user_template = (
-            self._config.recall_token_user_prompt or _SITUATIONAL_ASSESSMENT_USER
-        )
+        default_system, default_user = self._situational_defaults()
+        system_prompt = self._config.recall_token_system_prompt or default_system
+        user_template = self._config.recall_token_user_prompt or default_user
         user_prompt = user_template.format(
             new_content=trace.content or "",
             numbered_list=numbered_list,
@@ -1379,7 +1278,9 @@ class CognitiveMemory:
         return await self._extractor._provider.complete_structured(
             messages,
             output_type=TokenAssessment,
-            max_tokens=512,
+            max_tokens=int(
+                self._config.get("recall_tokens.assessment_max_tokens", 8192)
+            ),
             temperature=0.0,
         )
 
@@ -2175,7 +2076,7 @@ class CognitiveMemory:
         age_hours = (now - created).total_seconds() / 3600.0
 
         if age_hours >= grace_hours:
-            await self._storage.traces.delete_trace(trace.id)
+            await self._delete_trace_with_buffer_evict(trace.id)
             return "forgotten"
 
         await self._storage.traces.update_trace_strength(trace.id, decayed.strength)

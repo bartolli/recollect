@@ -5,7 +5,6 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 from recollect.core import (
-    _VALID_CATEGORIES,
     CognitiveMemory,
     _canonicalize_predicate,
     _find_contradicting_fact,
@@ -23,24 +22,6 @@ def _fact(
     content: str = "c",
 ) -> PersonaFact:
     return PersonaFact(subject=subj, predicate=pred, object=obj, content=content)
-
-
-class TestValidCategories:
-    def test_known_categories_in_set(self) -> None:
-        for cat in (
-            "health",
-            "dietary",
-            "identity",
-            "relationship",
-            "preference",
-            "schedule",
-            "constraint",
-            "general",
-        ):
-            assert cat in _VALID_CATEGORIES
-
-    def test_unknown_category_not_in_set(self) -> None:
-        assert "xyz_unknown" not in _VALID_CATEGORIES
 
 
 class TestShouldFastTrack:
@@ -166,7 +147,7 @@ class TestPersonaFactExtraction:
     ) -> None:
         result = ExtractionResult(
             fact_type="episodic",
-            relations=[Relation(source="A", relation="met", target="B")],
+            relations=[Relation(source="A", relation="is_associated_with", target="B")],
         )
         extractor = AsyncMock()
         extractor.extract = AsyncMock(return_value=result)

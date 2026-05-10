@@ -57,6 +57,7 @@ dmypy.json
 .env.production
 .envrc
 logs/
+.logs/
 
 # uv
 uv.lock

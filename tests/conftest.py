@@ -151,7 +151,7 @@ def mock_embeddings() -> AsyncMock:
     e = AsyncMock()
     e.generate_embedding = AsyncMock(return_value=_fake_embedding())
     e.generate_embeddings_batch = AsyncMock(
-        side_effect=lambda texts: [
+        side_effect=lambda texts, **_: [
             _fake_embedding(0.1 + i * 0.01) for i in range(len(texts))
         ]
     )

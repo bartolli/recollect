@@ -35,7 +35,9 @@ class TestEmbedTraceConcepts:
         trace = MemoryTrace(content="test memory", embedding=_emb())
         concepts = ["dinner planning", "food safety", "allergies"]
         await m._embed_trace_concepts(trace, ExtractionResult(concepts=concepts))
-        mock_embeddings.generate_embeddings_batch.assert_awaited_once_with(concepts)
+        mock_embeddings.generate_embeddings_batch.assert_awaited_once_with(
+            concepts, task="search_document"
+        )
         mock_storage.concept_embeddings.store_concept_embeddings.assert_awaited_once()
         store_fn = mock_storage.concept_embeddings.store_concept_embeddings
         stored = store_fn.call_args[0][0]

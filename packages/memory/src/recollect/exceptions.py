@@ -27,3 +27,7 @@ class TraceNotFoundError(MemorySDKError):
 
 class SessionNotFoundError(MemorySDKError):
     """Raised when a session is not found."""
+
+
+class PromptValidationError(MemorySDKError):
+    """Raised when a prompt override file fails validation on load."""

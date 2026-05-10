@@ -68,11 +68,14 @@ significance_reduction = 0.7  # sig=1.0 reduces decay by 70%
 valence_reduction = 0.5       # abs(valence)=1.0 reduces decay by 50%
 
 [extraction]
-pydantic_ai_model = ""                     # pydantic-ai model string (e.g. "anthropic:claude-haiku-4-5-20251001", "ollama:ministral-3")
+pydantic_ai_model = ""                     # pydantic-ai model string (e.g. "anthropic:claude-haiku-4-5-20251001", "ollama:ministral-3", "openrouter:deepseek/deepseek-v4-flash")
 max_tokens = 8192               # Reasoning models consume thinking tokens before output; 8192 covers most cases
+max_retries = 5                 # Provider retries on transient errors (502 envelopes, upstream flap); pydantic-ai Agent.retries
 timeout = 120                   # Seconds; reasoning models over network need headroom
 max_concepts = 5
 max_relations = 3
+template_path = ""              # Path to override extraction template (.md with header). Empty = packaged default.
+embed_relation_tags = false     # Embed each relation's context_tags as trace concepts (broadens MaxSim surface symmetric with persona facts). Default off pending A/B confirmation.
 instructions = """
 Entity types: person, organization, place, food, cuisine, product, event, skill, condition.
 Concepts: abstract lowercase noun phrases that could recur across memories.
@@ -86,8 +89,18 @@ DISAMBIGUATION: food restrictions are ALWAYS 'dietary' regardless of motivation 
 vegetarian for ethics, kosher for religion, gluten-free by choice are all 'dietary'. \
 The downstream pipeline uses this category to surface facts during food-related queries."""
 
+# Free-form passthrough into pydantic-ai ModelSettings. Provider-specific keys validate downstream.
+# Examples:
+#   temperature = 0.2
+#   top_p = 0.9
+#   openrouter_reasoning = { effort = "high" }
+#   openrouter_usage = { include = true }
+#   openrouter_models = ["anthropic/claude-sonnet-4-6", "deepseek/deepseek-v4-flash"]
+#   anthropic_thinking_budget = 4096
+[extraction.model_settings]
+
 [embedding]
-model = "nomic-ai/nomic-embed-text-v1.5-Q"
+model = "nomic-ai/nomic-embed-text-v1.5"
 dimensions = 768
 
 [server]
@@ -115,3 +128,4 @@ iter_stability_threshold = 0.95 # Top-K overlap fraction to stop iterating early
 iter_top_seeds = 3              # Token-discovered traces used as seeds per re-seeding round
 assessment_system_prompt = ""   # Override system prompt for token assessment (empty = built-in default)
 assessment_user_prompt = ""     # Override user prompt for token assessment (empty = built-in default)
+assessment_max_tokens = 8192    # Token budget for situational assessment LLM call; thinking models consume budget before output

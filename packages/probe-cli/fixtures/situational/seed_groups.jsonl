@@ -1,0 +1,23 @@
+# P6 situational seed groups. 5 groups, restored directly into probe DB before the eval arm runs.
+#
+# Storage shape (recall_tokens table, recollect.models.RecallToken):
+#   id, label, strength, significance, created_at, last_activated_at, status
+# token_stamps table: (token_id, trace_id, stamped_at) many-to-many.
+#
+# Persisted label is a single pipe-delimited string assembled by core.CognitiveMemory:
+#   label = f"{person_ref} | {situation} | {', '.join(implications)}"
+#   Matches _apply_token_create (initial) + _append_implication (extend, comma-appends to 3rd segment).
+# The LLM at assessment time sees: "G{i}: {label} (memories: {indices}, significance: {sig:.1f})"
+# (per core._format_existing_groups). No separate person_ref/situation/implications surfaced.
+#
+# Fixture keeps person_ref/situation/implications as structured fields for human review;
+# the seed loader joins them via the formula above to produce the stored label.
+# strength=1.0 and status=active for all seeded groups (fresh-out-of-creation state);
+# decay/archive lifecycle testing deferred to a P6.1 sub-fixture.
+# created_at and last_activated_at are owned by the loader (set at seed time).
+
+{"group_id": "G1", "person_ref": "household", "situation": "wedding venue capacity vs guest list overflow", "implications": ["venue commitment", "hard capacity ceiling", "guest list overflow"], "significance": 0.6, "strength": 1.0, "status": "active", "member_trace_ids": ["c1.1", "c1.2", "c1.3"]}
+{"group_id": "G2", "person_ref": "Alex (Octane CTO)", "situation": "post-Octane career transition", "implications": ["leadership identity", "leadership exit", "competitor recruitment talks"], "significance": 0.5, "strength": 1.0, "status": "active", "member_trace_ids": ["c2a.1", "c2a.2", "c2a.3"]}
+{"group_id": "G3", "person_ref": "Alex (Quill's sitter)", "situation": "after-school childcare arrangement", "implications": ["sitter onboarding schedule", "rate and pickup logistics"], "significance": 0.6, "strength": 1.0, "status": "active", "member_trace_ids": ["c2b.1", "c2b.2"]}
+{"group_id": "G4", "person_ref": "Dale", "situation": "hyperkalemia risk on combination antihypertensive therapy", "implications": ["antihypertensive baseline", "potassium retention risk", "regimen interaction risk"], "significance": 0.9, "strength": 1.0, "status": "active", "member_trace_ids": ["c3.1", "c3.2", "c3.3"]}
+{"group_id": "G5", "person_ref": "team", "situation": "Q4 compliance report blocked on vendor SOC2 access", "implications": ["regulatory deadline", "citation scope identified", "vendor responsiveness blocker"], "significance": 0.7, "strength": 1.0, "status": "active", "member_trace_ids": ["c4.1", "c4.2", "c4.3"]}

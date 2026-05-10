@@ -1,6 +1,11 @@
 .PHONY: dev test test-fast test-integration test-cov lint format type-check check fix clean \
        build build-sdk build-mcp \
-       db-start db-stop db-status db-setup db-reset serve-stdio serve-http \
+       db-start db-stop db-status db-setup db-reset \
+       probe-db-setup probe-db-reset probe-baseline probe-dense probe-dense-tagembed \
+       probe-baseline-k3 probe-dense-k3 probe-dense-tagembed-k3 \
+       probe-situational-db-setup probe-situational-db-reset probe-situational \
+       probe-situational-sonnet probe-situational-gemma probe-situational-openrouter \
+       serve-stdio serve-http \
        poc-hebbian poc-spread poc-token-reseed help
 
 # Load .env for all uv run commands (API keys, DATABASE_URL, etc.)
@@ -66,6 +71,71 @@ db-reset:
 	$(PG_BIN)/createdb memory_v3
 	$(PG_BIN)/psql -d memory_v3 -c "CREATE EXTENSION IF NOT EXISTS vector;" 2>/dev/null
 	@echo "Database memory_v3 recreated fresh with pgvector."
+
+# -- Probe DB (eval harness) --
+
+PROBE_DB := probe_eval
+
+probe-db-setup:
+	$(PG_BIN)/createdb $(PROBE_DB) 2>/dev/null || true
+	$(PG_BIN)/psql -d $(PROBE_DB) -c "CREATE EXTENSION IF NOT EXISTS vector;" 2>/dev/null
+	@echo "Probe DB $(PROBE_DB) ready with pgvector."
+
+probe-db-reset:
+	$(PG_BIN)/dropdb $(PROBE_DB) 2>/dev/null || true
+	$(PG_BIN)/createdb $(PROBE_DB)
+	$(PG_BIN)/psql -d $(PROBE_DB) -c "CREATE EXTENSION IF NOT EXISTS vector;" 2>/dev/null
+	@echo "Probe DB $(PROBE_DB) recreated fresh with pgvector."
+
+# -- Probe arms --
+# Reset probe DB before measurement; session_id is time-suffixed and append-only.
+
+probe-baseline: probe-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/eval.toml
+
+probe-dense: probe-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/dense-retrieval.toml
+
+probe-dense-tagembed: probe-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/dense-retrieval-tag-embed.toml
+
+# k=3 variants — push recall off ceiling (more headroom for prompt-quality discrimination)
+
+probe-baseline-k3: probe-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/eval-k3.toml
+
+probe-dense-k3: probe-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/dense-retrieval-k3.toml
+
+probe-dense-tagembed-k3: probe-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/dense-retrieval-tag-embed-k3.toml
+
+# -- P6 situational arm (separate DB; seed groups restored, eval Mode-A) --
+
+PROBE_SITUATIONAL_DB := probe_situational
+
+probe-situational-db-setup:
+	$(PG_BIN)/createdb $(PROBE_SITUATIONAL_DB) 2>/dev/null || true
+	$(PG_BIN)/psql -d $(PROBE_SITUATIONAL_DB) -c "CREATE EXTENSION IF NOT EXISTS vector;" 2>/dev/null
+	@echo "Probe DB $(PROBE_SITUATIONAL_DB) ready with pgvector."
+
+probe-situational-db-reset:
+	$(PG_BIN)/dropdb $(PROBE_SITUATIONAL_DB) 2>/dev/null || true
+	$(PG_BIN)/createdb $(PROBE_SITUATIONAL_DB)
+	$(PG_BIN)/psql -d $(PROBE_SITUATIONAL_DB) -c "CREATE EXTENSION IF NOT EXISTS vector;" 2>/dev/null
+	@echo "Probe DB $(PROBE_SITUATIONAL_DB) recreated fresh with pgvector."
+
+probe-situational: probe-situational-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/situational/baseline.toml
+
+probe-situational-sonnet: probe-situational-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/situational/sonnet.toml
+
+probe-situational-gemma: probe-situational-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/situational/gemma.toml
+
+probe-situational-openrouter: probe-situational-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/situational/openrouter.toml
 
 # -- POC Experiments --
 # Usage: make poc-spread ARGS="--spread-decay 0.8 --iter-max-rounds 5"
@@ -133,6 +203,24 @@ help:
 	@echo "  make db-status      Check if running"
 	@echo "  make db-setup       Create memory_v3 db + pgvector"
 	@echo "  make db-reset       Drop and recreate memory_v3"
+	@echo ""
+	@echo "Probe DB + arms:      (eval harness, separate from dev DB)"
+	@echo "  make probe-db-setup       Create probe_eval db + pgvector"
+	@echo "  make probe-db-reset       Drop and recreate probe_eval"
+	@echo "  make probe-baseline       Reset + run eval.toml (default prompt)"
+	@echo "  make probe-dense          Reset + run dense-retrieval.toml"
+	@echo "  make probe-dense-tagembed Reset + run dense-retrieval-tag-embed.toml"
+	@echo "  make probe-baseline-k3       Same as probe-baseline, top_k=3"
+	@echo "  make probe-dense-k3          Same as probe-dense, top_k=3"
+	@echo "  make probe-dense-tagembed-k3 Same as probe-dense-tagembed, top_k=3"
+	@echo ""
+	@echo "P6 situational arm:   (separate DB: probe_situational)"
+	@echo "  make probe-situational-db-setup  Create probe_situational + pgvector"
+	@echo "  make probe-situational-db-reset  Drop and recreate probe_situational"
+	@echo "  make probe-situational           Reset + run situational/baseline.toml (Haiku)"
+	@echo "  make probe-situational-sonnet    Reset + run situational/sonnet.toml"
+	@echo "  make probe-situational-gemma     Reset + run situational/gemma.toml"
+	@echo "  make probe-situational-openrouter Reset + run situational/openrouter.toml (deepseek-v4-flash)"
 	@echo ""
 	@echo "POC Experiments:      (ARGS= for extra flags)"
 	@echo "  make poc-hebbian          Hebbian recall tokens benchmark"

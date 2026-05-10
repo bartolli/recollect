@@ -157,3 +157,16 @@ class TestConsolidate:
         result = await mem.consolidate()
         assert result.still_pending == 1
         mock_trace_store.delete_trace.assert_not_awaited()
+
+    async def test_forget_path_evicts_buffered_aged_trace(
+        self, mem: CognitiveMemory, mock_trace_store: AsyncMock
+    ) -> None:
+        # Buffer ⊆ memory_traces invariant must hold across the consolidate path too.
+        old = MemoryTrace(
+            id="aged-1", content="Weak", strength=0.05,
+            created_at=now_utc() - timedelta(hours=48),
+        )
+        mem._buffer.add(old)
+        mock_trace_store.get_unconsolidated_traces.return_value = [old]
+        await mem.consolidate()
+        assert all(t.id != "aged-1" for t in mem._buffer.get_active())

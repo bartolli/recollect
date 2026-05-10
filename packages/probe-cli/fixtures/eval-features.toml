@@ -1,0 +1,29 @@
+# Production-aligned arm: persona + recall_tokens enabled (MCP defaults).
+# A/B vs eval.toml isolates the persona/tokens contribution to retrieval quality.
+#   uv run probe run --arm packages/probe-cli/fixtures/eval-features.toml
+
+[arm]
+name = "eval-features"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+max_concepts = 5
+max_relations = 3
+
+[corpus]
+path = "packages/probe-cli/fixtures/eval_traces.jsonl"
+
+[retrieval]
+enabled = true
+db_url = "postgresql://bartolli@localhost:5432/probe_eval"
+traces_corpus_path = "packages/probe-cli/fixtures/eval_traces.jsonl"
+query_corpus_path = "packages/probe-cli/fixtures/eval_queries.jsonl"
+token_budget = 100000
+top_k = 5
+max_retrievals_buffer = 50
+
+# persona + recall_tokens left at SDK defaults (true) — production parity.
+
+[output]
+dir = "out"

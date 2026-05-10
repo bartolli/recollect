@@ -1,18 +1,23 @@
 """Embedding generation using FastEmbed.
 
-Uses nomic-ai/nomic-embed-text-v1.5-Q (768 dimensions) for local embedding
+Uses nomic-ai/nomic-embed-text-v1.5 (768 dimensions) for local embedding
 generation. No API calls required -- runs entirely on-device.
+Nomic requires a task-instruction prefix on every input; see EmbeddingTask.
 """
 
 from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from recollect.exceptions import EmbeddingError
 
 logger = logging.getLogger(__name__)
+
+EmbeddingTask = Literal[
+    "search_document", "search_query", "clustering", "classification"
+]
 
 
 class FastEmbedProvider:
@@ -20,7 +25,7 @@ class FastEmbedProvider:
 
     def __init__(
         self,
-        model_name: str = "nomic-ai/nomic-embed-text-v1.5-Q",
+        model_name: str = "nomic-ai/nomic-embed-text-v1.5",
         dimensions: int = 768,
     ) -> None:
         self._model_name = model_name
@@ -51,24 +56,30 @@ class FastEmbedProvider:
         """
         await asyncio.to_thread(self._get_model)
 
-    async def generate_embedding(self, text: str) -> list[float]:
-        """Generate embedding for a single text."""
+    async def generate_embedding(
+        self, text: str, *, task: EmbeddingTask = "search_document"
+    ) -> list[float]:
+        """Generate embedding for a single text. Nomic requires a task prefix."""
         try:
             model = self._get_model()
-            embeddings = await asyncio.to_thread(lambda: list(model.embed([text])))
+            prefixed = f"{task}: {text}"
+            embeddings = await asyncio.to_thread(lambda: list(model.embed([prefixed])))
             return [float(v) for v in embeddings[0]]
         except EmbeddingError:
             raise
         except (RuntimeError, ValueError, OSError) as exc:
             raise EmbeddingError(str(exc)) from exc
 
-    async def generate_embeddings_batch(self, texts: list[str]) -> list[list[float]]:
-        """Generate embeddings for multiple texts in one call."""
+    async def generate_embeddings_batch(
+        self, texts: list[str], *, task: EmbeddingTask = "search_document"
+    ) -> list[list[float]]:
+        """Generate embeddings for multiple texts in one call. Single task per batch."""
         if not texts:
             return []
         try:
             model = self._get_model()
-            embeddings = await asyncio.to_thread(lambda: list(model.embed(texts)))
+            prefixed = [f"{task}: {t}" for t in texts]
+            embeddings = await asyncio.to_thread(lambda: list(model.embed(prefixed)))
             return [[float(v) for v in emb] for emb in embeddings]
         except EmbeddingError:
             raise

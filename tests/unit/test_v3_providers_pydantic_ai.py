@@ -31,7 +31,7 @@ class TestPydanticAIModelSettings:
         from recollect.llm.pydantic_ai import PydanticAIProvider
 
         result = PydanticAIProvider._build_model_settings(CompletionParams())
-        assert result["max_tokens"] == 1024
+        assert result["max_tokens"] == 8192
         assert result["temperature"] == 0.0
 
     def test_kwargs_override_defaults(self) -> None:

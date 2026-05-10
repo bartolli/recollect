@@ -98,12 +98,16 @@ class MemoryConfig:
             "extraction": {
                 "pydantic_ai_model": "",
                 "max_tokens": 8192,
+                "max_retries": 5,
                 "max_concepts": 5,
                 "max_relations": 3,
                 "instructions": "",
+                "template_path": "",
+                "embed_relation_tags": False,
+                "model_settings": {},
             },
             "embedding": {
-                "model": "nomic-ai/nomic-embed-text-v1.5-Q",
+                "model": "nomic-ai/nomic-embed-text-v1.5",
                 "dimensions": 768,
             },
             "server": {
@@ -131,6 +135,7 @@ class MemoryConfig:
                 "iter_top_seeds": 3,
                 "assessment_system_prompt": "",
                 "assessment_user_prompt": "",
+                "assessment_max_tokens": 8192,
             },
         }
 
@@ -157,6 +162,7 @@ class MemoryConfig:
             ("PYDANTIC_AI_MODEL", "extraction.pydantic_ai_model"),
             ("MEMORY_EXTRACTION_MAX_TOKENS", "extraction.max_tokens"),
             ("MEMORY_EXTRACTION_INSTRUCTIONS", "extraction.instructions"),
+            ("MEMORY_EXTRACTION_TEMPLATE_PATH", "extraction.template_path"),
             ("SERVER_HOST", "server.host"),
             ("SERVER_PORT", "server.port"),
             ("MEMORY_USER_ID", "server.user_id"),

@@ -112,3 +112,25 @@ class TestStats:
 
         stats = wm.get_stats()
         assert stats["total_displaced"] == 5
+
+
+class TestEvict:
+    def test_removes_matching_trace(self) -> None:
+        wm = WorkingMemory(capacity=5)
+        a, b = _trace("a"), _trace("b")
+        wm.add(a)
+        wm.add(b)
+        assert wm.evict(a.id) is True
+        assert [t.id for t in wm.get_active()] == [b.id]
+
+    def test_returns_false_when_absent(self) -> None:
+        wm = WorkingMemory(capacity=5)
+        assert wm.evict("nonexistent") is False
+
+    def test_clears_rehearsal_count(self) -> None:
+        wm = WorkingMemory(capacity=5)
+        t = _trace("a")
+        wm.add(t)
+        wm.rehearse(t)
+        wm.evict(t.id)
+        assert t.id not in wm._rehearsal_counts

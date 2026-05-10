@@ -1,0 +1,10 @@
+# Stratified smoke corpus for P3 baseline. One entry per FactCategory (8 of them).
+# expected_* fields are ground-truth labels for accuracy scoring (P4).
+{"id": "h1", "text": "Sarah carries an EpiPen for her severe peanut allergy.", "expected_category": "health", "expected_predicate": "is_allergic_to"}
+{"id": "d1", "text": "Marcus has been strictly vegetarian for ethical reasons since college.", "expected_category": "dietary", "expected_predicate": "avoids"}
+{"id": "c1", "text": "Lena requires wheelchair-accessible venues for any meeting.", "expected_category": "constraint", "expected_predicate": "requires"}
+{"id": "i1", "text": "Tomas works at Pixar as a senior animator.", "expected_category": "identity", "expected_predicate": "works_at"}
+{"id": "r1", "text": "Priya's mother Anjali lives next door and visits weekly.", "expected_category": "relationship", "expected_predicate": "is_related_to"}
+{"id": "p1", "text": "Eli is really into restoring vintage motorcycles on weekends.", "expected_category": "preference", "expected_predicate": "is_interested_in"}
+{"id": "s1", "text": "The team has standup every Monday at 9am.", "expected_category": "schedule", "expected_predicate": "recurs_on"}
+{"id": "g1", "text": "John mentioned he saw a documentary about climate policy last night.", "expected_category": "general", "expected_predicate": "is_associated_with"}

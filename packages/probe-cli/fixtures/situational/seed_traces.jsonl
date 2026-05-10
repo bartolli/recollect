@@ -1,0 +1,40 @@
+# P6 situational seed traces. 20 entries across 5 chains.
+# id prefix: c<chain>.<n> for chain members; c<chain>.d<n> for topical-distance distractors; c<chain>.u<n> for ungrouped lone seeds.
+# seed_group_id references seed_groups.jsonl; absent ⇒ ungrouped.
+# Loaded into the situational probe DB before the eval arm runs. Situational assessment skipped on seed; canonical groups restored via storage layer.
+# Person names disjoint from packages/probe-cli/fixtures/eval_traces.jsonl (islands corpus) to keep entity-bonus signals clean iff the harness ever shares a DB across the two corpora.
+# Causal construction: every grouped trace passes the temporal-rejection test ("would this hold months apart?") = yes.
+
+# C1 — wedding venue capacity (full lifecycle, household scope)
+{"id": "c1.1", "text": "Booked Linwood Estate as our wedding venue with a 3000 dollar deposit.", "expected_category": "schedule", "seed_group_id": "G1"}
+{"id": "c1.2", "text": "Linwood Estate has a hard maximum capacity of 80 guests under fire code.", "expected_category": "constraint", "seed_group_id": "G1"}
+{"id": "c1.3", "text": "Our preliminary guest list passed 110 names after both families weighed in.", "expected_category": "general", "seed_group_id": "G1"}
+
+# C2A — Alex (Octane CTO), career transition
+{"id": "c2a.1", "text": "Alex is the CTO and co-founder of Octane Robotics.", "expected_category": "identity", "seed_group_id": "G2"}
+{"id": "c2a.2", "text": "Alex resigned from Octane Robotics last month after a board dispute.", "expected_category": "identity", "seed_group_id": "G2"}
+{"id": "c2a.3", "text": "Alex is in talks with Vector Labs about a VP Engineering role.", "expected_category": "identity", "seed_group_id": "G2"}
+
+# C2B — Alex (Quill's after-school sitter), childcare arrangement
+{"id": "c2b.1", "text": "Alex (Quill's after-school sitter) starts on Tuesday afternoons next week.", "expected_category": "schedule", "seed_group_id": "G3"}
+{"id": "c2b.2", "text": "Alex requested 25 dollars per hour and pickup at 3:30pm from Quill's school.", "expected_category": "constraint", "seed_group_id": "G3"}
+
+# C3 — Dale, hyperkalemia risk on combination antihypertensive therapy (high significance)
+{"id": "c3.1", "text": "Dale takes daily lisinopril for stage 2 hypertension.", "expected_category": "health", "seed_group_id": "G4"}
+{"id": "c3.2", "text": "Dale's most recent lab showed serum potassium at 5.4 mEq/L, top of the normal range.", "expected_category": "health", "seed_group_id": "G4"}
+{"id": "c3.3", "text": "Dale's doctor added spironolactone, a potassium-sparing diuretic, to his daily regimen.", "expected_category": "health", "seed_group_id": "G4"}
+
+# C4 — Q4 compliance report blocked on vendor SOC2 access (topical-distance reactivation setup)
+{"id": "c4.1", "text": "The Q4 compliance report draft is due to Legal by November 1.", "expected_category": "schedule", "seed_group_id": "G5"}
+{"id": "c4.2", "text": "Legal flagged three sections of the compliance report that need vendor SOC2 citations.", "expected_category": "constraint", "seed_group_id": "G5"}
+{"id": "c4.3", "text": "Citation work is blocked because three vendors have not sent their SOC2 reports.", "expected_category": "constraint", "seed_group_id": "G5"}
+
+# C4 — topical-distance distractors (unrelated traces; surface-text gap between chain seed and reactivation eval)
+{"id": "c4.d1", "text": "Bought a new pair of low-light running shoes for fall mornings.", "expected_category": "preference"}
+{"id": "c4.d2", "text": "Watched the new Wes Anderson film at the indie cinema downtown.", "expected_category": "general"}
+{"id": "c4.d3", "text": "The jacaranda trees in the courtyard bloomed two weeks late this year.", "expected_category": "general"}
+
+# C5 — ungrouped lone seeds; eval introduces a memory that triggers create
+{"id": "c5.u1", "text": "Annual physical booked with Dr. Patel for May 22 at 9am.", "expected_category": "schedule"}
+{"id": "c5.u2", "text": "Reza started carpooling with Joon to morning yoga on Tuesdays.", "expected_category": "schedule"}
+{"id": "c5.u3", "text": "Read a long-form article on coral bleaching in the South Pacific.", "expected_category": "general"}

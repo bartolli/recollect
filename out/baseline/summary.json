@@ -1,0 +1,47 @@
+{
+  "arm_name": "baseline",
+  "runs": 3,
+  "total_entries_per_run": 8,
+  "prompt_version": "1.0.0",
+  "model": "anthropic:claude-haiku-4-5-20251001",
+  "validity_rate_mean": 1.0,
+  "validity_rate_std": 0.0,
+  "predicate_diversity_mean": 0.3913043478260869,
+  "predicate_diversity_std": 0.043478260869565216,
+  "escape_valve_rate_mean": 0.0,
+  "escape_valve_rate_std": 0.0,
+  "concepts_per_trace_mean": 4.875,
+  "concepts_per_trace_std": 0.0,
+  "valence_mean": 0.22708333333333333,
+  "significance_mean": 0.6020833333333333,
+  "predicate_distribution": {
+    "is_allergic_to": 3,
+    "takes_medication": 2,
+    "avoids": 3,
+    "requires": 4,
+    "works_at": 3,
+    "is_related_to": 3,
+    "lives_in": 3,
+    "scheduled_for": 4,
+    "is_interested_in": 6,
+    "recurs_on": 1
+  },
+  "category_distribution": {
+    "health": 6,
+    "dietary": 3,
+    "constraint": 3,
+    "identity": 6,
+    "relationship": 3,
+    "general": 3,
+    "schedule": 5,
+    "preference": 3
+  },
+  "entity_type_distribution": {
+    "person": 24,
+    "food": 3,
+    "product": 6,
+    "organization": 3,
+    "skill": 3,
+    "event": 6
+  }
+}

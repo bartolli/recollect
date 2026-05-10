@@ -31,7 +31,7 @@ class PydanticAIProvider:
         api_key: str | None = None,
         base_url: str | None = None,
         defaults: CompletionParams | None = None,
-        max_retries: int = 2,
+        max_retries: int | None = None,
         timeout: float | None = None,
     ) -> None:
         from recollect.config import config
@@ -44,7 +44,12 @@ class PydanticAIProvider:
                 "PYDANTIC_AI_MODEL environment variable."
             )
 
-        self._defaults = defaults or CompletionParams()
+        if defaults is None:
+            raw_settings = config.get("extraction.model_settings", {}) or {}
+            defaults = CompletionParams(**raw_settings)
+        self._defaults = defaults
+        if max_retries is None:
+            max_retries = int(config.get("extraction.max_retries", 5))
         self._max_retries = max_retries
 
         if api_key or base_url:
@@ -62,12 +67,11 @@ class PydanticAIProvider:
         defaults: CompletionParams,
         **kwargs: Any,
     ) -> dict[str, Any]:
-        """Merge defaults and overrides into a pydantic-ai ModelSettings dict."""
+        # extras pass through; pydantic-ai ModelSettings validates downstream.
         effective = {**defaults.model_dump(exclude_none=True), **kwargs}
-        return {
-            "max_tokens": int(effective.pop("max_tokens", 1024)),
-            "temperature": float(effective.pop("temperature", 0.0)),
-        }
+        max_tokens = int(effective.pop("max_tokens", 8192))
+        temperature = float(effective.pop("temperature", 0.0))
+        return {"max_tokens": max_tokens, "temperature": temperature, **effective}
 
     async def complete(
         self,

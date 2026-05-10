@@ -1,0 +1,33 @@
+# P5 dense retrieval arm — A/B vs eval.toml on recall@5, MRR, intrusion_rate.
+# Reset probe_eval DB before running for clean baseline comparison.
+#   uv run probe run --arm packages/probe-cli/fixtures/dense-retrieval.toml
+
+[arm]
+name = "dense-retrieval-k3"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+template_path = "packages/probe-cli/fixtures/extraction.dense.md"
+instructions = ""
+max_concepts = 5
+max_relations = 3
+
+[corpus]
+path = "packages/probe-cli/fixtures/eval_traces.jsonl"
+
+[retrieval]
+enabled = true
+db_url = "postgresql://bartolli@localhost:5432/probe_eval"
+traces_corpus_path = "packages/probe-cli/fixtures/eval_traces.jsonl"
+query_corpus_path = "packages/probe-cli/fixtures/eval_queries.jsonl"
+token_budget = 100000
+top_k = 3
+max_retrievals_buffer = 50
+
+[recollect_overrides]
+"persona.auto_extract" = false
+"recall_tokens.enabled" = false
+
+[output]
+dir = "out"

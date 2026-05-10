@@ -12,17 +12,39 @@ from recollect.models import MemoryTrace, RecallToken
 
 _EMB_DIM = 768
 _RELATED = MemoryTrace(
-    id="related-1", content="Sarah is feeling better",
+    id="related-1",
+    content="Sarah is feeling better",
     embedding=[0.2 + i * 0.001 for i in range(_EMB_DIM)],
 )
-_GROUP = [{"token_id": "tok-1", "label": "Sarah | health checkup | recovery progress",
-    "strength": 1.0, "significance": 0.6, "stamped_trace_ids": ["related-1"]}]
-_ARCHIVED_GROUP = [{"token_id": "tok-archived", "label": "Sarah | old | old imp",
-    "strength": 0.005, "significance": 0.7, "stamped_trace_ids": ["related-1"],
-    "status": "archived"}]
-_ACTIVE_GROUP = [{"token_id": "tok-active", "label": "Sarah | current | cur imp",
-    "strength": 0.8, "significance": 0.6, "stamped_trace_ids": ["related-1"],
-    "status": "active"}]
+_GROUP = [
+    {
+        "token_id": "tok-1",
+        "label": "Sarah | health checkup | recovery progress",
+        "strength": 1.0,
+        "significance": 0.6,
+        "stamped_trace_ids": ["related-1"],
+    }
+]
+_ARCHIVED_GROUP = [
+    {
+        "token_id": "tok-archived",
+        "label": "Sarah | old | old imp",
+        "strength": 0.005,
+        "significance": 0.7,
+        "stamped_trace_ids": ["related-1"],
+        "status": "archived",
+    }
+]
+_ACTIVE_GROUP = [
+    {
+        "token_id": "tok-active",
+        "label": "Sarah | current | cur imp",
+        "strength": 0.8,
+        "significance": 0.6,
+        "stamped_trace_ids": ["related-1"],
+        "status": "active",
+    }
+]
 
 
 def _emb(seed: float = 0.1) -> list[float]:
@@ -42,16 +64,25 @@ def _setup(mock_storage, mock_extractor, assessment, *, groups=None):
 @pytest.fixture()
 def mem(mock_storage, mock_embeddings, mock_extractor):
     return CognitiveMemory(
-        storage=mock_storage, embeddings=mock_embeddings, extractor=mock_extractor,
+        storage=mock_storage,
+        embeddings=mock_embeddings,
+        extractor=mock_extractor,
     )
 
 
 class TestWriteTimeAssessment:
     async def test_create_action(self, mem, mock_storage, mock_extractor):
-        _setup(mock_storage, mock_extractor, TokenAssessment(
-            action="create", linked_indices=[1],
-            person_ref="Sarah", situation="health checkup", implication="mother Sarah",
-        ))
+        _setup(
+            mock_storage,
+            mock_extractor,
+            TokenAssessment(
+                action="create",
+                linked_indices=[1],
+                person_ref="Sarah",
+                situation="health checkup",
+                implication="mother Sarah",
+            ),
+        )
         await mem.experience("Sarah's health checkup went well")
         mock_storage.recall_tokens.create_token.assert_awaited_once()
         mock_storage.recall_tokens.stamp_traces.assert_awaited_once()
@@ -60,9 +91,16 @@ class TestWriteTimeAssessment:
         assert len(stamped_ids) == 2
 
     async def test_extend_action(self, mem, mock_storage, mock_extractor):
-        _setup(mock_storage, mock_extractor, TokenAssessment(
-            action="extend", group_number=1, implication="new concept",
-        ), groups=_GROUP)
+        _setup(
+            mock_storage,
+            mock_extractor,
+            TokenAssessment(
+                action="extend",
+                group_number=1,
+                implication="new concept",
+            ),
+            groups=_GROUP,
+        )
         await mem.experience("Sarah mentioned a new treatment")
         mock_storage.recall_tokens.stamp_traces.assert_awaited_once()
         stamped = mock_storage.recall_tokens.stamp_traces.call_args[0][1]
@@ -70,10 +108,18 @@ class TestWriteTimeAssessment:
         mock_storage.recall_tokens.update_token_label.assert_awaited_once()
 
     async def test_revise_action(self, mem, mock_storage, mock_extractor):
-        _setup(mock_storage, mock_extractor, TokenAssessment(
-            action="revise", group_number=1,
-            situation="updated", implication="new state", significance=0.3,
-        ), groups=_GROUP)
+        _setup(
+            mock_storage,
+            mock_extractor,
+            TokenAssessment(
+                action="revise",
+                group_number=1,
+                situation="updated",
+                implication="new state",
+                significance=0.3,
+            ),
+            groups=_GROUP,
+        )
         await mem.experience("Sarah's diagnosis was revised")
         mock_storage.recall_tokens.update_token.assert_awaited_once()
         args = mock_storage.recall_tokens.update_token.call_args[0]
@@ -91,8 +137,10 @@ class TestWriteTimeAssessment:
         cfg = MemoryConfig()
         cfg._config["recall_tokens"]["enabled"] = False
         mem = CognitiveMemory(
-            storage=mock_storage, embeddings=mock_embeddings,
-            extractor=mock_extractor, config=cfg,
+            storage=mock_storage,
+            embeddings=mock_embeddings,
+            extractor=mock_extractor,
+            config=cfg,
         )
         await mem.experience("Anything")
         mock_storage.recall_tokens.create_token.assert_not_awaited()
@@ -116,8 +164,10 @@ class TestQueryTimeActivation:
         cfg = MemoryConfig()
         cfg._config["recall_tokens"]["enabled"] = False
         mem = CognitiveMemory(
-            storage=mock_storage, embeddings=mock_embeddings,
-            extractor=mock_extractor, config=cfg,
+            storage=mock_storage,
+            embeddings=mock_embeddings,
+            extractor=mock_extractor,
+            config=cfg,
         )
         t1 = MemoryTrace(id="seed-1", content="test", embedding=_emb())
         result = await mem._activate_recall_tokens(_emb(), [(t1, 0.6)])
@@ -128,9 +178,12 @@ class TestScoringBlend:
     def test_additive_blend(self):
         t1 = MemoryTrace(id="t1", content="test")
         result = CognitiveMemory._compute_fused_scores(
-            {"t1": t1}, {"t1": 0.7},
-            activation_levels={}, entity_sims={},
-            spread_bonus=0.1, entity_bonus=0.1,
+            {"t1": t1},
+            {"t1": 0.7},
+            activation_levels={},
+            entity_sims={},
+            spread_bonus=0.1,
+            entity_bonus=0.1,
             token_bonuses={"t1": 0.08},
         )
         _trace, score = result[0]
@@ -140,9 +193,12 @@ class TestScoringBlend:
     def test_additive_blend_with_zero_base(self):
         t1 = MemoryTrace(id="t1", content="test")
         result = CognitiveMemory._compute_fused_scores(
-            {"t1": t1}, {"t1": 0.0},
-            activation_levels={}, entity_sims={},
-            spread_bonus=0.1, entity_bonus=0.1,
+            {"t1": t1},
+            {"t1": 0.0},
+            activation_levels={},
+            entity_sims={},
+            spread_bonus=0.1,
+            entity_bonus=0.1,
             token_bonuses={"t1": 0.08},
         )
         _trace, score = result[0]
@@ -184,17 +240,37 @@ class TestTokenArchiving:
         await mem.consolidate()
         mock_storage.recall_tokens.decay_inactive.assert_awaited_once()
 
-    async def test_extend_reactivates_archived_token(self, mem, mock_storage, mock_extractor):
-        _setup(mock_storage, mock_extractor, TokenAssessment(
-            action="extend", group_number=1, implication="new relevance",
-        ), groups=_ARCHIVED_GROUP)
+    async def test_extend_reactivates_archived_token(
+        self, mem, mock_storage, mock_extractor
+    ):
+        _setup(
+            mock_storage,
+            mock_extractor,
+            TokenAssessment(
+                action="extend",
+                group_number=1,
+                implication="new relevance",
+            ),
+            groups=_ARCHIVED_GROUP,
+        )
         await mem.experience("Sarah's old situation resurfaced")
         mock_storage.recall_tokens.reinforce_tokens.assert_awaited()
-        assert mock_storage.recall_tokens.reinforce_tokens.call_args[0][0] == ["tok-archived"]
+        assert mock_storage.recall_tokens.reinforce_tokens.call_args[0][0] == [
+            "tok-archived"
+        ]
 
-    async def test_active_extend_does_not_reinforce(self, mem, mock_storage, mock_extractor):
-        _setup(mock_storage, mock_extractor, TokenAssessment(
-            action="extend", group_number=1, implication="more info",
-        ), groups=_ACTIVE_GROUP)
+    async def test_active_extend_does_not_reinforce(
+        self, mem, mock_storage, mock_extractor
+    ):
+        _setup(
+            mock_storage,
+            mock_extractor,
+            TokenAssessment(
+                action="extend",
+                group_number=1,
+                implication="more info",
+            ),
+            groups=_ACTIVE_GROUP,
+        )
         await mem.experience("Sarah mentioned something new")
         mock_storage.recall_tokens.reinforce_tokens.assert_not_awaited()

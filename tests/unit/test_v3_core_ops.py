@@ -37,6 +37,15 @@ class TestForgetAndReinforce:
         with pytest.raises(TraceNotFoundError):
             await mem.forget("nonexistent")
 
+    async def test_forget_evicts_buffered_trace(
+        self, mem: CognitiveMemory, mock_trace_store: AsyncMock
+    ) -> None:
+        trace = MemoryTrace(id="buf-1", content="x")
+        mem._buffer.add(trace)
+        assert any(t.id == "buf-1" for t in mem._buffer.get_active())
+        await mem.forget("buf-1")
+        assert all(t.id != "buf-1" for t in mem._buffer.get_active())
+
     async def test_reinforce_increases_strength(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
     ) -> None:

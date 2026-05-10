@@ -1,0 +1,23 @@
+# P6 situational arm — Sonnet 4.6 baseline. Same fixture as situational/baseline.toml.
+# Cost: ~110 Sonnet calls per run (20 seed extraction + 15 eval extraction + 15 assessment) × 3 runs.
+# DB: probe_situational, drop+recreate before run via `make probe-situational-sonnet`.
+
+[arm]
+name = "situational-sonnet"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-sonnet-4-6"
+
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[situational]
+enabled = true
+db_url = "postgresql://bartolli@localhost:5432/probe_situational"
+seed_traces_path = "packages/probe-cli/fixtures/situational/seed_traces.jsonl"
+seed_groups_path = "packages/probe-cli/fixtures/situational/seed_groups.jsonl"
+eval_corpus_path = "packages/probe-cli/fixtures/situational/eval.jsonl"

@@ -1,0 +1,62 @@
+{
+  "arm_name": "dense-retrieval-tag-embed-k3",
+  "runs": 3,
+  "queries_per_run": 30,
+  "top_k": 3,
+  "prompt_version": "1.0.0-dense",
+  "model": "anthropic:claude-haiku-4-5-20251001",
+  "recall_at_k_mean": 0.9782608695652174,
+  "recall_at_k_std": 0.0,
+  "mrr_mean": 0.9927536231884058,
+  "mrr_std": 0.012551092808470117,
+  "intrusion_rate_mean": 0.6376811594202898,
+  "intrusion_rate_std": 0.0,
+  "distractor_intrusion_mean": 1.0,
+  "distractor_intrusion_std": 0.0,
+  "persona_facts_per_query_mean": 0.0,
+  "persona_facts_per_query_std": 0.0,
+  "per_category": {
+    "constraint": {
+      "recall_at_k_mean": 1.0,
+      "recall_at_k_std": 0.0,
+      "mrr_mean": 1.0,
+      "mrr_std": 0.0
+    },
+    "dietary": {
+      "recall_at_k_mean": 1.0,
+      "recall_at_k_std": 0.0,
+      "mrr_mean": 0.9583333333333334,
+      "mrr_std": 0.07216878364870323
+    },
+    "health": {
+      "recall_at_k_mean": 1.0,
+      "recall_at_k_std": 0.0,
+      "mrr_mean": 1.0,
+      "mrr_std": 0.0
+    },
+    "identity": {
+      "recall_at_k_mean": 0.875,
+      "recall_at_k_std": 0.0,
+      "mrr_mean": 1.0,
+      "mrr_std": 0.0
+    },
+    "preference": {
+      "recall_at_k_mean": 1.0,
+      "recall_at_k_std": 0.0,
+      "mrr_mean": 1.0,
+      "mrr_std": 0.0
+    },
+    "relationship": {
+      "recall_at_k_mean": 1.0,
+      "recall_at_k_std": 0.0,
+      "mrr_mean": 1.0,
+      "mrr_std": 0.0
+    },
+    "schedule": {
+      "recall_at_k_mean": 1.0,
+      "recall_at_k_std": 0.0,
+      "mrr_mean": 1.0,
+      "mrr_std": 0.0
+    }
+  }
+}

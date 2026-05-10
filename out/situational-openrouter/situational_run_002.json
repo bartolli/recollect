@@ -1,0 +1,366 @@
+{
+  "arm_name": "situational-openrouter",
+  "run_index": 2,
+  "model": "openrouter:google/gemini-3-flash-preview",
+  "seed_groups_restored": 5,
+  "seed_traces_ingested": 20,
+  "eval_results": [
+    {
+      "entry_id": "c1.e1",
+      "expected_action": "extend",
+      "expected_group_id": "G1",
+      "expected_linked_trace_ids": [],
+      "actual_action": "extend",
+      "actual_group_id": "G1",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "guest list reduction conflict",
+      "actual_significance": 0.6,
+      "related_trace_ids": [
+        "9141755a-685d-4bac-ba25-d3e46dfc29dc",
+        "c32464ca-ff49-4730-b697-006dfc7daaa5",
+        "3b394828-85ab-4ecd-80e3-7f6922f7d813",
+        "872a25a2-a325-4584-950d-7fe968b0dc1b"
+      ],
+      "candidate_token_ids": [
+        "c6af2c73-2f2a-45ca-ad2e-150be4d0dcd2",
+        "c99faad6-4435-4b6a-8963-0db73f905e78",
+        "058b8809-c3cb-4c43-a82f-1214929827a1"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 12026.07020799769
+    },
+    {
+      "entry_id": "c1.e2",
+      "expected_action": "revise",
+      "expected_group_id": "G1",
+      "expected_linked_trace_ids": [],
+      "actual_action": "revise",
+      "actual_group_id": "G1",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "capacity conflict resolved",
+      "actual_significance": 0.4,
+      "related_trace_ids": [
+        "611c6c2a-7584-42b1-bae8-0000c1e4b25d",
+        "c32464ca-ff49-4730-b697-006dfc7daaa5",
+        "9141755a-685d-4bac-ba25-d3e46dfc29dc",
+        "7af68a01-b68f-4eb2-ab31-fb3e25c57cce"
+      ],
+      "candidate_token_ids": [
+        "c99faad6-4435-4b6a-8963-0db73f905e78"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 14228.459040998132
+    },
+    {
+      "entry_id": "c1.e3",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": "none",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "b955099b-16e2-481b-a161-461ebcd2f292",
+        "b98d8d6f-78b1-4295-9c99-334e66e3772d",
+        "872a25a2-a325-4584-950d-7fe968b0dc1b",
+        "aa95009e-5ea9-4d36-9ebd-5b2503dfe9ac"
+      ],
+      "candidate_token_ids": [
+        "c6af2c73-2f2a-45ca-ad2e-150be4d0dcd2"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 12109.542749996763
+    },
+    {
+      "entry_id": "c2.e1",
+      "expected_action": "extend",
+      "expected_group_id": "G2",
+      "expected_linked_trace_ids": [],
+      "actual_action": "extend",
+      "actual_group_id": "G2",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "offer negotiation status",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "4ddedfb1-ca72-40f4-b395-a94a75110168",
+        "e7ea4ecc-c830-416b-816b-39193e9a7fb5",
+        "00f175b3-72a4-46d2-a393-de125eb3c839",
+        "872a25a2-a325-4584-950d-7fe968b0dc1b"
+      ],
+      "candidate_token_ids": [
+        "a391c654-1dc6-4828-bd48-e71e0496eb21",
+        "c6af2c73-2f2a-45ca-ad2e-150be4d0dcd2"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 12173.131500007003
+    },
+    {
+      "entry_id": "c2.e2",
+      "expected_action": "extend",
+      "expected_group_id": "G3",
+      "expected_linked_trace_ids": [],
+      "actual_action": "extend",
+      "actual_group_id": "G3",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "recurring schedule shift",
+      "actual_significance": 0.6,
+      "related_trace_ids": [
+        "872a25a2-a325-4584-950d-7fe968b0dc1b",
+        "06b1826a-5e4f-46af-bcba-4aa0810c80e2",
+        "e7ea4ecc-c830-416b-816b-39193e9a7fb5",
+        "e2c0838c-60ca-482e-ab15-4de9df6881ef"
+      ],
+      "candidate_token_ids": [
+        "a391c654-1dc6-4828-bd48-e71e0496eb21",
+        "c6af2c73-2f2a-45ca-ad2e-150be4d0dcd2",
+        "058b8809-c3cb-4c43-a82f-1214929827a1"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 15184.30900000385
+    },
+    {
+      "entry_id": "c2.e3",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": "none",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "e7ea4ecc-c830-416b-816b-39193e9a7fb5",
+        "872a25a2-a325-4584-950d-7fe968b0dc1b",
+        "00f175b3-72a4-46d2-a393-de125eb3c839",
+        "06b1826a-5e4f-46af-bcba-4aa0810c80e2"
+      ],
+      "candidate_token_ids": [
+        "a391c654-1dc6-4828-bd48-e71e0496eb21",
+        "c6af2c73-2f2a-45ca-ad2e-150be4d0dcd2"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 24864.435875002528
+    },
+    {
+      "entry_id": "c3.e1",
+      "expected_action": "extend",
+      "expected_group_id": "G4",
+      "expected_linked_trace_ids": [],
+      "actual_action": "extend",
+      "actual_group_id": "G4",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "potassium monitoring schedule",
+      "actual_significance": 0.9,
+      "related_trace_ids": [
+        "ed9260f5-89f8-4d3c-80d8-704fce803b30",
+        "04caf5a0-bd2e-46f0-9a52-879193acb3f8",
+        "4c81c26f-5a9f-400d-9591-9c9b6e46c6cd",
+        "7af68a01-b68f-4eb2-ab31-fb3e25c57cce"
+      ],
+      "candidate_token_ids": [
+        "fcb02514-9c50-4cf2-9f3e-d3c20df2d6a5"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 11264.956458006054
+    },
+    {
+      "entry_id": "c3.e2",
+      "expected_action": "revise",
+      "expected_group_id": "G4",
+      "expected_linked_trace_ids": [],
+      "actual_action": "revise",
+      "actual_group_id": "G4",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "potassium-sparing interaction resolved",
+      "actual_significance": 0.8,
+      "related_trace_ids": [
+        "04caf5a0-bd2e-46f0-9a52-879193acb3f8",
+        "4c81c26f-5a9f-400d-9591-9c9b6e46c6cd",
+        "ed9260f5-89f8-4d3c-80d8-704fce803b30",
+        "0560725f-c0a6-4ac4-b247-b67a48804f29"
+      ],
+      "candidate_token_ids": [
+        "fcb02514-9c50-4cf2-9f3e-d3c20df2d6a5"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 29873.373915994307
+    },
+    {
+      "entry_id": "c3.e3",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": "none",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "04caf5a0-bd2e-46f0-9a52-879193acb3f8",
+        "0560725f-c0a6-4ac4-b247-b67a48804f29",
+        "4c81c26f-5a9f-400d-9591-9c9b6e46c6cd",
+        "57eb6901-b435-48fd-8071-d07e48717bc4"
+      ],
+      "candidate_token_ids": [
+        "fcb02514-9c50-4cf2-9f3e-d3c20df2d6a5"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 16848.678416004987
+    },
+    {
+      "entry_id": "c4.e1",
+      "expected_action": "extend",
+      "expected_group_id": "G5",
+      "expected_linked_trace_ids": [],
+      "actual_action": "extend",
+      "actual_group_id": "G5",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "increased board reporting frequency",
+      "actual_significance": 0.8,
+      "related_trace_ids": [
+        "e2c0838c-60ca-482e-ab15-4de9df6881ef",
+        "4f291582-995b-432a-a3f8-56ffc7591d0e",
+        "3b394828-85ab-4ecd-80e3-7f6922f7d813",
+        "872a25a2-a325-4584-950d-7fe968b0dc1b"
+      ],
+      "candidate_token_ids": [
+        "c6af2c73-2f2a-45ca-ad2e-150be4d0dcd2",
+        "058b8809-c3cb-4c43-a82f-1214929827a1"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 11714.577875012765
+    },
+    {
+      "entry_id": "c4.e2",
+      "expected_action": "revise",
+      "expected_group_id": "G5",
+      "expected_linked_trace_ids": [],
+      "actual_action": "revise",
+      "actual_group_id": "G5",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "citation blocker resolved",
+      "actual_significance": 0.6,
+      "related_trace_ids": [
+        "3b394828-85ab-4ecd-80e3-7f6922f7d813",
+        "4f291582-995b-432a-a3f8-56ffc7591d0e",
+        "e2c0838c-60ca-482e-ab15-4de9df6881ef",
+        "b98d8d6f-78b1-4295-9c99-334e66e3772d"
+      ],
+      "candidate_token_ids": [
+        "058b8809-c3cb-4c43-a82f-1214929827a1"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 13273.643167005503
+    },
+    {
+      "entry_id": "c4.e3",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": "none",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "b955099b-16e2-481b-a161-461ebcd2f292",
+        "b98d8d6f-78b1-4295-9c99-334e66e3772d",
+        "04caf5a0-bd2e-46f0-9a52-879193acb3f8",
+        "7af68a01-b68f-4eb2-ab31-fb3e25c57cce"
+      ],
+      "candidate_token_ids": [
+        "fcb02514-9c50-4cf2-9f3e-d3c20df2d6a5"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 9228.715540986741
+    },
+    {
+      "entry_id": "c5.e1",
+      "expected_action": "create",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [
+        "c5.u1"
+      ],
+      "actual_action": "create",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [
+        "c5.u1"
+      ],
+      "actual_implication": "appointment coverage conflict",
+      "actual_significance": 0.7,
+      "related_trace_ids": [
+        "7af68a01-b68f-4eb2-ab31-fb3e25c57cce",
+        "0560725f-c0a6-4ac4-b247-b67a48804f29",
+        "04caf5a0-bd2e-46f0-9a52-879193acb3f8",
+        "4c81c26f-5a9f-400d-9591-9c9b6e46c6cd"
+      ],
+      "candidate_token_ids": [
+        "fcb02514-9c50-4cf2-9f3e-d3c20df2d6a5"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 13478.841750009451
+    },
+    {
+      "entry_id": "c5.e2",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": "create",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [
+        "c5.u2"
+      ],
+      "actual_implication": "shift to Wednesday mornings",
+      "actual_significance": 0.3,
+      "related_trace_ids": [
+        "0560725f-c0a6-4ac4-b247-b67a48804f29",
+        "872a25a2-a325-4584-950d-7fe968b0dc1b",
+        "7af68a01-b68f-4eb2-ab31-fb3e25c57cce",
+        "e2c0838c-60ca-482e-ab15-4de9df6881ef"
+      ],
+      "candidate_token_ids": [
+        "c6af2c73-2f2a-45ca-ad2e-150be4d0dcd2",
+        "058b8809-c3cb-4c43-a82f-1214929827a1"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 13413.717207993614
+    },
+    {
+      "entry_id": "c5.e3",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": "none",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "b955099b-16e2-481b-a161-461ebcd2f292",
+        "b98d8d6f-78b1-4295-9c99-334e66e3772d",
+        "7af68a01-b68f-4eb2-ab31-fb3e25c57cce",
+        "0560725f-c0a6-4ac4-b247-b67a48804f29"
+      ],
+      "candidate_token_ids": [],
+      "success": true,
+      "error": "",
+      "latency_ms": 9087.88579198881
+    }
+  ]
+}

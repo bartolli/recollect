@@ -1,0 +1,466 @@
+{
+  "arm_name": "baseline",
+  "run_index": 1,
+  "model": "anthropic:claude-haiku-4-5-20251001",
+  "prompt_version": "1.0.0",
+  "entries": [
+    {
+      "entry_id": "h1",
+      "success": true,
+      "error": "",
+      "extraction": {
+        "concepts": [
+          "restaurant dinner ordering",
+          "food ingredient checking",
+          "catered meal planning",
+          "travel food safety",
+          "emergency medical preparedness"
+        ],
+        "relations": [
+          {
+            "source": "Sarah",
+            "relation": "is_allergic_to",
+            "target": "peanut",
+            "confidence": 0.95,
+            "category": "health",
+            "context": "Severe peanut allergy requiring EpiPen; critical when ordering food at restaurants, checking ingredients while cooking, or planning catered meals",
+            "context_tags": [
+              "restaurant dinner ordering",
+              "food ingredient checking",
+              "catered meal planning",
+              "thai food dining",
+              "cooking with nuts",
+              "allergy safe menu",
+              "snack selection caution",
+              "grocery shopping allergens",
+              "travel food safety",
+              "potluck dish planning",
+              "peanut oil detection",
+              "cross contamination risk"
+            ]
+          },
+          {
+            "source": "Sarah",
+            "relation": "requires",
+            "target": "EpiPen",
+            "confidence": 0.95,
+            "category": "health",
+            "context": "Carries EpiPen at all times as emergency treatment for severe allergic reactions; essential for safety during travel, social events, and dining out",
+            "context_tags": [
+              "emergency medical preparedness",
+              "travel bag packing",
+              "event attendance planning",
+              "restaurant visit safety",
+              "outdoor activity preparation",
+              "social gathering attendance",
+              "medication accessibility check",
+              "emergency contact notification",
+              "allergy disclosure conversation",
+              "medical kit organization",
+              "epinephrine auto injector",
+              "anaphylaxis emergency response"
+            ]
+          }
+        ],
+        "entities": [
+          {
+            "name": "Sarah",
+            "entity_type": "person",
+            "confidence": 0.95
+          },
+          {
+            "name": "peanut",
+            "entity_type": "food",
+            "confidence": 0.95
+          },
+          {
+            "name": "EpiPen",
+            "entity_type": "product",
+            "confidence": 0.95
+          }
+        ],
+        "emotional_valence": -0.3,
+        "significance": 0.95,
+        "fact_type": "semantic"
+      },
+      "latency_ms": 6747.688458002813
+    },
+    {
+      "entry_id": "d1",
+      "success": true,
+      "error": "",
+      "extraction": {
+        "concepts": [
+          "vegetarian restaurant selection",
+          "ethical food sourcing discussion",
+          "meat-free meal planning",
+          "dietary accommodation at events",
+          "plant-based lifestyle commitment"
+        ],
+        "relations": [
+          {
+            "source": "Marcus",
+            "relation": "avoids",
+            "target": "meat",
+            "confidence": 0.95,
+            "category": "dietary",
+            "context": "Marcus maintains strict vegetarianism for ethical reasons since college; critical when planning meals, ordering at restaurants, catering events, or discussing food choices",
+            "context_tags": [
+              "restaurant menu selection",
+              "dinner party catering",
+              "ethical food sourcing",
+              "vegetarian meal planning",
+              "group dining accommodation",
+              "grocery shopping choices",
+              "potluck dish contribution",
+              "business lunch ordering",
+              "travel food options",
+              "cooking ingredient substitution"
+            ]
+          }
+        ],
+        "entities": [
+          {
+            "name": "Marcus",
+            "entity_type": "person",
+            "confidence": 0.95
+          }
+        ],
+        "emotional_valence": 0.6,
+        "significance": 0.7,
+        "fact_type": "semantic"
+      },
+      "latency_ms": 3028.8612080039456
+    },
+    {
+      "entry_id": "c1",
+      "success": true,
+      "error": "",
+      "extraction": {
+        "concepts": [
+          "meeting venue accessibility",
+          "conference room wheelchair access",
+          "team gathering location planning",
+          "client meeting venue selection",
+          "event space accessibility requirements"
+        ],
+        "relations": [
+          {
+            "source": "Lena",
+            "relation": "requires",
+            "target": "wheelchair-accessible venues",
+            "confidence": 0.95,
+            "category": "constraint",
+            "context": "Lena requires wheelchair accessibility for all meetings and venues; critical when scheduling meetings, booking conference rooms, planning team events, or selecting meeting locations",
+            "context_tags": [
+              "meeting venue booking",
+              "conference room selection",
+              "team event planning",
+              "office accessibility check",
+              "client meeting location",
+              "wheelchair ramp availability",
+              "accessible parking nearby",
+              "elevator access requirement",
+              "accessible restroom location",
+              "meeting space reservation"
+            ]
+          }
+        ],
+        "entities": [
+          {
+            "name": "Lena",
+            "entity_type": "person",
+            "confidence": 0.95
+          }
+        ],
+        "emotional_valence": 0.0,
+        "significance": 0.9,
+        "fact_type": "semantic"
+      },
+      "latency_ms": 4235.6197080007405
+    },
+    {
+      "entry_id": "i1",
+      "success": true,
+      "error": "",
+      "extraction": {
+        "concepts": [
+          "pixar animation project involvement",
+          "senior animator career trajectory",
+          "animation studio workplace dynamics",
+          "film production collaboration",
+          "creative industry professional role"
+        ],
+        "relations": [
+          {
+            "source": "Tomas",
+            "relation": "works_at",
+            "target": "Pixar",
+            "confidence": 0.95,
+            "category": "identity",
+            "context": "Tomas holds a senior animator position at Pixar, a major animation studio. This is a core identity-defining career fact relevant when discussing his professional expertise, project involvement, or industry connections.",
+            "context_tags": [
+              "animation studio employment",
+              "pixar career role",
+              "senior animator position",
+              "film production work",
+              "animation industry job",
+              "creative studio workplace",
+              "professional animator background",
+              "pixar project collaboration",
+              "animation team leadership",
+              "visual effects expertise"
+            ]
+          }
+        ],
+        "entities": [
+          {
+            "name": "Tomas",
+            "entity_type": "person",
+            "confidence": 0.95
+          },
+          {
+            "name": "Pixar",
+            "entity_type": "organization",
+            "confidence": 0.95
+          },
+          {
+            "name": "senior animator",
+            "entity_type": "skill",
+            "confidence": 0.9
+          }
+        ],
+        "emotional_valence": 0.3,
+        "significance": 0.7,
+        "fact_type": "semantic"
+      },
+      "latency_ms": 3575.5848749977304
+    },
+    {
+      "entry_id": "r1",
+      "success": true,
+      "error": "",
+      "extraction": {
+        "concepts": [
+          "weekly family visits",
+          "mother-daughter time",
+          "neighbor household coordination",
+          "family meal planning",
+          "childcare support arrangement"
+        ],
+        "relations": [
+          {
+            "source": "Anjali",
+            "relation": "is_related_to",
+            "target": "Priya",
+            "confidence": 0.95,
+            "category": "relationship",
+            "context": "Anjali is Priya's mother; they live in close proximity (next door) and maintain regular weekly contact",
+            "context_tags": [
+              "family visit planning",
+              "mother daughter time",
+              "weekly family gathering",
+              "neighbor household coordination",
+              "family meal planning",
+              "weekend family activity",
+              "childcare arrangement",
+              "family emergency contact",
+              "holiday family gathering",
+              "household help coordination",
+              "family event planning",
+              "intergenerational time"
+            ]
+          },
+          {
+            "source": "Anjali",
+            "relation": "lives_in",
+            "target": "next door to Priya",
+            "confidence": 0.9,
+            "category": "general",
+            "context": "Anjali resides in the adjacent property next to Priya's home, enabling frequent in-person visits",
+            "context_tags": [
+              "neighbor proximity planning",
+              "adjacent property living",
+              "close family housing",
+              "neighborhood family arrangement",
+              "local family support",
+              "walking distance visit",
+              "same street residence",
+              "nearby family member",
+              "accessible family location",
+              "convenient family access"
+            ]
+          }
+        ],
+        "entities": [
+          {
+            "name": "Priya",
+            "entity_type": "person",
+            "confidence": 0.95
+          },
+          {
+            "name": "Anjali",
+            "entity_type": "person",
+            "confidence": 0.95
+          }
+        ],
+        "emotional_valence": 0.6,
+        "significance": 0.5,
+        "fact_type": "semantic"
+      },
+      "latency_ms": 4841.535457999271
+    },
+    {
+      "entry_id": "p1",
+      "success": true,
+      "error": "",
+      "extraction": {
+        "concepts": [
+          "weekend motorcycle restoration project",
+          "vintage bike parts sourcing",
+          "garage workshop time management",
+          "motorcycle restoration community events",
+          "mechanical skill development hobby"
+        ],
+        "relations": [
+          {
+            "source": "Eli",
+            "relation": "is_interested_in",
+            "target": "vintage motorcycle restoration",
+            "confidence": 0.95,
+            "category": "identity",
+            "context": "Eli is passionate about restoring vintage motorcycles as a regular weekend hobby; this is a core identity-defining activity that shapes leisure time and interests",
+            "context_tags": [
+              "weekend motorcycle project",
+              "vintage bike restoration",
+              "mechanical hobby pursuit",
+              "garage workshop time",
+              "classic motorcycle repair",
+              "motorcycle parts sourcing",
+              "restoration project planning",
+              "mechanic skill development",
+              "vintage vehicle enthusiasm",
+              "weekend hobby commitment",
+              "motorcycle community events",
+              "restoration workshop gathering"
+            ]
+          }
+        ],
+        "entities": [
+          {
+            "name": "Eli",
+            "entity_type": "person",
+            "confidence": 0.95
+          },
+          {
+            "name": "vintage motorcycles",
+            "entity_type": "product",
+            "confidence": 0.9
+          }
+        ],
+        "emotional_valence": 0.75,
+        "significance": 0.65,
+        "fact_type": "semantic"
+      },
+      "latency_ms": 3736.323958997673
+    },
+    {
+      "entry_id": "s1",
+      "success": true,
+      "error": "",
+      "extraction": {
+        "concepts": [
+          "weekly team standup meeting",
+          "monday morning meeting schedule",
+          "recurring team sync",
+          "work calendar blocking",
+          "team coordination routine"
+        ],
+        "relations": [
+          {
+            "source": "team",
+            "relation": "scheduled_for",
+            "target": "Monday 9am",
+            "confidence": 0.95,
+            "category": "schedule",
+            "context": "Team standup meeting occurs every Monday at 9am; relevant when scheduling conflicts, planning weekly work, or coordinating team availability",
+            "context_tags": [
+              "monday morning meeting",
+              "team standup time",
+              "weekly sync schedule",
+              "calendar conflict check",
+              "meeting attendance reminder",
+              "work week planning",
+              "team availability coordination",
+              "recurring meeting slot",
+              "standup preparation time",
+              "schedule conflict resolution"
+            ]
+          }
+        ],
+        "entities": [
+          {
+            "name": "team standup",
+            "entity_type": "event",
+            "confidence": 0.95
+          }
+        ],
+        "emotional_valence": 0.0,
+        "significance": 0.3,
+        "fact_type": "semantic"
+      },
+      "latency_ms": 3005.003249993024
+    },
+    {
+      "entry_id": "g1",
+      "success": true,
+      "error": "",
+      "extraction": {
+        "concepts": [
+          "documentary viewing evening",
+          "climate policy discussion",
+          "environmental media consumption",
+          "educational content recommendation"
+        ],
+        "relations": [
+          {
+            "source": "John",
+            "relation": "is_interested_in",
+            "target": "climate policy",
+            "confidence": 0.65,
+            "category": "preference",
+            "context": "John watched a documentary about climate policy, suggesting interest in environmental and policy topics. Relevant when recommending documentaries, discussing environmental issues, or planning educational activities.",
+            "context_tags": [
+              "documentary recommendation sharing",
+              "climate change discussion",
+              "environmental policy debate",
+              "educational content suggestion",
+              "sustainability topic conversation",
+              "news media consumption",
+              "science documentary viewing",
+              "policy analysis discussion",
+              "environmental activism interest",
+              "streaming content recommendation"
+            ]
+          }
+        ],
+        "entities": [
+          {
+            "name": "John",
+            "entity_type": "person",
+            "confidence": 0.95
+          },
+          {
+            "name": "climate policy documentary",
+            "entity_type": "event",
+            "confidence": 0.85
+          }
+        ],
+        "emotional_valence": 0.0,
+        "significance": 0.15,
+        "fact_type": "episodic"
+      },
+      "latency_ms": 3159.648749999178
+    }
+  ]
+}

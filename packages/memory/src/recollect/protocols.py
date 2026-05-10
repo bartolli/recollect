@@ -312,11 +312,12 @@ class FactStore(Protocol):
 class EmbeddingProtocol(Protocol):
     """Interface for embedding generation."""
 
-    async def generate_embedding(self, text: str) -> list[float]: ...
+    async def generate_embedding(
+        self, text: str, *, task: str = "search_document"
+    ) -> list[float]: ...
 
     async def generate_embeddings_batch(
-        self,
-        texts: list[str],
+        self, texts: list[str], *, task: str = "search_document"
     ) -> list[list[float]]: ...
 
     @property

@@ -1,0 +1,18 @@
+{
+  "arm_name": "situational-baseline",
+  "model": "anthropic:claude-haiku-4-5-20251001",
+  "runs": 3,
+  "eval_count": 15,
+  "action_accuracy_mean": 0.8666666666666667,
+  "action_accuracy_std": 0.0,
+  "extension_target_accuracy_mean": 1.0,
+  "extension_target_accuracy_std": 0.0,
+  "none_rate_actual_mean": 0.26666666666666666,
+  "none_rate_expected": 0.4,
+  "expected_distribution": {
+    "create": 1,
+    "extend": 5,
+    "revise": 3,
+    "none": 6
+  }
+}

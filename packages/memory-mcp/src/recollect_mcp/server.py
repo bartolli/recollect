@@ -505,48 +505,66 @@ async def _generate_primer(app: AppContext) -> str:
 
 
 def _load_prompt_files(
-    extraction_path: str | None,
-    token_path: str | None,
+    extraction_template_path: str | None,
+    extraction_instructions_path: str | None,
+    situational_path: str | None,
 ) -> None:
     """Load custom prompt files into config.
 
-    Extraction prompt: entire file content replaces extraction.instructions.
-    Token prompt: file split on '---' separator into system and user prompts.
+    extraction-template: full template override (applies-to: extraction-template).
+        Sets extraction.template_path; PatternExtractor reloads at construction.
+    extraction-instructions (legacy --extraction-prompt): raw text appended as
+        suffix to template. No header required.
+    situational: combined system + user override (applies-to: situational).
+        Sets recall_tokens.assessment_*_prompt slots.
     """
-    if extraction_path:
+    from recollect.exceptions import PromptValidationError
+    from recollect.prompts import load_prompt_file
+
+    if extraction_template_path:
+        loaded = load_prompt_file(extraction_template_path)
+        if loaded.applies_to != "extraction-template":
+            raise PromptValidationError(
+                f"{extraction_template_path}: applies-to must be "
+                f"'extraction-template', got '{loaded.applies_to}'"
+            )
+        config._set("extraction.template_path", extraction_template_path)
+        logger.info(
+            "Extraction template override: %s (version %s)",
+            extraction_template_path,
+            loaded.version,
+        )
+
+    if extraction_instructions_path:
         try:
-            text = Path(extraction_path).read_text(encoding="utf-8").strip()
-            config._set("extraction.instructions", text)
-            logger.info("Loaded extraction prompt from %s", extraction_path)
+            text = (
+                Path(extraction_instructions_path).read_text(encoding="utf-8").strip()
+            )
         except OSError:
             logger.exception(
-                "Failed to load extraction prompt from %s", extraction_path
+                "Failed to load extraction instructions from %s",
+                extraction_instructions_path,
             )
             raise
+        config._set("extraction.instructions", text)
+        logger.info(
+            "Extraction instructions suffix: %s", extraction_instructions_path
+        )
 
-    if token_path:
-        try:
-            text = Path(token_path).read_text(encoding="utf-8").strip()
-            parts = text.split("---")
-            # Find the system and user prompt sections
-            system_prompt = ""
-            user_prompt = ""
-            for part in parts:
-                stripped = part.strip()
-                if stripped.startswith("## System Prompt"):
-                    system_prompt = stripped.removeprefix("## System Prompt").strip()
-                elif stripped.startswith("## User Prompt Template"):
-                    user_prompt = stripped.removeprefix(
-                        "## User Prompt Template"
-                    ).strip()
-            if system_prompt:
-                config._set("recall_tokens.assessment_system_prompt", system_prompt)
-            if user_prompt:
-                config._set("recall_tokens.assessment_user_prompt", user_prompt)
-            logger.info("Loaded token assessment prompt from %s", token_path)
-        except OSError:
-            logger.exception("Failed to load token prompt from %s", token_path)
-            raise
+    if situational_path:
+        loaded = load_prompt_file(situational_path)
+        if loaded.applies_to != "situational":
+            raise PromptValidationError(
+                f"{situational_path}: applies-to must be 'situational', "
+                f"got '{loaded.applies_to}'"
+            )
+        config._set("recall_tokens.assessment_system_prompt", loaded.system)
+        config._set("recall_tokens.assessment_user_prompt", loaded.user)
+        logger.info(
+            "Situational prompt override: %s (version %s)",
+            situational_path,
+            loaded.version,
+        )
 
 
 def main() -> None:
@@ -564,14 +582,28 @@ def main() -> None:
         help="MCP transport (default: stdio)",
     )
     parser.add_argument(
+        "--extraction-template",
+        metavar="FILE",
+        help=(
+            "Path to full extraction template override (.md with header, "
+            "applies-to: extraction-template). Replaces packaged default."
+        ),
+    )
+    parser.add_argument(
         "--extraction-prompt",
         metavar="FILE",
-        help="Path to custom extraction system prompt file",
+        help=(
+            "Path to extraction instructions suffix (raw text, appended to "
+            "template). Legacy; prefer --extraction-template for full overrides."
+        ),
     )
     parser.add_argument(
         "--token-prompt",
         metavar="FILE",
-        help="Path to custom recall token assessment prompt file",
+        help=(
+            "Path to situational prompt override (.md with header, applies-to: "
+            "situational, ## System Prompt + ## User Prompt sections)."
+        ),
     )
     parser.add_argument(
         "--log-file",
@@ -588,7 +620,11 @@ def main() -> None:
 
     configure_logging(log_file=args.log_file, verbose=args.verbose)
 
-    _load_prompt_files(args.extraction_prompt, args.token_prompt)
+    _load_prompt_files(
+        args.extraction_template,
+        args.extraction_prompt,
+        args.token_prompt,
+    )
 
     if args.transport == "streamable-http":
         mcp.run(transport="streamable-http")

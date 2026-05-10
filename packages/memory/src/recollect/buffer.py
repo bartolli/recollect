@@ -73,6 +73,15 @@ class WorkingMemory:
         self._buffer.clear()
         self._rehearsal_counts.clear()
 
+    def evict(self, trace_id: str) -> bool:
+        """Remove a trace by id; returns True iff it was in the buffer."""
+        for trace in self._buffer:
+            if trace.id == trace_id:
+                self._buffer.remove(trace)
+                self._rehearsal_counts.pop(trace_id, None)
+                return True
+        return False
+
     def get_stats(self) -> dict[str, Any]:
         """Get working memory statistics."""
         return {

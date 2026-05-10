@@ -1,0 +1,42 @@
+# P6 situational eval traces. 15 entries, ground-truth action label per entry.
+#
+# Assessment mode: A (independent). Each eval trace assessed against the initial seed-group state from seed_groups.jsonl.
+# The harness MUST reset group state to the seed snapshot between eval ingests (not cumulative across the eval set).
+# Cumulative-mode evaluation is a separate fixture, deferred.
+#
+# DB isolation: situational corpus runs in its own probe DB (separate from probe_eval / islands).
+# Entity names here are disjoint from islands to keep the corpus robust if isolation breaks.
+#
+# Action distribution — deliberately oversampled on action≠none for measurement signal:
+#   extend=5, revise=3, create=1, none=6.
+# Real-world prior is 70–80% none per situational.default.md base-rate guidance; this corpus is a measurement instrument, not a traffic sample.
+# Aggregate none-rate gate must derive from this fixture's ground-truth distribution (40% none), not the prior.
+#
+# expected_group_id  references seed_groups.jsonl when expected_action ∈ {extend, revise}.
+# expected_linked_trace_ids references seed_traces.jsonl when expected_action = create.
+# expected_implication / expected_situation / expected_significance follow situational.default.md output spec.
+
+# C1 — wedding venue lifecycle
+{"id": "c1.e1", "text": "Uncle Brendan's family of six refuses to be cut from the guest list.", "expected_category": "constraint", "expected_action": "extend", "expected_group_id": "G1", "expected_implication": "guest cut blocked", "expected_significance": 0.7, "chain": "C1", "notes": "extend G1: directly amplifies overflow situation; counterfactual — without G1 (no overflow), this fact requires no action"}
+{"id": "c1.e2", "text": "Switched the wedding venue to Banyan Hall, capacity 150, deposit refunded.", "expected_category": "schedule", "expected_action": "revise", "expected_group_id": "G1", "expected_situation": "wedding venue capacity vs guest list overflow", "expected_implication": "overflow risk cleared", "expected_significance": 0.2, "chain": "C1", "notes": "revise G1: situation persists nominally; actionable risk resolved; significance drops"}
+{"id": "c1.e3", "text": "Refilled the bird feeder on the back porch this afternoon.", "expected_category": "general", "expected_action": "none", "chain": "C1", "notes": "none: off-chain household observation; no scope overlap with G1 (overflow); no create-attractor surface (replaces florist-quote which all 3 arms read as create on shared wedding scope)"}
+
+# C2 — same-name disambiguation: route to correct Alex group, do not extend the wrong one
+{"id": "c2.e1", "text": "Vector Labs sent Alex a draft offer for the VP Engineering seat; equity terms are still under negotiation.", "expected_category": "identity", "expected_action": "extend", "expected_group_id": "G2", "expected_implication": "draft offer received, terms pending", "expected_significance": 0.5, "chain": "C2", "notes": "extend G2 (Octane CTO Alex), NOT G3 (sitter Alex); additive event within ongoing talks (does not supersede 'in talks' seed); preserves disambiguation via Vector Labs + VP Engineering anchors"}
+{"id": "c2.e2", "text": "Alex needs to swap Tuesdays for Wednesdays starting next month for the Quill pickups.", "expected_category": "schedule", "expected_action": "extend", "expected_group_id": "G3", "expected_implication": "schedule swap request", "expected_significance": 0.6, "chain": "C2", "notes": "extend G3 (sitter Alex), NOT G2 (CTO Alex); disambiguation test"}
+{"id": "c2.e3", "text": "Alex from accounting submitted Q3 expense reports late again.", "expected_category": "general", "expected_action": "none", "chain": "C2", "notes": "none: third Alex with no situational overlap; must not extend G2 or G3"}
+
+# C3 — medication interaction lifecycle (high significance)
+{"id": "c3.e1", "text": "Dale's follow-up potassium check is scheduled for two weeks from today.", "expected_category": "schedule", "expected_action": "extend", "expected_group_id": "G4", "expected_implication": "monitoring cadence", "expected_significance": 0.9, "chain": "C3", "notes": "extend G4: monitoring step driven by the combination risk"}
+{"id": "c3.e2", "text": "Dale's doctor switched him from spironolactone to torsemide, a loop diuretic.", "expected_category": "health", "expected_action": "revise", "expected_group_id": "G4", "expected_situation": "hyperkalemia risk mitigated by drug substitution", "expected_implication": "interaction risk resolved", "expected_significance": 0.4, "chain": "C3", "notes": "revise G4: drug change removes the potassium-sparing arm; risk mitigated, significance drops"}
+{"id": "c3.e3", "text": "Dale tried the new ramen spot downtown and liked the tonkotsu.", "expected_category": "preference", "expected_action": "none", "chain": "C3", "notes": "none: shared subject (Dale), no situational mechanism with antihypertensive therapy"}
+
+# C4 — topical-distance reactivation (eval traces arrive after C4.d1–d3 surface-text gap)
+{"id": "c4.e1", "text": "The board now wants weekly status updates on the Q4 compliance report through filing.", "expected_category": "general", "expected_action": "extend", "expected_group_id": "G5", "expected_implication": "external accountability pressure raised", "expected_significance": 0.7, "chain": "C4", "notes": "extend G5: amplification pattern (external party adds recurring pressure) without mutating any seeded G5 property (deadline / scope / vendor state untouched); replaces deadline-shift v1 which all 3 arms read as revise; mirrors c1.e1's amplification structure (Uncle Brendan family pressure on overflow)"}
+{"id": "c4.e2", "text": "The last vendor sent their SOC2 report; all citations are now possible.", "expected_category": "general", "expected_action": "revise", "expected_group_id": "G5", "expected_situation": "Q4 compliance report unblocked, draft work resumes", "expected_implication": "blocker cleared", "expected_significance": 0.4, "chain": "C4", "notes": "revise G5: blocker fully resolved; deadline situation persists; significance drops"}
+{"id": "c4.e3", "text": "Switched to a new pair of running shorts for the season.", "expected_category": "preference", "expected_action": "none", "chain": "C4", "notes": "none: distractor topic (running gear), no link to compliance report"}
+
+# C5 — explicit create (lone seed facts; eval triggers group formation)
+{"id": "c5.e1", "text": "Switched to a new HMO plan; Dr. Patel is no longer in-network.", "expected_category": "constraint", "expected_action": "create", "expected_linked_trace_ids": ["c5.u1"], "expected_person_ref": "self", "expected_situation": "annual physical with newly out-of-network provider", "expected_implication": "insurance coverage gap", "expected_significance": 0.7, "chain": "C5", "notes": "create with c5.u1: insurance change makes the booked appointment actionably problematic"}
+{"id": "c5.e2", "text": "Reza's carpool day shifts to Wednesdays starting next week.", "expected_category": "schedule", "expected_action": "none", "chain": "C5", "notes": "none: schedule update on a lone fact (c5.u2); no third party depends on the timing, no causal mechanism"}
+{"id": "c5.e3", "text": "Bought tickets for a botanical garden weekend show.", "expected_category": "schedule", "expected_action": "none", "chain": "C5", "notes": "none: independent fact, no situational dependency with any seed trace"}

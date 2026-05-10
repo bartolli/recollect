@@ -6,6 +6,47 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from recollect.models import FactCategory
+
+EntityType = Literal[
+    "person",
+    "organization",
+    "place",
+    "food",
+    "cuisine",
+    "product",
+    "event",
+    "skill",
+    "condition",
+    "unknown",
+]
+
+Predicate = Literal[
+    "is_allergic_to",
+    "is_phobic_of",
+    "has_condition",
+    "takes_medication",
+    "avoids",
+    "requires",
+    "tolerates",
+    "works_at",
+    "studies",
+    "practices",
+    "holds_role",
+    "lives_in",
+    "originates_from",
+    "is_related_to",
+    "is_friend_of",
+    "is_colleague_of",
+    "is_partner_of",
+    "prefers",
+    "dislikes",
+    "is_interested_in",
+    "scheduled_for",
+    "recurs_on",
+    "is_associated_with",
+]
+
 
 class Message(BaseModel):
     """A message in a conversation with an LLM."""
@@ -24,7 +65,7 @@ class CompletionParams(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    max_tokens: int = Field(default=1024, ge=1)
+    max_tokens: int = Field(default=8192, ge=1)
     temperature: float = Field(default=0.0, ge=0.0)
 
 
@@ -32,7 +73,7 @@ class Entity(BaseModel):
     """A named entity extracted from text."""
 
     name: str
-    entity_type: str = "unknown"
+    entity_type: EntityType = "unknown"
     confidence: float = Field(default=0.8, ge=0.0, le=1.0)
 
 
@@ -40,10 +81,10 @@ class Relation(BaseModel):
     """A relationship between entities or concepts."""
 
     source: str
-    relation: str
+    relation: Predicate
     target: str
     confidence: float = Field(default=0.8, ge=0.0, le=1.0)
-    category: str = "general"
+    category: FactCategory = "general"
     context: str = ""
     context_tags: list[str] = Field(default_factory=list)
 
@@ -89,3 +130,14 @@ class TokenAssessment(BaseModel):
     implication: str = ""
     significance: float = Field(default=0.5, ge=0.0, le=1.0)
     linked_indices: list[int] = Field(default_factory=list)
+
+
+class SituationalAssessment(BaseModel):
+    """TokenAssessment plus the candidate context the LLM saw.
+
+    candidate_token_ids[group_number-1] resolves the assessment back to a token.
+    """
+
+    assessment: TokenAssessment
+    related_trace_ids: list[str] = Field(default_factory=list)
+    candidate_token_ids: list[str] = Field(default_factory=list)

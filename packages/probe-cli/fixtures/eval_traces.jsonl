@@ -1,0 +1,31 @@
+# Retrieval eval traces. 29 entries, ≥3 per FactCategory.
+# id = <cat-prefix><n>; queries reference these via relevant_trace_ids.
+{"id": "h1", "text": "Mei has a severe peanut allergy and carries an EpiPen at all times.", "expected_category": "health"}
+{"id": "h2", "text": "Owen takes daily medication for hypertension.", "expected_category": "health"}
+{"id": "h3", "text": "Lila has chronic asthma triggered by cold air and dust.", "expected_category": "health"}
+{"id": "h4", "text": "Karim was diagnosed with type 2 diabetes last winter.", "expected_category": "health"}
+{"id": "d1", "text": "Sasha has been vegan since 2019 for ethical reasons.", "expected_category": "dietary"}
+{"id": "d2", "text": "Taro avoids gluten because of celiac disease.", "expected_category": "dietary"}
+{"id": "d3", "text": "Beatriz keeps a strict halal household.", "expected_category": "dietary"}
+{"id": "d4", "text": "Niko refuses dairy after a severe lactose-intolerance flare-up.", "expected_category": "dietary"}
+{"id": "i1", "text": "Pham works at Stripe as a staff engineer on the payments platform.", "expected_category": "identity"}
+{"id": "i2", "text": "Aoife studies medieval Irish poetry at Trinity College.", "expected_category": "identity"}
+{"id": "i3", "text": "Ravi practices Vipassana meditation every morning before work.", "expected_category": "identity"}
+{"id": "i4", "text": "Eleni holds the position of mayor of her hometown.", "expected_category": "identity"}
+{"id": "r1", "text": "Hugo is married to Camille and they have two young children.", "expected_category": "relationship"}
+{"id": "r2", "text": "Yusra is Tomas's older sister and they live in the same neighborhood.", "expected_category": "relationship"}
+{"id": "r3", "text": "Devansh's college friend Priya now lives across the street from him.", "expected_category": "relationship"}
+{"id": "p1", "text": "Margot strongly prefers tea over coffee in any setting.", "expected_category": "preference"}
+{"id": "p2", "text": "Quincy is obsessed with restoring vintage synthesizers from the 1970s.", "expected_category": "preference"}
+{"id": "p3", "text": "Iris dislikes loud restaurants and prefers quiet cafes.", "expected_category": "preference"}
+{"id": "p4", "text": "Bram is deeply interested in competitive chess and plays in weekly tournaments.", "expected_category": "preference"}
+{"id": "s1", "text": "The engineering team holds standup every Monday at 9am.", "expected_category": "schedule"}
+{"id": "s2", "text": "Aria has a flight booked to Reykjavik on June third.", "expected_category": "schedule"}
+{"id": "s3", "text": "The community garden meets every Saturday morning during summer.", "expected_category": "schedule"}
+{"id": "c1", "text": "Lior requires wheelchair-accessible venues for any in-person meeting.", "expected_category": "constraint"}
+{"id": "c2", "text": "Soraya cannot attend events past 8pm because of childcare obligations.", "expected_category": "constraint"}
+{"id": "c3", "text": "The downtown conference room has a strict 12-person maximum capacity.", "expected_category": "constraint"}
+{"id": "g1", "text": "A documentary about deep-sea exploration aired last Thursday on PBS.", "expected_category": "general"}
+{"id": "g2", "text": "The new bookstore opened on Pine Street last month.", "expected_category": "general"}
+{"id": "g3", "text": "It rained heavily across the region all weekend.", "expected_category": "general"}
+{"id": "g4", "text": "A regional art festival starts next weekend at Brookhaven Park.", "expected_category": "general"}

@@ -1,0 +1,23 @@
+# P6 situational arm — Ollama Cloud gemma4:31b. Same fixture as situational/baseline.toml.
+# Routing: pydantic-ai resolves OLLAMA_BASE_URL from env (user .env points at remote Ubuntu).
+# DB: probe_situational, drop+recreate before run via `make probe-situational-gemma`.
+
+[arm]
+name = "situational-gemma"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "ollama:gemma4:31b-cloud"
+
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[situational]
+enabled = true
+db_url = "postgresql://bartolli@localhost:5432/probe_situational"
+seed_traces_path = "packages/probe-cli/fixtures/situational/seed_traces.jsonl"
+seed_groups_path = "packages/probe-cli/fixtures/situational/seed_groups.jsonl"
+eval_corpus_path = "packages/probe-cli/fixtures/situational/eval.jsonl"

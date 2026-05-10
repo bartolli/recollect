@@ -1,0 +1,20 @@
+# P5 dense extraction arm — A/B vs baseline.toml on extraction validity + predicate diversity.
+# instructions="" suppresses the prose suffix from config.toml — dense template is sole spec.
+#   uv run probe run --arm packages/probe-cli/fixtures/dense-extraction.toml
+
+[arm]
+name = "dense-extraction"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+template_path = "packages/probe-cli/fixtures/extraction.dense.md"
+instructions = ""
+max_concepts = 5
+max_relations = 3
+
+[corpus]
+path = "packages/probe-cli/fixtures/smoke.jsonl"
+
+[output]
+dir = "out"

@@ -1,0 +1,36 @@
+# Retrieval eval queries. 30 entries, stratified by phrasing_style:
+#   literal: matches trace wording.
+#   domain_shift: reframes scenario where trace becomes relevant.
+#   ambiguous: matches >=2 traces.
+#   distractor: relevant_trace_ids=[] (topic absent from corpus).
+# relevant_trace_ids → eval_traces.jsonl CorpusEntry.id.
+{"id": "q01", "text": "What is Mei allergic to?", "relevant_trace_ids": ["h1"], "expected_category": "health", "phrasing_style": "literal"}
+{"id": "q02", "text": "Who takes daily hypertension medication?", "relevant_trace_ids": ["h2"], "expected_category": "health", "phrasing_style": "literal"}
+{"id": "q03", "text": "Tell me about Sasha's diet.", "relevant_trace_ids": ["d1"], "expected_category": "dietary", "phrasing_style": "literal"}
+{"id": "q04", "text": "Who avoids gluten and why?", "relevant_trace_ids": ["d2"], "expected_category": "dietary", "phrasing_style": "literal"}
+{"id": "q05", "text": "Where does Pham work?", "relevant_trace_ids": ["i1"], "expected_category": "identity", "phrasing_style": "literal"}
+{"id": "q06", "text": "What does Aoife study?", "relevant_trace_ids": ["i2"], "expected_category": "identity", "phrasing_style": "literal"}
+{"id": "q07", "text": "Who is married to Camille?", "relevant_trace_ids": ["r1"], "expected_category": "relationship", "phrasing_style": "literal"}
+{"id": "q08", "text": "Who is Tomas's older sister?", "relevant_trace_ids": ["r2"], "expected_category": "relationship", "phrasing_style": "literal"}
+{"id": "q09", "text": "When is the engineering standup?", "relevant_trace_ids": ["s1"], "expected_category": "schedule", "phrasing_style": "literal"}
+{"id": "q10", "text": "What does Lior require for in-person meetings?", "relevant_trace_ids": ["c1"], "expected_category": "constraint", "phrasing_style": "literal"}
+{"id": "q11", "text": "Planning a Thai dinner with friends -- any allergy risks I should know about?", "relevant_trace_ids": ["h1"], "expected_category": "health", "phrasing_style": "domain_shift"}
+{"id": "q12", "text": "We're catering a vegan-friendly company event.", "relevant_trace_ids": ["d1"], "expected_category": "dietary", "phrasing_style": "domain_shift"}
+{"id": "q13", "text": "Designing a halal-certified menu for an upcoming gathering.", "relevant_trace_ids": ["d3"], "expected_category": "dietary", "phrasing_style": "domain_shift"}
+{"id": "q14", "text": "Recruiting an experienced engineer for a payments startup.", "relevant_trace_ids": ["i1"], "expected_category": "identity", "phrasing_style": "domain_shift"}
+{"id": "q15", "text": "Recommend a quiet evening venue for a small dinner party.", "relevant_trace_ids": ["p3"], "expected_category": "preference", "phrasing_style": "domain_shift"}
+{"id": "q16", "text": "Need to book an accessible event space for an offsite.", "relevant_trace_ids": ["c1"], "expected_category": "constraint", "phrasing_style": "domain_shift"}
+{"id": "q17", "text": "Scheduling an evening dinner that runs past 9pm.", "relevant_trace_ids": ["c2"], "expected_category": "constraint", "phrasing_style": "domain_shift"}
+{"id": "q18", "text": "Cold weather is making someone's breathing problems worse.", "relevant_trace_ids": ["h3"], "expected_category": "health", "phrasing_style": "domain_shift"}
+{"id": "q19", "text": "Who plays competitive chess?", "relevant_trace_ids": ["p4"], "expected_category": "preference", "phrasing_style": "literal"}
+{"id": "q20", "text": "Tell me about morning routines.", "relevant_trace_ids": ["i3", "s3"], "expected_category": "identity", "phrasing_style": "ambiguous"}
+{"id": "q21", "text": "Anyone with kids in the family or with childcare needs?", "relevant_trace_ids": ["r1", "c2"], "expected_category": "relationship", "phrasing_style": "ambiguous"}
+{"id": "q22", "text": "Music gear collectors I should know about.", "relevant_trace_ids": ["p2"], "expected_category": "preference", "phrasing_style": "ambiguous"}
+{"id": "q23", "text": "Weekend plans for this summer in the area.", "relevant_trace_ids": ["s3", "g4"], "expected_category": "schedule", "phrasing_style": "ambiguous"}
+{"id": "q24", "text": "What is the capital of Mongolia?", "relevant_trace_ids": [], "phrasing_style": "distractor"}
+{"id": "q25", "text": "How do I parallelize a Python function?", "relevant_trace_ids": [], "phrasing_style": "distractor"}
+{"id": "q26", "text": "What is the recipe for borscht?", "relevant_trace_ids": [], "phrasing_style": "distractor"}
+{"id": "q27", "text": "Who won the 2018 World Cup?", "relevant_trace_ids": [], "phrasing_style": "distractor"}
+{"id": "q28", "text": "Best ski boots for narrow feet.", "relevant_trace_ids": [], "phrasing_style": "distractor"}
+{"id": "q29", "text": "Difference between TCP and UDP protocols.", "relevant_trace_ids": [], "phrasing_style": "distractor"}
+{"id": "q30", "text": "Recommend an algorithm for matrix multiplication.", "relevant_trace_ids": [], "phrasing_style": "distractor"}
