@@ -1,13 +1,13 @@
 {
   "arm_name": "situational-sonnet",
   "model": "anthropic:claude-sonnet-4-6",
-  "runs": 3,
+  "runs": 10,
   "eval_count": 15,
-  "action_accuracy_mean": 0.9777777777777779,
-  "action_accuracy_std": 0.03849001794597504,
+  "action_accuracy_mean": 1.0,
+  "action_accuracy_std": 0.0,
   "extension_target_accuracy_mean": 1.0,
   "extension_target_accuracy_std": 0.0,
-  "none_rate_actual_mean": 0.4000000000000001,
+  "none_rate_actual_mean": 0.4,
   "none_rate_expected": 0.4,
   "expected_distribution": {
     "create": 1,

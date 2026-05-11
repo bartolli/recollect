@@ -4,7 +4,7 @@
 
 [arm]
 name = "situational-sonnet"
-runs = 3
+runs = 10
 
 [extraction]
 pydantic_ai_model = "anthropic:claude-sonnet-4-6"
