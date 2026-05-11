@@ -75,14 +75,14 @@ class TestExtractorFlow:
 
         assert provider.last_output_type is ExtractionResult
 
-    async def test_system_prompt_mentions_json(self) -> None:
+    async def test_system_prompt_references_schema(self) -> None:
         provider = _CapturingProvider(ExtractionResult())
         extractor = PatternExtractor(provider)
 
         await extractor.extract("anything")
 
         system = provider.last_messages[0].content
-        assert "JSON" in system or "json" in system
+        assert "schema" in system.lower()
 
     async def test_uses_low_temperature(self) -> None:
         provider = _CapturingProvider(ExtractionResult())
