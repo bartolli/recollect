@@ -1,13 +1,15 @@
-# P6 situational arm — Ollama Cloud gemma4:31b. Same fixture as situational/baseline.toml.
-# Routing: pydantic-ai resolves OLLAMA_BASE_URL from env (user .env points at remote Ubuntu).
-# DB: probe_situational, drop+recreate before run via `make probe-situational-gemma`.
+# .env OLLAMA_BASE_URL must point at LM Studio for this arm (same var gemma.toml uses for Ollama).
+# thinking = false → reasoning_effort=none; required for thinking-mode models to route structured output to content.
 
 [arm]
-name = "situational-gemma"
+name = "situational-lmstudio"
 runs = 3
 
 [extraction]
-pydantic_ai_model = "ollama:gemma4"
+pydantic_ai_model = "ollama:qwen3-6"
+
+[extraction.model_settings]
+# thinking = false
 
 [corpus]
 path = ""

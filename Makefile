@@ -134,6 +134,9 @@ probe-situational-sonnet: probe-situational-db-reset
 probe-situational-gemma: probe-situational-db-reset
 	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/situational/gemma.toml
 
+probe-situational-lmstudio: probe-situational-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/situational/lmstudio.toml
+
 probe-situational-openrouter: probe-situational-db-reset
 	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/situational/openrouter.toml
 
@@ -220,6 +223,7 @@ help:
 	@echo "  make probe-situational           Reset + run situational/baseline.toml (Haiku)"
 	@echo "  make probe-situational-sonnet    Reset + run situational/sonnet.toml"
 	@echo "  make probe-situational-gemma     Reset + run situational/gemma.toml"
+	@echo "  make probe-situational-lmstudio  Reset + run situational/lmstudio.toml"
 	@echo "  make probe-situational-openrouter Reset + run situational/openrouter.toml (gemini-3-flash + reasoning)"
 	@echo ""
 	@echo "POC Experiments:      (ARGS= for extra flags)"

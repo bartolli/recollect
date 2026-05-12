@@ -1,0 +1,355 @@
+{
+  "arm_name": "situational-lmstudio",
+  "run_index": 2,
+  "model": "ollama:qwen3-6",
+  "seed_groups_restored": 5,
+  "seed_traces_ingested": 20,
+  "eval_results": [
+    {
+      "entry_id": "c1.e1",
+      "expected_action": "extend",
+      "expected_group_id": "G1",
+      "expected_linked_trace_ids": [],
+      "actual_action": "extend",
+      "actual_group_id": "G1",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "guest list capacity conflict",
+      "actual_significance": 0.6,
+      "related_trace_ids": [
+        "0bf76df8-7a1b-4651-8683-a70e9b047866",
+        "7cd247be-b377-4a8a-b103-21f8caca2173",
+        "87014604-8b85-4fe0-92ac-9836d88d867f",
+        "56c269c4-7cb9-4050-9d7e-e6e05461fd22"
+      ],
+      "candidate_token_ids": [
+        "731fc53c-cbf3-4160-b3a4-d82bf6aaf3b7",
+        "fe098a67-45ca-473a-863b-5cfc0f5ef9a4",
+        "0abae532-1e42-4895-8f07-06f668ccbf23"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 13432.222499977797
+    },
+    {
+      "entry_id": "c1.e2",
+      "expected_action": "revise",
+      "expected_group_id": "G1",
+      "expected_linked_trace_ids": [],
+      "actual_action": "revise",
+      "actual_group_id": "G1",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "venue switched to Banyan Hall",
+      "actual_significance": 0.6,
+      "related_trace_ids": [
+        "42b2ce89-5bd6-4e79-9fa4-5aaafceaa600",
+        "7cd247be-b377-4a8a-b103-21f8caca2173",
+        "0bf76df8-7a1b-4651-8683-a70e9b047866",
+        "af445516-72b1-4de2-85fe-389bf7acfb51"
+      ],
+      "candidate_token_ids": [
+        "fe098a67-45ca-473a-863b-5cfc0f5ef9a4"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 5918.168042000616
+    },
+    {
+      "entry_id": "c1.e3",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": "none",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "9df4a437-b7d6-4c73-b56e-3a408500ef63",
+        "d5454c18-821a-4237-8201-87b8ba07da24",
+        "56c269c4-7cb9-4050-9d7e-e6e05461fd22",
+        "f31c1193-393b-481d-969f-0c2c80d8b96d"
+      ],
+      "candidate_token_ids": [
+        "0abae532-1e42-4895-8f07-06f668ccbf23"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 13406.788541993592
+    },
+    {
+      "entry_id": "c2.e1",
+      "expected_action": "extend",
+      "expected_group_id": "G2",
+      "expected_linked_trace_ids": [],
+      "actual_action": "extend",
+      "actual_group_id": "G2",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "equity negotiation status",
+      "actual_significance": 0.6,
+      "related_trace_ids": [
+        "75c08bdd-9466-4d5a-9a81-79f63a37187a",
+        "b4cb9df0-8059-4ae4-a13b-59d35a7c8738",
+        "7172c983-072b-4cc0-8917-9b9bf88e2f3d",
+        "56c269c4-7cb9-4050-9d7e-e6e05461fd22"
+      ],
+      "candidate_token_ids": [
+        "0abae532-1e42-4895-8f07-06f668ccbf23",
+        "417fd303-8592-4b98-9cf0-3ed767b34cce"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 16433.38637499255
+    },
+    {
+      "entry_id": "c2.e2",
+      "expected_action": "extend",
+      "expected_group_id": "G3",
+      "expected_linked_trace_ids": [],
+      "actual_action": "extend",
+      "actual_group_id": "G3",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "schedule swap for pickups",
+      "actual_significance": 0.6,
+      "related_trace_ids": [
+        "56c269c4-7cb9-4050-9d7e-e6e05461fd22",
+        "7069a403-71f5-45d6-9fb1-e9a0ecfc55d9",
+        "b4cb9df0-8059-4ae4-a13b-59d35a7c8738",
+        "6566fa2c-975f-4813-893d-6896fc538fea"
+      ],
+      "candidate_token_ids": [
+        "731fc53c-cbf3-4160-b3a4-d82bf6aaf3b7",
+        "0abae532-1e42-4895-8f07-06f668ccbf23",
+        "417fd303-8592-4b98-9cf0-3ed767b34cce"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 5242.281750019174
+    },
+    {
+      "entry_id": "c2.e3",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": "none",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "b4cb9df0-8059-4ae4-a13b-59d35a7c8738",
+        "56c269c4-7cb9-4050-9d7e-e6e05461fd22",
+        "7172c983-072b-4cc0-8917-9b9bf88e2f3d",
+        "7069a403-71f5-45d6-9fb1-e9a0ecfc55d9"
+      ],
+      "candidate_token_ids": [
+        "0abae532-1e42-4895-8f07-06f668ccbf23",
+        "417fd303-8592-4b98-9cf0-3ed767b34cce"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 11863.831791008124
+    },
+    {
+      "entry_id": "c3.e1",
+      "expected_action": "extend",
+      "expected_group_id": "G4",
+      "expected_linked_trace_ids": [],
+      "actual_action": "extend",
+      "actual_group_id": "G4",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "follow-up monitoring schedule",
+      "actual_significance": 0.8,
+      "related_trace_ids": [
+        "e15c9b12-e7fe-432a-9c59-e1337bdd45e0",
+        "b79febfa-4159-425c-94fc-a6f9b43ff59e",
+        "1c4d7317-82d0-46fb-99ec-8dbeba1d94f2",
+        "af445516-72b1-4de2-85fe-389bf7acfb51"
+      ],
+      "candidate_token_ids": [
+        "d8625df0-f2a4-49a7-bc5c-184a56df385e"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 5378.587082988815
+    },
+    {
+      "entry_id": "c3.e2",
+      "expected_action": "revise",
+      "expected_group_id": "G4",
+      "expected_linked_trace_ids": [],
+      "actual_action": "extend",
+      "actual_group_id": "G4",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "diuretic regimen change",
+      "actual_significance": 0.9,
+      "related_trace_ids": [
+        "b79febfa-4159-425c-94fc-a6f9b43ff59e",
+        "1c4d7317-82d0-46fb-99ec-8dbeba1d94f2",
+        "e15c9b12-e7fe-432a-9c59-e1337bdd45e0",
+        "11d806b6-6e2b-4020-ab5f-c8a9f7601313"
+      ],
+      "candidate_token_ids": [
+        "d8625df0-f2a4-49a7-bc5c-184a56df385e"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 9641.951917001279
+    },
+    {
+      "entry_id": "c3.e3",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": null,
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": null,
+      "related_trace_ids": [],
+      "candidate_token_ids": [],
+      "success": false,
+      "error": "assess: pydantic-ai API error (ollama:qwen3-6): Exceeded maximum output retries (5)",
+      "latency_ms": 16813.039875007235
+    },
+    {
+      "entry_id": "c4.e1",
+      "expected_action": "extend",
+      "expected_group_id": "G5",
+      "expected_linked_trace_ids": [],
+      "actual_action": "extend",
+      "actual_group_id": "G5",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "weekly reporting requirement",
+      "actual_significance": 0.7,
+      "related_trace_ids": [
+        "6566fa2c-975f-4813-893d-6896fc538fea",
+        "14e74608-11e6-4291-9da9-52fe0eaf3df7",
+        "87014604-8b85-4fe0-92ac-9836d88d867f",
+        "56c269c4-7cb9-4050-9d7e-e6e05461fd22"
+      ],
+      "candidate_token_ids": [
+        "0abae532-1e42-4895-8f07-06f668ccbf23",
+        "731fc53c-cbf3-4160-b3a4-d82bf6aaf3b7"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 5988.905917009106
+    },
+    {
+      "entry_id": "c4.e2",
+      "expected_action": "revise",
+      "expected_group_id": "G5",
+      "expected_linked_trace_ids": [],
+      "actual_action": "revise",
+      "actual_group_id": "G5",
+      "actual_linked_trace_ids": [],
+      "actual_implication": "vendor SOC2 report received",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "87014604-8b85-4fe0-92ac-9836d88d867f",
+        "14e74608-11e6-4291-9da9-52fe0eaf3df7",
+        "6566fa2c-975f-4813-893d-6896fc538fea",
+        "d5454c18-821a-4237-8201-87b8ba07da24"
+      ],
+      "candidate_token_ids": [
+        "731fc53c-cbf3-4160-b3a4-d82bf6aaf3b7"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 12002.414624992525
+    },
+    {
+      "entry_id": "c4.e3",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": "none",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "9df4a437-b7d6-4c73-b56e-3a408500ef63",
+        "d5454c18-821a-4237-8201-87b8ba07da24",
+        "b79febfa-4159-425c-94fc-a6f9b43ff59e",
+        "af445516-72b1-4de2-85fe-389bf7acfb51"
+      ],
+      "candidate_token_ids": [
+        "d8625df0-f2a4-49a7-bc5c-184a56df385e"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 8274.132666003425
+    },
+    {
+      "entry_id": "c5.e1",
+      "expected_action": "create",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [
+        "c5.u1"
+      ],
+      "actual_action": "none",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "af445516-72b1-4de2-85fe-389bf7acfb51",
+        "11d806b6-6e2b-4020-ab5f-c8a9f7601313",
+        "b79febfa-4159-425c-94fc-a6f9b43ff59e",
+        "1c4d7317-82d0-46fb-99ec-8dbeba1d94f2"
+      ],
+      "candidate_token_ids": [
+        "d8625df0-f2a4-49a7-bc5c-184a56df385e"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 6463.874542008853
+    },
+    {
+      "entry_id": "c5.e2",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": "none",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "11d806b6-6e2b-4020-ab5f-c8a9f7601313",
+        "56c269c4-7cb9-4050-9d7e-e6e05461fd22",
+        "af445516-72b1-4de2-85fe-389bf7acfb51",
+        "6566fa2c-975f-4813-893d-6896fc538fea"
+      ],
+      "candidate_token_ids": [
+        "731fc53c-cbf3-4160-b3a4-d82bf6aaf3b7",
+        "0abae532-1e42-4895-8f07-06f668ccbf23"
+      ],
+      "success": true,
+      "error": "",
+      "latency_ms": 5740.30608299654
+    },
+    {
+      "entry_id": "c5.e3",
+      "expected_action": "none",
+      "expected_group_id": null,
+      "expected_linked_trace_ids": [],
+      "actual_action": "none",
+      "actual_group_id": null,
+      "actual_linked_trace_ids": [],
+      "actual_implication": "",
+      "actual_significance": 0.5,
+      "related_trace_ids": [
+        "9df4a437-b7d6-4c73-b56e-3a408500ef63",
+        "d5454c18-821a-4237-8201-87b8ba07da24",
+        "af445516-72b1-4de2-85fe-389bf7acfb51",
+        "11d806b6-6e2b-4020-ab5f-c8a9f7601313"
+      ],
+      "candidate_token_ids": [],
+      "success": true,
+      "error": "",
+      "latency_ms": 6046.077666018391
+    }
+  ]
+}
