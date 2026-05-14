@@ -75,6 +75,7 @@ Add to `.mcp.json` (Claude Code) or `claude_desktop_config.json` (Claude Desktop
 | `OLLAMA_BASE_URL` | No | `http://localhost:11434/v1` | Ollama API endpoint. |
 | `MEMORY_EXTRACTION_MAX_TOKENS` | No | `8192` | Max tokens for LLM extraction. Reasoning models consume thinking tokens before output; 8192 covers most cases. |
 | `MEMORY_CONFIG` | No | -- | Path to custom TOML config file. |
+| `MEMORY_EXTRACTION_TEMPLATE_PATH` | No | -- | Path to override extraction prompt (markdown with header schema). |
 | `HF_HUB_OFFLINE` | No | -- | Set to `1` to skip HuggingFace HTTP checks on startup. Use after the embedding model has been cached locally. |
 | `SERVER_HOST` | No | `localhost` | Server bind host (streamable-http transport). |
 | `SERVER_PORT` | No | `8000` | Server bind port (streamable-http transport). |
@@ -82,9 +83,15 @@ Add to `.mcp.json` (Claude Code) or `claude_desktop_config.json` (Claude Desktop
 | `MEMORY_RECALL_TOKENS_TOP_K` | No | `5` | Max related traces for token assessment. |
 | `MEMORY_RECALL_TOKENS_THRESHOLD` | No | `0.42` | Min cosine similarity for related trace lookup at write time. |
 | `MEMORY_RECALL_TOKENS_STRENGTH_THRESHOLD` | No | `0.1` | Min token strength to activate. |
-| `MEMORY_RECALL_TOKENS_SCORE_BONUS` | No | `0.1` | Gated additive bonus per token. |
 | `MEMORY_RECALL_TOKENS_REINFORCE_BOOST` | No | `0.1` | Strength increment on activation. |
 | `MEMORY_RECALL_TOKENS_DECAY_FACTOR` | No | `0.9` | Inactive token decay per consolidation. |
+| `MEMORY_RECALL_TOKENS_HOP_DECAY` | No | `0.85` | Signal attenuation per token hop during propagation. |
+| `MEMORY_RECALL_TOKENS_PROPAGATION_BLEND` | No | `0.5` | Weight of propagated signal in the additive blend. |
+| `MEMORY_RECALL_TOKENS_MAX_ROUNDS` | No | `3` | Max re-seeding iterations at query time. |
+| `MEMORY_RECALL_TOKENS_STABILITY_THRESHOLD` | No | `0.95` | Top-K overlap fraction to stop re-seeding early. |
+| `MEMORY_RECALL_TOKENS_TOP_SEEDS` | No | `3` | Token-discovered traces used as seeds per re-seeding round. |
+| `MEMORY_RECALL_TOKENS_SYSTEM_PROMPT` | No | -- | Override situational-assessment system prompt (inline string). |
+| `MEMORY_RECALL_TOKENS_USER_PROMPT` | No | -- | Override situational-assessment user prompt (inline string). |
 
 ## Provider
 
@@ -92,6 +99,7 @@ Add to `.mcp.json` (Claude Code) or `claude_desktop_config.json` (Claude Desktop
 |----------------------------|---------------------|
 | `anthropic:...` | `ANTHROPIC_API_KEY` |
 | `openai:...` | `OPENAI_API_KEY` |
+| `openrouter:...` | `OPENROUTER_API_KEY` (e.g. `openrouter:google/gemini-3-flash-preview`) |
 | `ollama:...` | `OLLAMA_BASE_URL` (defaults to `http://localhost:11434/v1`) |
 
 Reasoning models (Qwen3, DeepSeek-R1) consume thinking tokens from the extraction budget. If `remember` returns extraction errors, increase `MEMORY_EXTRACTION_MAX_TOKENS` or set `MEMORY_CONFIG` to a custom TOML file with `[extraction] max_tokens = 8192`.

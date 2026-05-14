@@ -56,14 +56,21 @@ asyncio.run(main())
 | `OLLAMA_BASE_URL` | No | `http://localhost:11434/v1` | Ollama API endpoint. |
 | `MEMORY_EXTRACTION_MAX_TOKENS` | No | `8192` | Max tokens for LLM extraction. Reasoning models consume thinking tokens before output; 8192 covers most cases. |
 | `MEMORY_CONFIG` | No | -- | Path to custom TOML config file. |
-| `MEMORY_EXTRACTION_INSTRUCTIONS` | No | -- | Override extraction prompt instructions. |
+| `MEMORY_EXTRACTION_INSTRUCTIONS` | No | -- | Override extraction prompt instructions (inline string). |
+| `MEMORY_EXTRACTION_TEMPLATE_PATH` | No | -- | Path to override extraction prompt (markdown with `version` / `applies-to` / `placeholders` header schema). |
 | `MEMORY_RECALL_TOKENS_ENABLED` | No | `true` | Enable write-time token stamping and query-time activation. |
 | `MEMORY_RECALL_TOKENS_TOP_K` | No | `5` | Max related traces to consider for token assessment. |
 | `MEMORY_RECALL_TOKENS_THRESHOLD` | No | `0.42` | Min cosine similarity to consider a trace as related at write time. |
 | `MEMORY_RECALL_TOKENS_STRENGTH_THRESHOLD` | No | `0.1` | Min token strength to activate at query time. |
-| `MEMORY_RECALL_TOKENS_SCORE_BONUS` | No | `0.1` | Gated additive bonus: `token_strength * bonus * effective_sim`. |
 | `MEMORY_RECALL_TOKENS_REINFORCE_BOOST` | No | `0.1` | Strength increment on token activation (capped at 1.0). |
 | `MEMORY_RECALL_TOKENS_DECAY_FACTOR` | No | `0.9` | Multiply inactive token strength by this during consolidation. |
+| `MEMORY_RECALL_TOKENS_HOP_DECAY` | No | `0.85` | Signal attenuation per token hop during query-time propagation. |
+| `MEMORY_RECALL_TOKENS_PROPAGATION_BLEND` | No | `0.5` | Weight of propagated signal in the additive blend. |
+| `MEMORY_RECALL_TOKENS_MAX_ROUNDS` | No | `3` | Max re-seeding iterations at query time. |
+| `MEMORY_RECALL_TOKENS_STABILITY_THRESHOLD` | No | `0.95` | Top-K overlap fraction to stop re-seeding early. |
+| `MEMORY_RECALL_TOKENS_TOP_SEEDS` | No | `3` | Token-discovered traces used as seeds per re-seeding round. |
+| `MEMORY_RECALL_TOKENS_SYSTEM_PROMPT` | No | -- | Override situational-assessment system prompt (inline string). |
+| `MEMORY_RECALL_TOKENS_USER_PROMPT` | No | -- | Override situational-assessment user prompt (inline string). |
 
 ## Configuration
 
@@ -86,9 +93,11 @@ pydantic_ai_model = "ollama:ministral-3"   # pydantic-ai provider:model format
 | `[memory]` | Core memory model | `initial_strength`, `consolidation_threshold`, `decay_rate` |
 | `[working_memory]` | Working memory capacity | `capacity` (default 7, range 5-9) |
 | `[retrieval]` | Retrieval pipeline tuning | `max_retrievals`, `search_limit`, `selection_threshold` |
-| `[extraction]` | LLM extraction | `max_tokens`, `max_concepts`, `max_relations`, `pydantic_ai_model` |
+| `[extraction]` | LLM extraction | `max_tokens`, `max_concepts`, `max_relations`, `pydantic_ai_model`, `template_path`, `embed_relation_tags` |
+| `[extraction.model_settings]` | Provider-specific settings forwarded to pydantic-ai | `openrouter_reasoning`, `anthropic_thinking_budget`, `thinking`, `top_p` |
 | `[embedding]` | Local embedding model | `model`, `dimensions` |
 | `[persona]` | Persona fact management | `auto_extract`, `confidence_threshold` |
+| `[recall_tokens]` | Situational grouping at write + propagation at read | `enabled`, `assessment_max_tokens`, `assessment_template_path`, plus strength / decay / propagation knobs (env-var-exposed above) |
 | `[session]` | Session summaries | `summary_strength`, `summary_max_tokens` |
 
 Full defaults: [`config.toml`](https://github.com/bartolli/recollect/blob/main/packages/memory/src/recollect/config.toml)

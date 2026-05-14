@@ -1,6 +1,6 @@
 [project]
 name = "recollect-mcp"
-version = "0.7.0"
+version = "0.8.0"
 description = "MCP server for Recollect"
 readme = "README.md"
 license = "MIT"
