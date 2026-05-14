@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Prompt A/B harness for Recollect"
 license = "MIT"
 requires-python = ">=3.12.4"
+classifiers = ["Private :: Do Not Upload"]
 dependencies = [
     "recollect",
     "pydantic>=2.0",
