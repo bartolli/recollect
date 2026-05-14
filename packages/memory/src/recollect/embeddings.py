@@ -23,6 +23,8 @@ EmbeddingTask = Literal[
 class FastEmbedProvider:
     """FastEmbed-based embedding provider."""
 
+    TASK_PREFIX_VERSION = "v0.7"
+
     def __init__(
         self,
         model_name: str = "nomic-ai/nomic-embed-text-v1.5",
@@ -35,6 +37,10 @@ class FastEmbedProvider:
     @property
     def dimensions(self) -> int:
         return self._dimensions
+
+    def contract(self) -> tuple[str, str]:
+        """Return (model, task_prefix_version) — the stored-vector contract."""
+        return (self._model_name, self.TASK_PREFIX_VERSION)
 
     def _get_model(self) -> Any:
         if self._model is None:

@@ -31,3 +31,15 @@ class SessionNotFoundError(MemorySDKError):
 
 class PromptValidationError(MemorySDKError):
     """Raised when a prompt override file fails validation on load."""
+
+
+class BootstrapError(MemorySDKError):
+    """Raised when schema bootstrap or migration application fails."""
+
+
+class DuplicateMigrationError(BootstrapError):
+    """Raised when two migrations are registered under the same name."""
+
+
+class EmbeddingContractError(BootstrapError):
+    """Raised when the stored embedding contract differs from the running provider."""

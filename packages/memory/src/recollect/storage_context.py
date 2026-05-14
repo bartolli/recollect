@@ -57,8 +57,13 @@ class StorageContext:
     recall_tokens: RecallTokenStore
 
     async def initialize(self) -> None:
-        """Initialize the connection pool and create schema."""
+        """Open the connection pool and apply schema bootstrap."""
+        from recollect.bootstrap.migrations import default_registry
+        from recollect.bootstrap.runner import apply
+
         await self.pool.initialize()
+        pool = await self.pool.get_pool()
+        await apply(pool, default_registry())
 
     async def close(self) -> None:
         """Close the connection pool."""

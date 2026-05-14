@@ -335,10 +335,18 @@ class CognitiveMemory:
         return self._storage
 
     async def connect(self, db_url: str | None = None) -> None:
-        """Initialize storage connection and schema."""
+        """Open storage, apply bootstrap, verify embedding contract."""
         if db_url:
             self._storage = create_storage_context(db_url)
         await self._storage.initialize()
+        from recollect.storage_ops import (
+            get_embedding_contract,
+            verify_embedding_contract,
+        )
+
+        pool = await self._storage.pool.get_pool()
+        stored = await get_embedding_contract(pool)
+        verify_embedding_contract(stored=stored, current=self._embeddings.contract())
         self._connected = True
         logger.info("CognitiveMemory connected")
 

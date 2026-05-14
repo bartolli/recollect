@@ -254,24 +254,18 @@ class PoolManager:
             raise StorageError(f"Failed to create database {db_name}: {exc}") from exc
 
     async def initialize(self) -> None:
-        """Create schema tables and indexes."""
+        """Open the connection pool.
+
+        Schema DDL was previously inline here; it now lives in the
+        bootstrap migration registry. StorageContext.initialize() runs
+        bootstrap.apply() after this shim opens the pool.
+        """
         try:
-            pool = await self.get_pool()
-            async with pool.acquire() as conn:
-                await conn.execute(SCHEMA_SQL)
-                try:
-                    await conn.execute(VECTOR_INDEX_SQL)
-                    await conn.execute(FACT_VECTOR_INDEX_SQL)
-                    await conn.execute(CONCEPT_VECTOR_INDEX_SQL)
-                except asyncpg.UndefinedObjectError:
-                    logger.exception(
-                        "pgvector HNSW not available, skipping vector index"
-                    )
-            logger.info("Storage schema initialized")
+            await self.get_pool()
         except StorageError:
             raise
         except asyncpg.PostgresError as exc:
-            raise StorageError(f"Failed to initialize schema: {exc}") from exc
+            raise StorageError(f"Failed to open connection pool: {exc}") from exc
 
     async def close(self) -> None:
         """Close the connection pool."""

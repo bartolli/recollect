@@ -143,7 +143,35 @@ def mock_storage(
     ctx.recall_tokens = mock_recall_token_store
     ctx.initialize = AsyncMock()
     ctx.close = AsyncMock()
+    # connect() reads the embedding_contract via pool.get_pool() after bootstrap;
+    # stored=None short-circuits verify_embedding_contract so the mock passes.
+    ctx.pool = MagicMock()
+    ctx.pool.get_pool = AsyncMock(return_value=_FakePoolForContract())
     return ctx
+
+
+class _FakePoolForContract:
+    """Minimal pool stub: pool.acquire() yields a conn whose fetchrow returns None.
+
+    Used in unit tests so connect()'s contract verification sees an "absent"
+    contract row and skips comparison.
+    """
+
+    def acquire(self) -> _FakePoolForContractAcquire:
+        return _FakePoolForContractAcquire()
+
+
+class _FakePoolForContractAcquire:
+    async def __aenter__(self) -> _FakeContractConn:
+        return _FakeContractConn()
+
+    async def __aexit__(self, *_a: object) -> None:
+        return None
+
+
+class _FakeContractConn:
+    async def fetchrow(self, _sql: str, *_args: object) -> None:
+        return None
 
 
 @pytest.fixture()

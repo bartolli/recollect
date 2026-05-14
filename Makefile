@@ -1,6 +1,7 @@
 .PHONY: dev test test-fast test-integration test-cov lint format type-check check fix clean \
        build build-sdk build-mcp \
-       db-start db-stop db-status db-setup db-reset \
+       db-start db-stop db-status db-setup db-reset re-embed \
+       db-bootstrap db-bootstrap-check \
        probe-db-setup probe-db-reset probe-baseline probe-dense probe-dense-tagembed \
        probe-baseline-k3 probe-dense-k3 probe-dense-tagembed-k3 \
        probe-situational-db-setup probe-situational-db-reset probe-situational \
@@ -71,6 +72,16 @@ db-reset:
 	$(PG_BIN)/createdb memory_v3
 	$(PG_BIN)/psql -d memory_v3 -c "CREATE EXTENSION IF NOT EXISTS vector;" 2>/dev/null
 	@echo "Database memory_v3 recreated fresh with pgvector."
+
+re-embed:
+	$(UV_RUN) python scripts/re_embed_v07.py $(ARGS)
+
+# Schema bootstrap: idempotent migration registry (advisory-locked).
+db-bootstrap:
+	$(UV_RUN) python -m recollect.bootstrap --apply $(ARGS)
+
+db-bootstrap-check:
+	$(UV_RUN) python -m recollect.bootstrap --check $(ARGS)
 
 # -- Probe DB (eval harness) --
 
@@ -206,6 +217,8 @@ help:
 	@echo "  make db-status      Check if running"
 	@echo "  make db-setup       Create memory_v3 db + pgvector"
 	@echo "  make db-reset       Drop and recreate memory_v3"
+	@echo "  make db-bootstrap         Apply pending schema migrations (advisory-locked)"
+	@echo "  make db-bootstrap-check   Read-only: list pending migrations + invariants"
 	@echo ""
 	@echo "Probe DB + arms:      (eval harness, separate from dev DB)"
 	@echo "  make probe-db-setup       Create probe_eval db + pgvector"

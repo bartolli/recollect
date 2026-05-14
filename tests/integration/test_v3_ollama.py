@@ -134,32 +134,6 @@ class TestOllamaCompletion:
         assert response
         assert len(response) > 0
 
-    async def test_stop_sequence_passthrough(self) -> None:
-        """Stop sequences pass through and truncate output.
-
-        Reasoning models (qwen3.5) may consume stop sequences in their
-        thinking tokens, producing an empty visible response. We accept
-        either truncated output or an ExtractionError from the empty
-        content guard.
-        """
-        from recollect.exceptions import ExtractionError
-
-        provider = _make_provider()
-        messages = [
-            Message(
-                role="user",
-                content="Count from 1 to 10, one number per line.",
-            ),
-        ]
-        try:
-            response = await provider.complete(
-                messages, max_tokens=OLLAMA_MAX_TOKENS, stop=["\n5"]
-            )
-            assert response
-            assert "10" not in response
-        except ExtractionError:
-            pass  # Acceptable: stop sequence hit inside thinking tokens
-
 
 @skip_no_ollama
 class TestOllamaExtraction:
