@@ -300,7 +300,13 @@ class CognitiveMemory:
     ) -> None:
         self._config = config or default_config
         self._storage = storage or create_storage_context()
-        self._embeddings = embeddings or FastEmbedProvider()
+        self._embeddings = embeddings or FastEmbedProvider(
+            model_name=str(
+                self._config.get("embedding.model", "nomic-ai/nomic-embed-text-v1.5")
+            ),
+            dimensions=self._config.embedding_dimensions,
+            cache_dir=str(self._config.get("embedding.cache_dir", "") or "") or None,
+        )
         self._extractor = extractor
         self._buffer = WorkingMemory(self._config.working_memory_capacity)
         self._connected = False

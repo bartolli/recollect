@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from pathlib import Path
 from typing import Any, Literal
 
 from recollect.exceptions import EmbeddingError
@@ -29,10 +30,23 @@ class FastEmbedProvider:
         self,
         model_name: str = "nomic-ai/nomic-embed-text-v1.5",
         dimensions: int = 768,
+        cache_dir: str | None = None,
     ) -> None:
         self._model_name = model_name
         self._dimensions = dimensions
+        self._cache_dir = self._resolve_cache_dir(cache_dir)
         self._model: Any = None
+
+    @staticmethod
+    def _resolve_cache_dir(cache_dir: str | None) -> str:
+        # Override fastembed's tempdir default; macOS purges /tmp, stranding ONNX blobs.
+        path = (
+            Path(cache_dir).expanduser()
+            if cache_dir
+            else Path.home() / ".cache" / "recollect" / "fastembed"
+        )
+        path.mkdir(parents=True, exist_ok=True)
+        return str(path)
 
     @property
     def dimensions(self) -> int:
@@ -47,7 +61,10 @@ class FastEmbedProvider:
             try:
                 from fastembed import TextEmbedding
 
-                self._model = TextEmbedding(model_name=self._model_name)
+                self._model = TextEmbedding(
+                    model_name=self._model_name,
+                    cache_dir=self._cache_dir,
+                )
             except (ImportError, OSError, RuntimeError, ValueError) as exc:
                 raise EmbeddingError(
                     f"Failed to load embedding model '{self._model_name}': {exc}"
