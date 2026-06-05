@@ -149,17 +149,18 @@ _FAST_TRACK_CATEGORIES: frozenset[str] = frozenset(
     }
 )
 
-# Generous domain -> safety-category gate for write-time fact surfacing. Recall-
-# optimized: borderline domains over-trigger (the client LLM discards), absorbing
-# extraction mis-tags. Domains absent here (social/finance/general) surface no
-# safety fact. No domain maps to `constraint` -- constraint facts have no
-# write-time domain trigger by design.
+# Write-time safety surfacing is recall-maximal by the design asymmetry: an extra
+# ignored line of context costs nothing, a silent safety miss costs the feature.
+# Every safety-relevant domain surfaces ALL safety categories; the runtime LLM
+# does the per-write discard. Domains absent here (social/finance/general) surface
+# no safety fact. The map keeps per-domain shape so narrowing a domain to a subset
+# is a measured follow-up, not a refactor.
 _DOMAIN_SAFETY_MAP: dict[str, frozenset[str]] = {
-    "food": frozenset({"dietary", "health"}),
-    "medication": frozenset({"health", "dietary"}),
-    "travel": frozenset({"health", "dietary"}),
-    "exercise": frozenset({"health"}),
-    "environment": frozenset({"health"}),
+    "food": _FAST_TRACK_CATEGORIES,
+    "travel": _FAST_TRACK_CATEGORIES,
+    "medication": _FAST_TRACK_CATEGORIES,
+    "exercise": _FAST_TRACK_CATEGORIES,
+    "environment": _FAST_TRACK_CATEGORIES,
 }
 
 

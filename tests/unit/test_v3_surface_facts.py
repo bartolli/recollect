@@ -66,6 +66,23 @@ class TestSurfaceRelevantFacts:
         surfaced = await mem.surface_relevant_facts(_trace(["travel"]))
         assert [f.id for f in surfaced] == [fact.id]
 
+    async def test_all_safety_categories_surface_on_safety_domain(
+        self,
+        mock_storage: MagicMock,
+        mock_embeddings: AsyncMock,
+        mock_fact_store: AsyncMock,
+    ) -> None:
+        # Recall-maximal contract: a safety-relevant domain surfaces every safety
+        # category, not a subset (exercise was health-only; constraint had none).
+        mock_fact_store.get_persona_facts.return_value = [
+            _safety_fact("health"),
+            _safety_fact("dietary", obj="gluten"),
+            _safety_fact("constraint", obj="no night shifts"),
+        ]
+        mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
+        surfaced = await mem.surface_relevant_facts(_trace(["exercise"]))
+        assert {f.category for f in surfaced} == {"health", "dietary", "constraint"}
+
     async def test_non_safety_fact_not_surfaced(
         self,
         mock_storage: MagicMock,
