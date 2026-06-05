@@ -35,6 +35,7 @@ from recollect_mcp.server import (
 def mock_memory() -> AsyncMock:
     memory = AsyncMock()
     memory.experience.return_value = MemoryTrace(content="test")
+    memory.surface_relevant_facts.return_value = []
     memory.think_about.return_value = [
         Thought(
             trace=MemoryTrace(content="recalled"),
@@ -105,6 +106,34 @@ async def test_remember_with_context(
     assert isinstance(result, str)
     assert "Remembered" in result
     assert mock_memory.experience.call_args.kwargs["context"] == meta
+
+
+async def test_remember_surfaces_important_context(
+    ctx: MagicMock,
+    mock_memory: AsyncMock,
+) -> None:
+    mock_memory.surface_relevant_facts.return_value = [
+        PersonaFact(
+            subject="Alex",
+            predicate="is_allergic_to",
+            object="peanuts",
+            content="Alex is allergic to peanuts",
+            status="pinned",
+        )
+    ]
+    result = await remember("booking dinner at an Asian restaurant", ctx)
+    assert "IMPORTANT CONTEXT:" in result
+    assert "peanuts" in result
+    surfaced_trace = mock_memory.surface_relevant_facts.call_args.args[0]
+    assert surfaced_trace is mock_memory.experience.return_value
+
+
+async def test_remember_no_context_block_when_empty(
+    ctx: MagicMock,
+    mock_memory: AsyncMock,
+) -> None:
+    result = await remember("fixed the parser bug", ctx)
+    assert "IMPORTANT CONTEXT" not in result
 
 
 async def test_recall(ctx: MagicMock, mock_memory: AsyncMock) -> None:

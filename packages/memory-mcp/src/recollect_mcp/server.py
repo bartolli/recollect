@@ -262,7 +262,10 @@ async def remember(
             session_id=session_id,
             user_id=app.user_id or None,
         )
-        return _format_remember_result(trace)
+        surfaced = await app.memory.surface_relevant_facts(
+            trace, user_id=app.user_id or None
+        )
+        return _format_remember_result(trace, surfaced)
     except ExtractionError as exc:
         logger.exception("Extraction failed for remember")
         return f"Extraction failed: {exc}"
@@ -403,11 +406,14 @@ async def forget(
         return f"Failed to forget trace {trace_id}: {exc}"
 
 
-def _format_remember_result(trace: MemoryTrace) -> str:
+def _format_remember_result(
+    trace: MemoryTrace, surfaced_facts: list[PersonaFact] | None = None
+) -> str:
     """Format a stored trace as a compact confirmation.
 
     Returns the full trace ID so pin/forget can reference it.
     Previous short-ID format (8 chars) broke downstream lookups.
+    Write-time surfaced persona facts follow as an IMPORTANT CONTEXT block.
     """
     entities = trace.pattern.get("entities", [])
     concepts = trace.pattern.get("concepts", [])
@@ -420,7 +426,12 @@ def _format_remember_result(trace: MemoryTrace) -> str:
     else:
         parts.append(", extraction degraded")
     parts.append(")")
-    return "".join(parts)
+    confirmation = "".join(parts)
+    if not surfaced_facts:
+        return confirmation
+    block = ["IMPORTANT CONTEXT:"]
+    block.extend(_format_single_fact(f) for f in surfaced_facts)
+    return f"{confirmation}\n\n" + "\n".join(block)
 
 
 def _format_thoughts(thoughts: list[Thought]) -> str:

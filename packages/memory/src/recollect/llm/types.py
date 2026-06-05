@@ -47,6 +47,17 @@ Predicate = Literal[
     "is_associated_with",
 ]
 
+Domain = Literal[
+    "food",
+    "travel",
+    "medication",
+    "exercise",
+    "environment",
+    "social",
+    "finance",
+    "general",
+]
+
 
 class Message(BaseModel):
     """A message in a conversation with an LLM."""
@@ -98,6 +109,7 @@ class ExtractionResult(BaseModel):
     emotional_valence: float = Field(default=0.0, ge=-1.0, le=1.0)
     significance: float = Field(default=0.1, ge=0.0, le=1.0)
     fact_type: Literal["episodic", "semantic"] = "episodic"
+    domains: list[Domain] = Field(default_factory=list)
 
     @field_validator("fact_type", mode="before")
     @classmethod

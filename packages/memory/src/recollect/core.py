@@ -149,6 +149,19 @@ _FAST_TRACK_CATEGORIES: frozenset[str] = frozenset(
     }
 )
 
+# Generous domain -> safety-category gate for write-time fact surfacing. Recall-
+# optimized: borderline domains over-trigger (the client LLM discards), absorbing
+# extraction mis-tags. Domains absent here (social/finance/general) surface no
+# safety fact. No domain maps to `constraint` -- constraint facts have no
+# write-time domain trigger by design.
+_DOMAIN_SAFETY_MAP: dict[str, frozenset[str]] = {
+    "food": frozenset({"dietary", "health"}),
+    "medication": frozenset({"health", "dietary"}),
+    "travel": frozenset({"health", "dietary"}),
+    "exercise": frozenset({"health"}),
+    "environment": frozenset({"health"}),
+}
+
 
 def _should_fast_track(category: str, confidence: float) -> bool:
     """Check if a fact should skip candidate stage.
@@ -1894,6 +1907,60 @@ class CognitiveMemory:
         except (StorageError, OSError):
             logger.exception("Entity matching failed for query")
             return []
+
+    async def surface_relevant_facts(
+        self,
+        trace: MemoryTrace,
+        *,
+        user_id: str | None = None,
+    ) -> list[PersonaFact]:
+        """Persona facts relevant to a just-written trace, for write-time return.
+
+        Read-only: surfacing is not mentioning, so no mention_count or recency
+        write. Safety facts (health/dietary/constraint) surface by domain-gating
+        the trace's extracted domains against `_DOMAIN_SAFETY_MAP` -- no cosine.
+        Non-safety facts surface by semantic/entity relevance above
+        `persona.surface_relevance_floor`, capped at `persona.max_surfaced_facts`.
+        Safety facts are listed first.
+        """
+        safety = await self._surface_safety_facts(trace, user_id=user_id)
+        non_safety = await self._surface_non_safety_facts(trace, user_id=user_id)
+        return self._deduplicate_facts(safety + non_safety)
+
+    async def _surface_safety_facts(
+        self, trace: MemoryTrace, *, user_id: str | None
+    ) -> list[PersonaFact]:
+        safety_categories: set[str] = set()
+        for domain in trace.pattern.get("domains", []):
+            safety_categories |= _DOMAIN_SAFETY_MAP.get(domain, frozenset())
+        if not safety_categories:
+            return []
+        facts = await self._storage.facts.get_persona_facts(user_id=user_id)
+        return [
+            f
+            for f in facts
+            if f.status in ("promoted", "pinned")
+            and f.category in _FAST_TRACK_CATEGORIES
+            and f.category in safety_categories
+        ]
+
+    async def _surface_non_safety_facts(
+        self, trace: MemoryTrace, *, user_id: str | None
+    ) -> list[PersonaFact]:
+        if not trace.content or not trace.embedding:
+            return []
+        floor = float(self._config.get("persona.surface_relevance_floor", 0.4))
+        cap = int(self._config.get("persona.max_surfaced_facts", 3))
+        facts, scores = await self._find_relevant_persona_facts(
+            trace.content, trace.embedding, user_id=user_id
+        )
+        relevant = [
+            f
+            for f in facts
+            if f.category not in _FAST_TRACK_CATEGORIES
+            and scores.get(f.id, 0.0) >= floor
+        ]
+        return relevant[:cap]
 
     async def _find_relevant_persona_facts(
         self,

@@ -1,4 +1,4 @@
-# version: 1.1.0
+# version: 1.2.0
 # applies-to: extraction-template
 # placeholders: max_concepts, max_relations
 
@@ -48,6 +48,9 @@ A generic phrase (`venue selection`, `medication management`) pulls a diffuse ne
 | emotional_valence | see Step 2 tier table |
 | significance | see Step 1 tier table |
 | fact_type | **episodic memory** (Tulving): single dated event; **semantic memory**: enduring fact, preference, identity, condition |
+| domains | real-world activity areas this experience concerns, by world knowledge about what the named things ARE — not surface keywords (`banh mi` → `food`; `pilates` → `exercise`); closed `Domain` enum; recall discipline below |
+
+`domains` is recall-biased and multi-valued: tag every area that plausibly applies. A meal shared with another person is BOTH `food` and `social` — never `social` alone; an outdoor hike is BOTH `exercise` and `environment`. Reserve `general` for genuinely topic-less content — the routine tier of Step 1 (small talk, status updates, mundane logistics) — never as a stand-in for a specific domain that fits. A miss here fails silently downstream, so over-tag rather than under-tag.
 
 ### Relation fields
 

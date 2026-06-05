@@ -82,6 +82,7 @@ class TestExperience:
             "emotional_valence": 0.0,
             "significance": 0.1,
             "fact_type": "episodic",
+            "domains": [],
         }
 
 
