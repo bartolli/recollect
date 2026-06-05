@@ -63,6 +63,25 @@ class TestDomainTagging:
         # silently lost if the model reads it as a purely social event.
         assert "food" in await _domains(extractor, text)
 
+    @pytest.mark.parametrize(
+        "text", ["booking a dental cleaning appointment", "scheduling a doctor visit"]
+    )
+    async def test_clinical_context_tags_medical(
+        self, extractor: PatternExtractor, text: str
+    ) -> None:
+        # Clinical contexts must tag `medical` so safety facts surface on care
+        # writes (the warfarin-before-dental case). Taught as a class, not by
+        # these instances.
+        assert "medical" in await _domains(extractor, text)
+
+    async def test_condition_tags_food_and_medical(
+        self, extractor: PatternExtractor
+    ) -> None:
+        # A standing condition carries `medical` alongside its everyday area --
+        # genuine inference (the prompt names "ongoing conditions", not allergies).
+        tags = await _domains(extractor, "I'm allergic to peanuts")
+        assert {"food", "medical"} <= tags
+
     async def test_non_food_write_omits_food(
         self, extractor: PatternExtractor
     ) -> None:

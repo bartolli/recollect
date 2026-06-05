@@ -17,6 +17,7 @@ from recollect.config import config as default_config
 from recollect.datetime_utils import memory_timestamp_for_comparison, now_utc
 from recollect.embeddings import FastEmbedProvider
 from recollect.exceptions import (
+    EmbeddingError,
     ExtractionError,
     PromptValidationError,
     SessionNotFoundError,
@@ -159,6 +160,7 @@ _DOMAIN_SAFETY_MAP: dict[str, frozenset[str]] = {
     "food": _FAST_TRACK_CATEGORIES,
     "travel": _FAST_TRACK_CATEGORIES,
     "medication": _FAST_TRACK_CATEGORIES,
+    "medical": _FAST_TRACK_CATEGORIES,
     "exercise": _FAST_TRACK_CATEGORIES,
     "environment": _FAST_TRACK_CATEGORIES,
 }
@@ -752,6 +754,7 @@ class CognitiveMemory:
             object=trace.content or "",
             content=trace.content or "",
             source_trace_id=trace_id,
+            user_id=trace.user_id,
             confidence=1.0,
             status="pinned",
         )
@@ -1131,6 +1134,7 @@ class CognitiveMemory:
                 category=category,
                 content=content,
                 source_trace_id=trace.id,
+                user_id=trace.user_id,
                 confidence=rel.confidence,
                 status=status,
                 scope=_category_to_scope(category),
@@ -1948,12 +1952,21 @@ class CognitiveMemory:
     async def _surface_non_safety_facts(
         self, trace: MemoryTrace, *, user_id: str | None
     ) -> list[PersonaFact]:
-        if not trace.content or not trace.embedding:
+        if not trace.content:
             return []
-        floor = float(self._config.get("persona.surface_relevance_floor", 0.4))
+        floor = float(self._config.get("persona.surface_relevance_floor", 0.5))
         cap = int(self._config.get("persona.max_surfaced_facts", 3))
+        # nomic retrieval is asymmetric: the trace is the QUERY here, so embed it
+        # search_query. Reusing trace.embedding (search_document, write-side) is
+        # the wrong mode and inflates the baseline against search_document facts.
+        try:
+            query_embedding = await self._embeddings.generate_embedding(
+                trace.content, task="search_query"
+            )
+        except EmbeddingError:
+            return []
         facts, scores = await self._find_relevant_persona_facts(
-            trace.content, trace.embedding, user_id=user_id
+            trace.content, query_embedding, user_id=user_id
         )
         relevant = [
             f

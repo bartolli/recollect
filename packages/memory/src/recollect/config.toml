@@ -62,7 +62,7 @@ predicate_similarity_threshold = 0.8  # Embedding similarity for predicate synon
 ranking_strategy = "hybrid"  # pinned | relevance | hybrid
 max_facts_per_query = 5
 similarity_threshold = 0.3  # Minimum cosine similarity for fact retrieval
-surface_relevance_floor = 0.4  # Min blended score for non-safety write-time fact surfacing
+surface_relevance_floor = 0.5  # Min blended score for non-safety write-time fact surfacing (search_query mode)
 max_surfaced_facts = 3  # Cap on non-safety facts surfaced per write (safety facts uncapped)
 
 [decay]

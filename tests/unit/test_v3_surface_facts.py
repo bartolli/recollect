@@ -107,16 +107,17 @@ class TestSurfaceRelevantFacts:
         mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
         assert await mem.surface_relevant_facts(_trace(["food"])) == []
 
-    async def test_no_domains_skips_lookup(
+    async def test_safety_silent_without_domain(
         self,
         mock_storage: MagicMock,
         mock_embeddings: AsyncMock,
         mock_fact_store: AsyncMock,
     ) -> None:
+        # No safety domain -> the safety gate stays shut even though a safety
+        # fact exists (the non-safety path still runs but excludes safety cats).
         mock_fact_store.get_persona_facts.return_value = [_safety_fact("health")]
         mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
         assert await mem.surface_relevant_facts(_trace([])) == []
-        mock_fact_store.get_persona_facts.assert_not_awaited()
 
     async def test_is_read_only(
         self,

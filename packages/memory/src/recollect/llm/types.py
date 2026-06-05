@@ -51,6 +51,7 @@ Domain = Literal[
     "food",
     "travel",
     "medication",
+    "medical",
     "exercise",
     "environment",
     "social",

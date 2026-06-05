@@ -105,3 +105,20 @@ class TestNonSafetySurfacing:
         )
         surfaced = await mem.surface_relevant_facts(_emb_trace())
         assert [f.id for f in surfaced] == [p1.id]
+
+    async def test_query_embedded_as_search_query(
+        self,
+        mock_storage: MagicMock,
+        mock_embeddings: AsyncMock,
+        mock_fact_store: AsyncMock,
+    ) -> None:
+        # nomic asymmetric retrieval: the non-safety path embeds the trace as a
+        # query, not reuse its search_document write-side embedding.
+        mock_fact_store.search_facts_semantic.return_value = [(_pref(), 0.9)]
+        mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
+        await mem.surface_relevant_facts(_emb_trace())
+        tasks = [
+            c.kwargs.get("task")
+            for c in mock_embeddings.generate_embedding.call_args_list
+        ]
+        assert "search_query" in tasks
