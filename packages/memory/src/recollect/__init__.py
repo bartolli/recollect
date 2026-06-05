@@ -1,6 +1,6 @@
 """Memory -- Human-like memory for AI applications."""
 
-__version__ = "0.1.0"
+from importlib.metadata import PackageNotFoundError, version
 
 from recollect.core import CognitiveMemory
 from recollect.models import (
@@ -13,6 +13,11 @@ from recollect.models import (
     Thought,
 )
 from recollect.storage_context import StorageContext, create_storage_context
+
+try:
+    __version__ = version("recollect")
+except PackageNotFoundError:  # source-tree import before install
+    __version__ = "0.0.0"
 
 __all__ = [
     "Association",

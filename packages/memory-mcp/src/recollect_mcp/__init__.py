@@ -1,3 +1,8 @@
 """Memory MCP -- MCP server for Memory SDK."""
 
-__version__ = "0.3.1"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("recollect-mcp")
+except PackageNotFoundError:  # source-tree import before install
+    __version__ = "0.0.0"
