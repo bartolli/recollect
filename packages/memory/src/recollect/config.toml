@@ -124,6 +124,7 @@ write_time_threshold = 0.42     # Min cosine similarity to consider a trace as r
 strength_threshold = 0.1        # Min token strength to activate at query time
 reinforce_boost = 0.1           # Strength increment on token activation (capped at 1.0)
 decay_factor = 0.9              # Multiply inactive token strength by this during consolidation
+decay_inactivity_seconds = 1800 # Tokens activated within this window skip decay (consolidation interval)
 hop_decay = 0.85                # Signal attenuation per token hop in propagation
 propagation_blend = 0.50        # Weight of propagated signal in additive blend
 iter_max_rounds = 3             # Max re-seeding iterations (3 default, configurable for tuning)

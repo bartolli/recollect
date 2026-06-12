@@ -138,6 +138,7 @@ class MemoryConfig:
                 "assessment_user_prompt": "",
                 "assessment_max_tokens": 8192,
                 "assessment_template_path": "",
+                "decay_inactivity_seconds": 1800,
             },
         }
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 from typing import Literal, cast
 
 import asyncpg
@@ -339,17 +340,27 @@ class PgRecallTokenStore:
             raise StorageError(f"Failed to delete token stamps: {exc}") from exc
 
     async def decay_inactive(
-        self, decay_factor: float, *, min_strength: float = 0.01
+        self,
+        decay_factor: float,
+        *,
+        min_strength: float = 0.01,
+        inactive_before: datetime | None = None,
     ) -> int:
-        """Decay active token strengths and archive weak tokens."""
+        """Decay active token strengths and archive weak tokens.
+
+        inactive_before gates decay on last_activated_at: tokens
+        reinforced at or after the cutoff keep their strength. None
+        decays every active token (legacy behavior).
+        """
         try:
             pool = await self._pool_mgr.get_pool()
             async with pool.acquire() as conn, conn.transaction():
-                # Decay all active tokens
                 result = await conn.execute(
                     "UPDATE recall_tokens SET strength = strength * $1"
-                    " WHERE status = 'active'",
+                    " WHERE status = 'active'"
+                    " AND ($2::timestamptz IS NULL OR last_activated_at < $2)",
                     decay_factor,
+                    inactive_before,
                 )
                 # Archive tokens below threshold
                 await conn.execute(

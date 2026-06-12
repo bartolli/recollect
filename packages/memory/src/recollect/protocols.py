@@ -9,6 +9,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from recollect.models import (
         Association,
         ConceptEmbedding,
@@ -223,12 +225,17 @@ class RecallTokenStore(Protocol):
         ...
 
     async def decay_inactive(
-        self, decay_factor: float, *, min_strength: float = 0.01
+        self,
+        decay_factor: float,
+        *,
+        min_strength: float = 0.01,
+        inactive_before: datetime | None = None,
     ) -> int:
-        """Decay tokens not activated since last consolidation.
+        """Decay tokens not activated since the inactivity cutoff.
 
-        Multiplies strength by decay_factor for all tokens. Archives tokens
-        that fall below min_strength (sets status='archived'). Returns count
+        Multiplies strength by decay_factor for active tokens whose
+        last_activated_at predates inactive_before (None decays all).
+        Archives tokens that fall below min_strength. Returns count
         decayed.
         """
         ...

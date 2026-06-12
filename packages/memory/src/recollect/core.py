@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import math
+from datetime import timedelta
 from typing import Any, cast
 
 from pydantic import ValidationError
@@ -631,21 +632,30 @@ class CognitiveMemory:
         """Assemble final thoughts guaranteeing minimum trace slots.
 
         Pinned facts get priority but cannot consume more than
-        (max_total - min_traces) slots, preserving space for traces.
-        Remaining slots filled by relevance regardless of pin status.
+        (max_total - min_traces) slots. The reserved slots hold actual
+        memory traces -- persona-fact thoughts are facts regardless of
+        pin flag, so they never satisfy the trace guarantee.
+        Remaining slots filled by relevance regardless of kind.
         """
         pinned = sorted(
             [t for t in thoughts if t.pinned],
             key=lambda t: -t.relevance,
         )
-        unpinned = sorted(
-            [t for t in thoughts if not t.pinned],
+        traces_only = sorted(
+            [
+                t
+                for t in thoughts
+                if not t.pinned and not t.trace.pattern.get("persona_fact")
+            ],
             key=lambda t: -t.relevance,
         )
         max_pinned = max(0, max_total - min_traces)
-        selected = pinned[:max_pinned] + unpinned[:min_traces]
-        remaining = pinned[max_pinned:] + unpinned[min_traces:]
-        remaining.sort(key=lambda t: -t.relevance)
+        selected = pinned[:max_pinned] + traces_only[:min_traces]
+        chosen = {id(t) for t in selected}
+        remaining = sorted(
+            [t for t in thoughts if id(t) not in chosen],
+            key=lambda t: -t.relevance,
+        )
         selected += remaining[: max_total - len(selected)]
         selected.sort(key=lambda t: -t.relevance)
         return selected
@@ -680,9 +690,13 @@ class CognitiveMemory:
             decay_factor = float(
                 self._config.get("recall_tokens.decay_factor", 0.9)
             )
+            inactivity = float(
+                self._config.get("recall_tokens.decay_inactivity_seconds", 1800)
+            )
+            cutoff = now_utc() - timedelta(seconds=inactivity)
             try:
                 tokens_decayed = await self._storage.recall_tokens.decay_inactive(
-                    decay_factor
+                    decay_factor, inactive_before=cutoff
                 )
                 if tokens_decayed > 0:
                     logger.debug("Decayed %d recall tokens", tokens_decayed)
@@ -1950,7 +1964,10 @@ class CognitiveMemory:
                 )
             if token_bonuses and trace_id in token_bonuses:
                 score += token_bonuses[trace_id] * propagation_blend
-            score = min(score, 1.0)
+            # Lower clamp is load-bearing: _fetch_token_traces seeds raw
+            # cosine (negative for anti-correlated), and Thought.relevance
+            # declares ge=0 -- unclamped, one bad candidate fails the recall.
+            score = min(max(score, 0.0), 1.0)
             result.append((trace, score))
         result.sort(key=lambda x: x[1], reverse=True)
         return result
