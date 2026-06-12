@@ -6,7 +6,6 @@ from unittest.mock import AsyncMock, MagicMock
 
 from recollect.core import (
     CognitiveMemory,
-    _canonicalize_predicate,
     _find_contradicting_fact,
     _find_exact_duplicate,
     _should_fast_track,
@@ -41,15 +40,6 @@ class TestShouldFastTrack:
         assert _should_fast_track("general", 1.0) is False
 
 
-class TestCanonicalizePredicate:
-    def test_known_alias(self) -> None:
-        assert _canonicalize_predicate("started_at") == "works_at"
-        assert _canonicalize_predicate("employed_at") == "works_at"
-
-    def test_unknown_passes_through(self) -> None:
-        assert _canonicalize_predicate("custom_pred") == "custom_pred"
-
-
 class TestFindContradictingFact:
     def test_finds_contradiction(self) -> None:
         result = _find_contradicting_fact([_fact(obj="Acme")], _fact(obj="Google"))
@@ -65,12 +55,6 @@ class TestFindContradictingFact:
             is None
         )
 
-    def test_alias_matching(self) -> None:
-        result = _find_contradicting_fact(
-            [_fact(obj="Acme")], _fact(pred="started_at", obj="Google")
-        )
-        assert result is not None
-
 
 class TestFindExactDuplicate:
     def test_finds_exact_duplicate(self) -> None:
@@ -83,11 +67,6 @@ class TestFindExactDuplicate:
 
     def test_no_duplicate_different_predicate(self) -> None:
         assert _find_exact_duplicate([_fact()], _fact(pred="lives_in")) is None
-
-    def test_duplicate_alias_matching(self) -> None:
-        # employed_at canonicalizes to works_at
-        result = _find_exact_duplicate([_fact()], _fact(pred="employed_at"))
-        assert result is not None
 
 
 class TestPersonaFactExtraction:

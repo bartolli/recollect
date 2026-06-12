@@ -1,6 +1,6 @@
 """Tests for WorkingMemory buffer.
 
-Focus: capacity enforcement, displacement tracking, rehearsal mechanics.
+Focus: capacity enforcement, FIFO displacement, eviction.
 """
 
 from recollect.buffer import WorkingMemory
@@ -65,35 +65,17 @@ class TestAddAndDisplacement:
             wm.add(_trace(f"item-{i}"))
         assert len(wm) <= 5
 
+    def test_fifo_displaces_oldest_even_when_strongest(self) -> None:
+        """Displacement is recency-based; strength plays no role."""
+        wm = WorkingMemory(capacity=5)
+        strongest = MemoryTrace(content="strongest", strength=1.0)
+        wm.add(strongest)
+        for i in range(4):
+            wm.add(MemoryTrace(content=f"weak-{i}", strength=0.1))
 
-class TestRehearsal:
-    def test_rehearse_existing_item(self) -> None:
-        wm = WorkingMemory()
-        t = _trace("rehearse-me")
-        wm.add(t)
-        original_strength = t.strength
-        assert wm.rehearse(t) is True
-        # rehearse() uses model_copy, so the updated trace is in the buffer
-        active = wm.get_active()
-        updated = active[-1]  # rehearsed item moved to end
-        assert updated.strength > original_strength
-
-    def test_rehearse_moves_to_end(self) -> None:
-        wm = WorkingMemory()
-        first = _trace("first")
-        wm.add(first)
-        wm.add(_trace("second"))
-        wm.add(_trace("third"))
-        wm.rehearse(first)
-
-        # 'first' should now be last (most recent position)
-        active = wm.get_active()
-        assert active[-1].content == "first"
-
-    def test_rehearse_nonexistent_returns_false(self) -> None:
-        wm = WorkingMemory()
-        t = _trace("not-in-buffer")
-        assert wm.rehearse(t) is False
+        displaced = wm.add(MemoryTrace(content="overflow", strength=0.1))
+        assert displaced is not None
+        assert displaced.content == "strongest"
 
 
 class TestStats:
@@ -126,11 +108,3 @@ class TestEvict:
     def test_returns_false_when_absent(self) -> None:
         wm = WorkingMemory(capacity=5)
         assert wm.evict("nonexistent") is False
-
-    def test_clears_rehearsal_count(self) -> None:
-        wm = WorkingMemory(capacity=5)
-        t = _trace("a")
-        wm.add(t)
-        wm.rehearse(t)
-        wm.evict(t.id)
-        assert t.id not in wm._rehearsal_counts

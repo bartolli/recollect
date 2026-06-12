@@ -95,40 +95,6 @@ def _compute_decay_rate(
     return base_rate * sig_factor * emo_factor
 
 
-def _rrf_fuse(
-    ranked_lists: dict[str, list[str]],
-    k: int = 60,
-) -> dict[str, float]:
-    """Reciprocal Rank Fusion across multiple signal sources.
-
-    Each source provides a ranked list of trace IDs (best first).
-    Returns {trace_id: fused_score} ordered by score descending.
-    """
-    scores: dict[str, float] = {}
-    for source_ids in ranked_lists.values():
-        for rank, trace_id in enumerate(source_ids, start=1):
-            scores[trace_id] = scores.get(trace_id, 0.0) + 1.0 / (k + rank)
-    return scores
-
-
-_PREDICATE_ALIASES: dict[str, str] = {
-    "started_at": "works_at",
-    "employed_at": "works_at",
-    "joined": "works_at",
-    "has_allergy": "is_allergic_to",
-    "allergic_to": "is_allergic_to",
-    "likes": "prefers",
-    "enjoys": "prefers",
-    "lives_in": "located_in",
-    "moved_to": "located_in",
-}
-
-
-def _canonicalize_predicate(predicate: str) -> str:
-    """Normalize predicate to canonical form via alias lookup."""
-    return _PREDICATE_ALIASES.get(predicate, predicate)
-
-
 _SURFACING_RANK: dict[str, int] = {
     "archived": 0,
     "candidate": 0,
@@ -211,10 +177,8 @@ def _find_contradicting_fact(
     existing: list[PersonaFact], new_fact: PersonaFact
 ) -> PersonaFact | None:
     """Find existing fact with same subject+predicate but different object."""
-    canonical_new = _canonicalize_predicate(new_fact.predicate)
     for fact in existing:
-        canonical_existing = _canonicalize_predicate(fact.predicate)
-        if canonical_existing == canonical_new and fact.object != new_fact.object:
+        if fact.predicate == new_fact.predicate and fact.object != new_fact.object:
             return fact
     return None
 
@@ -223,10 +187,8 @@ def _find_exact_duplicate(
     existing: list[PersonaFact], new_fact: PersonaFact
 ) -> PersonaFact | None:
     """Find existing fact with same subject+predicate+object."""
-    canonical_new = _canonicalize_predicate(new_fact.predicate)
     for fact in existing:
-        canonical_existing = _canonicalize_predicate(fact.predicate)
-        if canonical_existing == canonical_new and fact.object == new_fact.object:
+        if fact.predicate == new_fact.predicate and fact.object == new_fact.object:
             return fact
     return None
 
@@ -1029,11 +991,15 @@ class CognitiveMemory:
             return
         previous = active[-2]
         weight = float(self._config.get("associations.temporal_weight", 0.5))
+        # forward/backward_strength drive the spreading-activation CTE;
+        # the weight column alone is never traversed.
         association = Association(
             source_trace_id=previous.id,
             target_trace_id=trace.id,
             association_type="temporal",
             weight=weight,
+            forward_strength=weight,
+            backward_strength=weight,
         )
         try:
             await self._storage.associations.store_association(association)
@@ -1217,7 +1183,7 @@ class CognitiveMemory:
             fact_embedding = None
         return PersonaFact(
             subject=rel.source,
-            predicate=_canonicalize_predicate(rel.relation),
+            predicate=rel.relation,
             object=rel.target,
             category=rel.category,
             content=content,
@@ -1608,9 +1574,10 @@ class CognitiveMemory:
         """Spread activation from top candidates."""
         activated: list[tuple[MemoryTrace, float]] = []
         seen_ids: set[str] = set()
+        max_depth = int(self._config.get("activation.max_spread_depth", 2))
         for candidate in candidates:
             spreads = await self._storage.vectors.spread_activation(
-                candidate.id, user_id=user_id
+                candidate.id, max_depth, user_id=user_id
             )
             for trace, level in spreads:
                 if trace.id not in seen_ids:
@@ -1982,7 +1949,7 @@ class CognitiveMemory:
         """Select top candidates that fit within token budget."""
         selected: list[tuple[MemoryTrace, float]] = []
         tokens_used = 0
-        max_retrievals = int(self._config.get("retrieval.max_retrievals", 3))
+        max_retrievals = int(self._config.get("retrieval.max_retrievals", 7))
 
         for trace, score in candidates:
             if len(selected) >= max_retrievals:

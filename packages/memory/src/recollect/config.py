@@ -1,6 +1,15 @@
 """Configuration management for Memory SDK.
 
-Uses TOML for human-readable config with sensible cognitive model defaults.
+Layered resolution, later layers deep-merge over earlier ones:
+
+1. Bootstrap floor (`_load_defaults`) -- only the keys the convenience
+   properties read without a fallback; survives a broken wheel.
+2. Packaged config.toml -- the canonical cognitive-parameter defaults;
+   always loads.
+3. First existing user TOML (constructor path > MEMORY_CONFIG > cwd
+   memory.toml) -- a partial override never drops packaged values.
+4. Env overrides (`_apply_env_overrides`).
+
 Supports dot-notation access (e.g., config.get('memory.decay_rate')).
 """
 
@@ -16,6 +25,10 @@ class MemoryConfig:
     def __init__(self, config_path: Path | None = None) -> None:
         self._config = self._load_defaults()
 
+        packaged = Path(__file__).parent / "config.toml"
+        if packaged.exists():
+            self._load_from_file(packaged)
+
         for path in self._get_config_paths(config_path):
             if path.exists():
                 self._load_from_file(path)
@@ -24,121 +37,38 @@ class MemoryConfig:
         self._apply_env_overrides()
 
     def _get_config_paths(self, custom_path: Path | None) -> list[Path]:
+        """User-supplied config candidates; first existing file wins.
+
+        The packaged config.toml is not a candidate -- it always loads
+        before this layer, so a user file overrides only the keys it sets.
+        """
         paths: list[Path] = []
         if custom_path:
             paths.append(custom_path)
         if env_path := os.getenv("MEMORY_CONFIG"):
             paths.append(Path(env_path))
         paths.append(Path.cwd() / "memory.toml")
-        paths.append(Path(__file__).parent / "config.toml")
         return paths
 
     def _load_defaults(self) -> dict[str, Any]:
+        """Bootstrap floor: only the key paths the convenience properties
+        read without a fallback. Cognitive-parameter defaults live in the
+        packaged config.toml, which always merges over this -- the drift
+        test pins every value here to its packaged twin.
+        """
         return {
             "database": {
                 "url": "postgresql://localhost:5432/memory_sdk",
             },
             "memory": {
-                "initial_strength": 0.3,
                 "consolidation_threshold": 0.5,
-                "decay_rate": 0.1,
             },
             "working_memory": {
                 "capacity": 7,
-                "min_capacity": 5,
-                "max_capacity": 9,
-            },
-            "activation": {
-                "activation_decay": 0.7,
-                "activation_threshold": 0.1,
-                "max_spread_depth": 2,
-                "spread_weight_factor": 0.1,
-            },
-            "retrieval": {
-                "activation_boost": 0.01,
-                "retrieval_boost": 0.1,
-                "wm_retrieval_boost": 0.2,
-                "max_retrievals": 3,
-                "selection_threshold": 0.3,
-                "search_limit": 10,
-                "spread_seed_count": 3,
-                "wm_similarity_threshold": 0.3,
-                "entity_similarity_threshold": 0.3,
-                "rrf_k": 60,
-            },
-            "strengthening": {
-                "rehearsal_factor": 1.05,
-                "max_strength": 1.0,
-                "consolidation_boost": 1.2,
-            },
-            "forgetting": {
-                "displacement_decay": 0.8,
-                "forget_decay": 0.5,
-                "grace_period_hours": 24,
-            },
-            "consolidation": {
-                "batch_size": 50,
-            },
-            "associations": {
-                "temporal_weight": 0.5,
-                "entity_weight": 0.7,
-                "concept_weight": 0.4,
-                "max_links_per_entity": 5,
-            },
-            "persona": {
-                "auto_extract": True,
-                "confidence_threshold": 0.6,
-                "predicate_similarity_threshold": 0.8,
-                "ranking_strategy": "hybrid",
-            },
-            "decay": {
-                "significance_reduction": 0.7,
-                "valence_reduction": 0.5,
-            },
-            "extraction": {
-                "pydantic_ai_model": "",
-                "max_tokens": 8192,
-                "max_retries": 5,
-                "max_concepts": 5,
-                "max_relations": 3,
-                "instructions": "",
-                "template_path": "",
-                "embed_relation_tags": False,
-                "model_settings": {},
             },
             "embedding": {
                 "model": "nomic-ai/nomic-embed-text-v1.5",
                 "dimensions": 768,
-                "cache_dir": "",
-            },
-            "server": {
-                "host": "localhost",
-                "port": 8000,
-                "user_id": "",
-            },
-            "session": {
-                "summary_strength": 0.8,
-                "summary_significance": 0.7,
-                "summary_decay_rate": 0.02,
-                "summary_max_tokens": 1024,
-            },
-            "recall_tokens": {
-                "enabled": True,
-                "write_time_top_k": 5,
-                "write_time_threshold": 0.42,
-                "strength_threshold": 0.1,
-                "reinforce_boost": 0.1,
-                "decay_factor": 0.9,
-                "hop_decay": 0.85,
-                "propagation_blend": 0.50,
-                "iter_max_rounds": 3,
-                "iter_stability_threshold": 0.95,
-                "iter_top_seeds": 3,
-                "assessment_system_prompt": "",
-                "assessment_user_prompt": "",
-                "assessment_max_tokens": 8192,
-                "assessment_template_path": "",
-                "decay_inactivity_seconds": 1800,
             },
         }
 
