@@ -1701,7 +1701,7 @@ class CognitiveMemory:
                 break
             prev_top_k = curr_top_k
 
-        # Reinforce activated tokens
+        # Reinforce contributing tokens only (contribution gate in _token_hop)
         await self._reinforce_activated_tokens(
             all_token_ids, reinforce_boost
         )
@@ -1720,7 +1720,12 @@ class CognitiveMemory:
     ) -> tuple[dict[str, float], set[str]]:
         """Single hop of token activation from seed traces.
 
-        Returns (propagated_sims, activated_token_ids).
+        Returns (propagated_sims, contributing_token_ids). A token is
+        credited only when one of its rows survives the exclusion filter
+        -- it propagated at least one new non-seed trace this hop. Hebbian
+        reinforcement rewards firing together, not sitting near seeds: a
+        token stamped only on seed traces yields zero hop rows by SQL
+        construction and earns nothing.
         """
         try:
             rows = await self._storage.recall_tokens.get_activated_trace_ids(
@@ -1734,24 +1739,23 @@ class CognitiveMemory:
         exclude = set(exclude_ids) if exclude_ids else set()
         exclude.update(seed_ids)
         propagated: dict[str, float] = {}
-        for trace_id, _label, tok_strength, tok_significance, anchor_id in rows:
+        contributing: set[str] = set()
+        for (
+            trace_id,
+            token_id,
+            _label,
+            tok_strength,
+            tok_significance,
+            anchor_id,
+        ) in rows:
             if trace_id in exclude:
                 continue
             anchor_sim = anchor_sims.get(anchor_id, 0.0)
             prop = anchor_sim * hop_decay * tok_strength * tok_significance
+            contributing.add(token_id)
             if prop > propagated.get(trace_id, 0.0):
                 propagated[trace_id] = prop
-        # Collect actual token IDs for reinforcement
-        actual_token_ids: set[str] = set()
-        try:
-            token_data = await self._storage.recall_tokens.get_tokens_for_traces(
-                seed_ids, strength_threshold=strength_threshold
-            )
-            for token, _stamped in token_data:
-                actual_token_ids.add(token.id)
-        except (StorageError, OSError):
-            logger.exception("Failed to collect token IDs for reinforcement")
-        return propagated, actual_token_ids
+        return propagated, contributing
 
     @staticmethod
     def _top_k_ids(sims: dict[str, float], k: int) -> list[str]:

@@ -8,7 +8,7 @@ import pytest
 from recollect.config import MemoryConfig
 from recollect.core import CognitiveMemory
 from recollect.llm.types import TokenAssessment
-from recollect.models import MemoryTrace, RecallToken
+from recollect.models import MemoryTrace
 
 _EMB_DIM = 768
 _RELATED = MemoryTrace(
@@ -150,10 +150,7 @@ class TestQueryTimeActivation:
     async def test_propagation_formula(self, mem, mock_storage):
         t1 = MemoryTrace(id="seed-1", content="test", embedding=_emb())
         mock_storage.recall_tokens.get_activated_trace_ids.return_value = [
-            ("activated-1", "mother-sarah", 0.8, 0.5, "seed-1"),
-        ]
-        mock_storage.recall_tokens.get_tokens_for_traces.return_value = [
-            (RecallToken(id="tok-1", label="mother-sarah"), "seed-1"),
+            ("activated-1", "tok-1", "mother-sarah", 0.8, 0.5, "seed-1"),
         ]
         result = await mem._activate_recall_tokens(_emb(), [(t1, 0.6)])
         assert "activated-1" in result

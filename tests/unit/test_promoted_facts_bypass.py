@@ -81,7 +81,6 @@ class TestPromotedFactsBypass:
 
         # Recall tokens inactive
         mock_recall_token_store.get_activated_trace_ids.return_value = []
-        mock_recall_token_store.get_tokens_for_traces.return_value = []
 
         mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
         thoughts = await mem.think_about("Friday dinner plans at Siam Kitchen")
@@ -121,7 +120,6 @@ class TestPromotedFactsBypass:
         mock_entity_index.match_entities.return_value = []
         mock_concept_embedding_store.get_max_sim_per_owner.return_value = {}
         mock_recall_token_store.get_activated_trace_ids.return_value = []
-        mock_recall_token_store.get_tokens_for_traces.return_value = []
 
         mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
         thoughts = await mem.think_about("Friday dinner plans at Siam Kitchen")

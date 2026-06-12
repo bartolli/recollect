@@ -167,15 +167,17 @@ class PgRecallTokenStore:
         *,
         strength_threshold: float = 0.1,
         user_id: str | None = None,
-    ) -> list[tuple[str, str, float, float, str]]:
+    ) -> list[tuple[str, str, str, float, float, str]]:
         """One-hop token activation from seed traces.
 
-        Returns (trace_id, token_label, token_strength, token_significance,
-        anchor_trace_id) for traces linked via shared tokens but NOT in
-        the seed set. anchor_trace_id is the seed trace that carried the
-        token into the result set. user_id restricts hop targets to that
-        user's traces -- a token stamped across users never bridges them.
-        None means no filter.
+        Returns (trace_id, token_id, token_label, token_strength,
+        token_significance, anchor_trace_id) for traces linked via shared
+        tokens but NOT in the seed set -- a token stamped only on seeds
+        yields zero rows, which is what gates Hebbian reinforcement on
+        propagation contribution. anchor_trace_id is the seed trace that
+        carried the token into the result set. user_id restricts hop
+        targets to that user's traces -- a token stamped across users
+        never bridges them. None means no filter.
         """
         if not seed_trace_ids:
             return []
@@ -206,6 +208,7 @@ class PgRecallTokenStore:
             return [
                 (
                     str(row["trace_id"]),
+                    str(row["token_id"]),
                     str(row["label"]),
                     float(row["strength"]),
                     float(row["significance"]),
@@ -290,38 +293,6 @@ class PgRecallTokenStore:
             logger.exception("Failed to reinforce tokens")
             raise StorageError(f"Failed to reinforce tokens: {exc}") from exc
 
-    async def get_tokens_for_traces(
-        self, trace_ids: list[str], *, strength_threshold: float = 0.1
-    ) -> list[tuple[RecallToken, list[str]]]:
-        """Find active tokens linked to any of the given traces."""
-        if not trace_ids:
-            return []
-        try:
-            pool = await self._pool_mgr.get_pool()
-            async with pool.acquire() as conn:
-                rows = await conn.fetch(
-                    """
-                    SELECT rt.id, rt.label, rt.strength, rt.significance,
-                           rt.created_at, rt.last_activated_at,
-                           array_agg(ts.trace_id) AS stamped_traces
-                    FROM recall_tokens rt
-                    JOIN token_stamps ts ON ts.token_id = rt.id
-                    WHERE ts.trace_id = ANY($1::text[])
-                    AND rt.strength > $2
-                    AND rt.status = 'active'
-                    GROUP BY rt.id
-                    ORDER BY rt.strength DESC
-                    """,
-                    trace_ids,
-                    strength_threshold,
-                )
-            return [_row_to_token_with_traces(row) for row in rows]
-        except StorageError:
-            raise
-        except asyncpg.PostgresError as exc:
-            logger.exception("Failed to get tokens for traces")
-            raise StorageError(f"Failed to get tokens for traces: {exc}") from exc
-
     async def delete_by_trace(self, trace_id: str) -> int:
         """Remove all token stamps for a trace. Returns count removed."""
         try:
@@ -374,19 +345,3 @@ class PgRecallTokenStore:
         except asyncpg.PostgresError as exc:
             logger.exception("Failed to decay recall tokens")
             raise StorageError(f"Failed to decay recall tokens: {exc}") from exc
-
-
-def _row_to_token_with_traces(
-    row: asyncpg.Record,
-) -> tuple[RecallToken, list[str]]:
-    """Convert a database row to (RecallToken, stamped_trace_ids) pair."""
-    token = RecallToken(
-        id=str(row["id"]),
-        label=str(row["label"]),
-        strength=float(row["strength"]),
-        significance=float(row["significance"]),
-        created_at=row["created_at"],
-        last_activated_at=row["last_activated_at"],
-    )
-    stamped = [str(tid) for tid in row["stamped_traces"]]
-    return (token, stamped)

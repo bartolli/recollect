@@ -112,7 +112,6 @@ def mock_recall_token_store() -> AsyncMock:
     rt.get_activated_trace_ids = AsyncMock(return_value=[])
     rt.find_token_by_traces = AsyncMock(return_value=None)
     rt.reinforce_tokens = AsyncMock()
-    rt.get_tokens_for_traces = AsyncMock(return_value=[])
     rt.delete_by_trace = AsyncMock(return_value=0)
     rt.decay_inactive = AsyncMock(return_value=0)
     return rt

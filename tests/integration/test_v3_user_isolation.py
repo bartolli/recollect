@@ -167,7 +167,7 @@ class TestTokenHopIsolation:
         rows = await two_user.reader.storage.recall_tokens.get_activated_trace_ids(
             [two_user.a1.id], user_id="user-a"
         )
-        ids = {trace_id for trace_id, _, _, _, _ in rows}
+        ids = {trace_id for trace_id, _, _, _, _, _ in rows}
         assert two_user.b1.id not in ids
 
     async def test_no_user_id_hops_across_users(
@@ -176,7 +176,7 @@ class TestTokenHopIsolation:
         rows = await two_user.reader.storage.recall_tokens.get_activated_trace_ids(
             [two_user.a1.id]
         )
-        ids = {trace_id for trace_id, _, _, _, _ in rows}
+        ids = {trace_id for trace_id, _, _, _, _, _ in rows}
         assert two_user.b1.id in ids
 
 

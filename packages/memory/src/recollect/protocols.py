@@ -180,28 +180,18 @@ class RecallTokenStore(Protocol):
         """
         ...
 
-    async def get_tokens_for_traces(
-        self, trace_ids: list[str], *, strength_threshold: float = 0.1
-    ) -> list[tuple[RecallToken, list[str]]]:
-        """Find active tokens linked to any of the given traces.
-
-        Returns (token, list_of_stamped_trace_ids) pairs for tokens
-        above the strength threshold.
-        """
-        ...
-
     async def get_activated_trace_ids(
         self,
         seed_trace_ids: list[str],
         *,
         strength_threshold: float = 0.1,
         user_id: str | None = None,
-    ) -> list[tuple[str, str, float, float, str]]:
+    ) -> list[tuple[str, str, str, float, float, str]]:
         """One-hop token activation from seed traces.
 
-        Returns (trace_id, token_label, token_strength, token_significance,
-        anchor_trace_id) for traces linked via shared tokens but NOT in
-        the seed set.
+        Returns (trace_id, token_id, token_label, token_strength,
+        token_significance, anchor_trace_id) for traces linked via shared
+        tokens but NOT in the seed set.
         """
         ...
 
