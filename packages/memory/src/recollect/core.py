@@ -52,10 +52,10 @@ from recollect.models import (
     TraceConcept,
     TraceEntity,
     _clamp_strength,
-    apply_activation_boost,
-    apply_displacement_decay,
-    apply_retrieval_boost,
+    activation_boost_factor,
     apply_time_decay,
+    displacement_decay_factor,
+    retrieval_boost_factor,
 )
 from recollect.prompts import LoadedPrompt, load_packaged_default, load_prompt_file
 from recollect.storage_context import StorageContext, create_storage_context
@@ -357,6 +357,14 @@ class CognitiveMemory:
         pool = await self._storage.pool.get_pool()
         stored = await get_embedding_contract(pool)
         verify_embedding_contract(stored=stored, current=self._embeddings.contract())
+        # Pre-load the ONNX model here so the first embed never runs the
+        # multi-second load synchronously on the event loop. Best-effort:
+        # an unavailable model keeps the lazy contract and surfaces its
+        # error at first use, exactly as before.
+        try:
+            await self._embeddings.warm()
+        except EmbeddingError:
+            logger.exception("Embedding pre-load failed; deferring to first use")
         self._connected = True
         logger.info("CognitiveMemory connected")
 
@@ -447,9 +455,8 @@ class CognitiveMemory:
 
         displaced = self._buffer.add(trace)
         if displaced is not None:
-            decayed = apply_displacement_decay(displaced)
-            await self._storage.traces.update_trace_strength(
-                displaced.id, decayed.strength
+            await self._storage.traces.apply_strength_factor(
+                displaced.id, displacement_decay_factor()
             )
 
         # Independent operations: temporal link + extraction links + concept embeddings
@@ -723,9 +730,10 @@ class CognitiveMemory:
         trace = await self._storage.traces.get_trace(trace_id)
         if trace is None:
             raise TraceNotFoundError(f"Trace {trace_id} not found")
-        new_strength = _clamp_strength(trace.strength * factor)
-        await self._storage.traces.update_trace_strength(trace_id, new_strength)
-        return trace.model_copy(update={"strength": new_strength})
+        await self._storage.traces.apply_strength_factor(trace_id, factor)
+        return trace.model_copy(
+            update={"strength": _clamp_strength(trace.strength * factor)}
+        )
 
     # -- Introspection --
 
@@ -1969,8 +1977,9 @@ class CognitiveMemory:
         thoughts: list[Thought] = []
         for trace, relevance in selected:
             in_wm = self._buffer.find(lambda t, _id=trace.id: t.id == _id) is not None
-            boosted = apply_retrieval_boost(trace, from_working_memory=in_wm)
-            await self._storage.traces.update_trace_strength(trace.id, boosted.strength)
+            await self._storage.traces.apply_strength_factor(
+                trace.id, retrieval_boost_factor(from_working_memory=in_wm)
+            )
             await self._storage.traces.mark_retrieved(trace.id)
 
             content = trace.content or str(trace.pattern)
@@ -1994,9 +2003,8 @@ class CognitiveMemory:
         selected_ids = {t.trace.id for t in thoughts}
         for trace, _ in all_candidates:
             if trace.id not in selected_ids:
-                boosted = apply_activation_boost(trace)
-                await self._storage.traces.update_trace_strength(
-                    trace.id, boosted.strength
+                await self._storage.traces.apply_strength_factor(
+                    trace.id, activation_boost_factor()
                 )
                 await self._storage.traces.mark_activated(trace.id)
 
@@ -2247,11 +2255,14 @@ class CognitiveMemory:
                 content = f"[IMPORTANT CONTEXT] {triple} -- {fact.content}"
             else:
                 content = f"[IMPORTANT CONTEXT] {triple}"
+            # Carry the fact's real timestamp -- a synthetic now() renders
+            # today's date on years-old facts at recall formatting.
             trace = MemoryTrace(
                 content=content,
                 pattern={"persona_fact": True, "category": fact.category},
                 strength=1.0,
                 significance=1.0,
+                created_at=fact.created_at,
             )
             if strategy == "pinned":
                 pinned = True
@@ -2297,8 +2308,14 @@ class CognitiveMemory:
 
         Returns 'consolidated', 'forgotten', or 'pending'.
         """
+        # Naive full-age factor: re-decays from creation each pass
+        # (compounding). Per-pass telescoping requires a decay-anchor
+        # column; the atomic factor shape here is anchor-agnostic.
+        decay_factor = (
+            decayed.strength / trace.strength if trace.strength > 0.0 else 0.0
+        )
         if decayed.strength >= threshold:
-            await self._storage.traces.update_trace_strength(trace.id, decayed.strength)
+            await self._storage.traces.apply_strength_factor(trace.id, decay_factor)
             await self._storage.traces.mark_consolidated(trace.id)
             return "consolidated"
 
@@ -2310,5 +2327,5 @@ class CognitiveMemory:
             await self._delete_trace_with_buffer_evict(trace.id)
             return "forgotten"
 
-        await self._storage.traces.update_trace_strength(trace.id, decayed.strength)
+        await self._storage.traces.apply_strength_factor(trace.id, decay_factor)
         return "pending"

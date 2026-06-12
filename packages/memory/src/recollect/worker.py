@@ -38,7 +38,7 @@ class ConsolidationWorker:
         """Start the consolidation loop. Safe to call multiple times."""
         if self.running:
             return
-        self._task = asyncio.get_event_loop().create_task(self._loop())
+        self._task = asyncio.get_running_loop().create_task(self._loop())
         logger.info("Consolidation worker started (interval=%.0fs)", self._interval)
 
     def stop(self) -> None:

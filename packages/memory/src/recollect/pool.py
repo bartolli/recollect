@@ -6,6 +6,7 @@ the PoolManager instance and use it to acquire connections.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 
 import asyncpg
@@ -103,7 +104,9 @@ CREATE TABLE IF NOT EXISTS persona_facts (
     scope TEXT DEFAULT 'general',
     context_tags TEXT[] DEFAULT '{}',
     embedding vector(768),
-    user_id TEXT
+    -- m002 twin: fresh DBs get the constraint here; m002's
+    -- backfill-then-constrain no-ops idempotently.
+    user_id TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS entity_relations (
@@ -211,23 +214,31 @@ class PoolManager:
     def __init__(self, database_url: str | None = None) -> None:
         self._database_url = database_url or config.database_url
         self._pool: asyncpg.Pool[asyncpg.Record] | None = None
+        self._pool_lock = asyncio.Lock()
 
     async def get_pool(self) -> asyncpg.Pool[asyncpg.Record]:
-        """Get the connection pool, creating the database if needed."""
+        """Get the connection pool, creating the database if needed.
+
+        Single-flight: concurrent first calls share one pool instead of
+        racing two create_pool calls and leaking one.
+        """
         if self._pool is not None:
             return self._pool
-        try:
-            self._pool = await asyncpg.create_pool(
-                self._database_url, min_size=2, max_size=10
-            )
-        except asyncpg.InvalidCatalogNameError:
-            await self._create_database()
-            self._pool = await asyncpg.create_pool(
-                self._database_url, min_size=2, max_size=10
-            )
-        except Exception as exc:
-            raise StorageError(f"Failed to create connection pool: {exc}") from exc
-        return self._pool
+        async with self._pool_lock:
+            if self._pool is not None:
+                return self._pool
+            try:
+                self._pool = await asyncpg.create_pool(
+                    self._database_url, min_size=2, max_size=10
+                )
+            except asyncpg.InvalidCatalogNameError:
+                await self._create_database()
+                self._pool = await asyncpg.create_pool(
+                    self._database_url, min_size=2, max_size=10
+                )
+            except Exception as exc:
+                raise StorageError(f"Failed to create connection pool: {exc}") from exc
+            return self._pool
 
     async def _create_database(self) -> None:
         """Create the database if it does not exist.

@@ -115,21 +115,28 @@ class PgTraceStore:
             logger.exception("Failed to delete trace")
             raise StorageError(f"Failed to delete trace {trace_id}: {exc}") from exc
 
-    async def update_trace_strength(self, trace_id: str, new_strength: float) -> None:
-        """Set a trace's strength to a specific value."""
+    async def apply_strength_factor(self, trace_id: str, factor: float) -> None:
+        """Multiply a trace's strength atomically, clamped to [0, 1].
+
+        Factor-based SQL is the race-free write shape: the multiplication
+        reads the current row value inside the statement, so concurrent
+        factors compose multiplicatively regardless of interleaving --
+        absolute writes from in-memory reads were last-writer-wins.
+        """
         try:
             pool = await self._pool_mgr.get_pool()
             async with pool.acquire() as conn:
                 await conn.execute(
-                    "UPDATE memory_traces SET strength = $1 WHERE id = $2",
-                    new_strength,
+                    "UPDATE memory_traces SET strength = "
+                    "LEAST(1.0, GREATEST(0.0, strength * $1)) WHERE id = $2",
+                    factor,
                     trace_id,
                 )
         except StorageError:
             raise
         except asyncpg.PostgresError as exc:
-            logger.exception("Failed to update trace strength")
-            raise StorageError(f"Failed to update trace strength: {exc}") from exc
+            logger.exception("Failed to apply strength factor")
+            raise StorageError(f"Failed to apply strength factor: {exc}") from exc
 
     async def mark_activated(self, trace_id: str) -> None:
         """Increment activation counter and update timestamp."""

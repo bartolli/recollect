@@ -50,9 +50,9 @@ class PostgresStorage:
         """Fetch multiple traces by ID."""
         return await self._ctx.traces.get_traces_bulk(trace_ids)
 
-    async def update_trace_strength(self, trace_id: str, new_strength: float) -> None:
-        """Set a trace's strength to a specific value."""
-        await self._ctx.traces.update_trace_strength(trace_id, new_strength)
+    async def apply_strength_factor(self, trace_id: str, factor: float) -> None:
+        """Multiply a trace's strength atomically, clamped to [0, 1]."""
+        await self._ctx.traces.apply_strength_factor(trace_id, factor)
 
     async def mark_activated(self, trace_id: str) -> None:
         """Increment activation counter and update timestamp."""

@@ -51,9 +51,9 @@ class TestExperience:
     ) -> None:
         for i in range(7):
             await mem.experience(f"Memory {i}", user_id="u1")
-        mock_trace_store.update_trace_strength.reset_mock()
+        mock_trace_store.apply_strength_factor.reset_mock()
         await mem.experience("Overflow", user_id="u1")
-        mock_trace_store.update_trace_strength.assert_awaited()
+        mock_trace_store.apply_strength_factor.assert_awaited()
 
     async def test_store_failure_leaves_working_memory_consistent(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
@@ -61,13 +61,13 @@ class TestExperience:
         for i in range(7):
             await mem.experience(f"Memory {i}", user_id="u1")
         mock_trace_store.store_trace.side_effect = StorageError("down")
-        mock_trace_store.update_trace_strength.reset_mock()
+        mock_trace_store.apply_strength_factor.reset_mock()
         with pytest.raises(StorageError):
             await mem.experience("Doomed", user_id="u1")
         contents = [t.content for t in mem.active_traces()]
         assert "Doomed" not in contents
         assert len(contents) == 7
-        mock_trace_store.update_trace_strength.assert_not_awaited()
+        mock_trace_store.apply_strength_factor.assert_not_awaited()
 
     async def test_temporal_association(
         self, mem: CognitiveMemory, mock_association_store: AsyncMock

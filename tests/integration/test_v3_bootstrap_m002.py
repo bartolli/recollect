@@ -75,6 +75,14 @@ def _registry_with_m002(default_uid: str) -> MigrationRegistry:
     return r
 
 
+async def _make_legacy_nullable(conn: asyncpg.Connection[asyncpg.Record]) -> None:
+    # Pre-m002 DBs were created with nullable user_id; current SCHEMA_SQL
+    # ships the constraint, so legacy shape must be recreated explicitly.
+    await conn.execute(
+        "ALTER TABLE persona_facts ALTER COLUMN user_id DROP NOT NULL"
+    )
+
+
 async def _insert_null_fact(conn: asyncpg.Connection[asyncpg.Record]) -> None:
     await conn.execute(
         """
@@ -94,6 +102,7 @@ class TestM002Backfill:
         m001_only.register(m001_initial)
         await apply(scratch_pool, m001_only)
         async with scratch_pool.acquire() as conn:
+            await _make_legacy_nullable(conn)
             await _insert_null_fact(conn)
             await _insert_null_fact(conn)
             await _insert_null_fact(conn)
@@ -127,6 +136,7 @@ class TestM002Backfill:
         m001_only.register(m001_initial)
         await apply(scratch_pool, m001_only)
         async with scratch_pool.acquire() as conn:
+            await _make_legacy_nullable(conn)
             await _insert_null_fact(conn)
 
         with pytest.raises(BootstrapError, match="user_id"):

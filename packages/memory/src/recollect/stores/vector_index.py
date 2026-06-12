@@ -44,6 +44,7 @@ class PgVectorIndex:
                     SELECT *, embedding <=> $1::vector AS distance
                     FROM memory_traces
                     WHERE strength >= $2
+                      AND embedding IS NOT NULL
                       AND ($4::text IS NULL OR session_id = $4)
                       AND ($5::text IS NULL OR user_id = $5)
                     ORDER BY distance ASC

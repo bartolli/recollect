@@ -96,7 +96,6 @@ async def app_lifespan(
         extractor=extractor,
     )
     await memory.connect()
-    await memory._embeddings.warm()  # pre-load ONNX model at startup
     worker = ConsolidationWorker(memory)
     worker.start()
     user_id = config.server_user_id

@@ -73,7 +73,7 @@ async def _seed_fact(
     *,
     obj: str,
     status: FactStatus,
-    predicate: str = "located_in",
+    predicate: str = "lives_in",
 ) -> PersonaFact:
     fact = PersonaFact(
         subject="user",
@@ -100,7 +100,7 @@ def _wire_extraction(extractor: AsyncMock, relation: Relation) -> None:
 
 _BERLIN = Relation(
     source="user",
-    relation="lives_in",  # canonicalizes to located_in at fact-write
+    relation="lives_in",  # enum-canonical; persists raw (alias map deleted)
     target="Berlin",
     confidence=0.9,
     category="identity",

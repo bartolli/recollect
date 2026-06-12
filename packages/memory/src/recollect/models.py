@@ -223,8 +223,10 @@ class HealthStatus(BaseModel):
 
 
 # -- Strength functions --
-# These are pure functions that return new MemoryTrace instances.
-# All multipliers come from the cognitive model parameters.
+# Pure functions return new MemoryTrace instances for in-memory shaping;
+# the factor helpers are the single source persistence consumes -- the DB
+# applies factors atomically (strength * factor in SQL), never absolute
+# values computed from in-memory reads.
 
 
 def _clamp_strength(value: float) -> float:
@@ -232,11 +234,24 @@ def _clamp_strength(value: float) -> float:
     return max(0.0, min(max_strength, value))
 
 
+def activation_boost_factor() -> float:
+    return 1.0 + float(config.get("retrieval.activation_boost", 0.01))
+
+
+def retrieval_boost_factor(*, from_working_memory: bool = False) -> float:
+    if from_working_memory:
+        return 1.0 + float(config.get("retrieval.wm_retrieval_boost", 0.2))
+    return 1.0 + float(config.get("retrieval.retrieval_boost", 0.1))
+
+
+def displacement_decay_factor() -> float:
+    return float(config.get("forgetting.displacement_decay", 0.8))
+
+
 def apply_activation_boost(trace: MemoryTrace) -> MemoryTrace:
     """Apply small boost for spreading activation (x1.01 default)."""
-    factor = 1.0 + float(config.get("retrieval.activation_boost", 0.01))
     return trace.model_copy(
-        update={"strength": _clamp_strength(trace.strength * factor)}
+        update={"strength": _clamp_strength(trace.strength * activation_boost_factor())}
     )
 
 
@@ -248,10 +263,7 @@ def apply_retrieval_boost(
     Working memory retrieval gets a stronger boost (x1.2) than
     long-term retrieval (x1.1).
     """
-    if from_working_memory:
-        factor = 1.0 + float(config.get("retrieval.wm_retrieval_boost", 0.2))
-    else:
-        factor = 1.0 + float(config.get("retrieval.retrieval_boost", 0.1))
+    factor = retrieval_boost_factor(from_working_memory=from_working_memory)
     return trace.model_copy(
         update={"strength": _clamp_strength(trace.strength * factor)}
     )
@@ -259,7 +271,7 @@ def apply_retrieval_boost(
 
 def apply_displacement_decay(trace: MemoryTrace) -> MemoryTrace:
     """Apply decay when pushed out of working memory (x0.8 default)."""
-    factor = float(config.get("forgetting.displacement_decay", 0.8))
+    factor = displacement_decay_factor()
     return trace.model_copy(
         update={"strength": _clamp_strength(trace.strength * factor)}
     )
