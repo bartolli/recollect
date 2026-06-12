@@ -16,6 +16,9 @@ from recollect.bootstrap.migrations.m002_user_id_backfill import (
 from recollect.bootstrap.migrations.m003_embedding_contract import (
     m003_embedding_contract,
 )
+from recollect.bootstrap.migrations.m004_fact_orphan_cleanup import (
+    m004_fact_orphan_cleanup,
+)
 
 
 def default_registry() -> MigrationRegistry:
@@ -23,6 +26,7 @@ def default_registry() -> MigrationRegistry:
     registry.register(m001_initial)
     registry.register(m002_user_id_backfill)
     registry.register(m003_embedding_contract)
+    registry.register(m004_fact_orphan_cleanup)
     return registry
 
 
@@ -31,4 +35,5 @@ __all__ = [
     "m001_initial",
     "m002_user_id_backfill",
     "m003_embedding_contract",
+    "m004_fact_orphan_cleanup",
 ]

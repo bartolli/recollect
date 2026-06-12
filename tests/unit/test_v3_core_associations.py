@@ -30,7 +30,7 @@ class TestEntityAssociations:
             embeddings=mock_embeddings,
             extractor=_make_extractor(result),
         )
-        await mem.experience("Google is a search company")
+        await mem.experience("Google is a search company", user_id="u1")
         mock_entity_index.store_trace_entities.assert_awaited_once()
         entities_arg = mock_entity_index.store_trace_entities.call_args[0][1]
         assert len(entities_arg) == 1
@@ -48,7 +48,7 @@ class TestEntityAssociations:
             embeddings=mock_embeddings,
             extractor=_make_extractor(result),
         )
-        await mem.experience("AI and robotics")
+        await mem.experience("AI and robotics", user_id="u1")
         mock_entity_index.store_trace_concepts.assert_awaited_once()
         concepts_arg = mock_entity_index.store_trace_concepts.call_args[0][1]
         assert len(concepts_arg) == 2
@@ -67,7 +67,7 @@ class TestEntityAssociations:
             embeddings=mock_embeddings,
             extractor=_make_extractor(result),
         )
-        await mem.experience("Met Sarah today")
+        await mem.experience("Met Sarah today", user_id="u1")
 
         # One association per pair (pair_key deduplicates direction)
         entity_calls = [
@@ -93,7 +93,7 @@ class TestEntityAssociations:
         )
         # Return empty so no existing traces share this entity
         mock_entity_index.get_traces_by_entity.return_value = []
-        await mem.experience("Bob is here")
+        await mem.experience("Bob is here", user_id="u1")
         entity_calls = [
             call
             for call in mock_association_store.store_association.call_args_list
@@ -115,7 +115,7 @@ class TestEntityAssociations:
             embeddings=mock_embeddings,
             extractor=_make_extractor(result),
         )
-        await mem.experience("Working on machine learning")
+        await mem.experience("Working on machine learning", user_id="u1")
         concept_calls = [
             call
             for call in mock_association_store.store_association.call_args_list
@@ -139,5 +139,5 @@ class TestEntityAssociations:
             extractor=_make_extractor(result),
         )
         # Should not raise -- error is caught and logged
-        trace = await mem.experience("Something about X")
+        trace = await mem.experience("Something about X", user_id="u1")
         assert trace.content == "Something about X"

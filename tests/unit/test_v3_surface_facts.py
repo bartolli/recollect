@@ -182,7 +182,7 @@ class TestExperienceDomainLinkage:
         mem = CognitiveMemory(
             storage=mock_storage, embeddings=mock_embeddings, extractor=extractor
         )
-        await mem.experience("dinner plans")
+        await mem.experience("dinner plans", user_id="u1")
         stored = mock_trace_store.store_trace.call_args.args[0]
         assert stored.pattern["domains"] == ["food"]
 

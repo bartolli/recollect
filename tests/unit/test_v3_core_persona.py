@@ -112,7 +112,7 @@ class TestPersonaFactExtraction:
             embeddings=mock_embeddings,
             extractor=extractor,
         )
-        await mem.experience("Sarah is allergic to shellfish")
+        await mem.experience("Sarah is allergic to shellfish", user_id="u1")
         mock_fact_store.store_persona_fact.assert_awaited()
 
     async def test_duplicate_fact_not_reinserted(
@@ -136,7 +136,7 @@ class TestPersonaFactExtraction:
             embeddings=mock_embeddings,
             extractor=extractor,
         )
-        await mem.experience("Sarah works at Google")
+        await mem.experience("Sarah works at Google", user_id="u1")
         mock_fact_store.store_persona_fact.assert_not_awaited()
 
     async def test_episodic_trace_skips_persona_facts(
@@ -156,7 +156,7 @@ class TestPersonaFactExtraction:
             embeddings=mock_embeddings,
             extractor=extractor,
         )
-        await mem.experience("Met someone today")
+        await mem.experience("Met someone today", user_id="u1")
         mock_fact_store.store_persona_fact.assert_not_awaited()
 
 

@@ -83,7 +83,7 @@ class TestWriteTimeAssessment:
                 implication="mother Sarah",
             ),
         )
-        await mem.experience("Sarah's health checkup went well")
+        await mem.experience("Sarah's health checkup went well", user_id="u1")
         mock_storage.recall_tokens.create_token.assert_awaited_once()
         mock_storage.recall_tokens.stamp_traces.assert_awaited_once()
         stamped_ids = mock_storage.recall_tokens.stamp_traces.call_args[0][1]
@@ -101,7 +101,7 @@ class TestWriteTimeAssessment:
             ),
             groups=_GROUP,
         )
-        await mem.experience("Sarah mentioned a new treatment")
+        await mem.experience("Sarah mentioned a new treatment", user_id="u1")
         mock_storage.recall_tokens.stamp_traces.assert_awaited_once()
         stamped = mock_storage.recall_tokens.stamp_traces.call_args[0][1]
         assert len(stamped) == 1
@@ -120,7 +120,7 @@ class TestWriteTimeAssessment:
             ),
             groups=_GROUP,
         )
-        await mem.experience("Sarah's diagnosis was revised")
+        await mem.experience("Sarah's diagnosis was revised", user_id="u1")
         mock_storage.recall_tokens.update_token.assert_awaited_once()
         args = mock_storage.recall_tokens.update_token.call_args[0]
         assert args[0] == "tok-1"
@@ -130,7 +130,7 @@ class TestWriteTimeAssessment:
 
     async def test_none_action(self, mem, mock_storage, mock_extractor):
         _setup(mock_storage, mock_extractor, TokenAssessment(action="none"))
-        await mem.experience("Unrelated thought")
+        await mem.experience("Unrelated thought", user_id="u1")
         mock_storage.recall_tokens.create_token.assert_not_awaited()
 
     async def test_disabled(self, mock_storage, mock_embeddings, mock_extractor):
@@ -142,7 +142,7 @@ class TestWriteTimeAssessment:
             extractor=mock_extractor,
             config=cfg,
         )
-        await mem.experience("Anything")
+        await mem.experience("Anything", user_id="u1")
         mock_storage.recall_tokens.create_token.assert_not_awaited()
 
 
@@ -253,7 +253,7 @@ class TestTokenArchiving:
             ),
             groups=_ARCHIVED_GROUP,
         )
-        await mem.experience("Sarah's old situation resurfaced")
+        await mem.experience("Sarah's old situation resurfaced", user_id="u1")
         mock_storage.recall_tokens.reinforce_tokens.assert_awaited()
         assert mock_storage.recall_tokens.reinforce_tokens.call_args[0][0] == [
             "tok-archived"
@@ -272,5 +272,5 @@ class TestTokenArchiving:
             ),
             groups=_ACTIVE_GROUP,
         )
-        await mem.experience("Sarah mentioned something new")
+        await mem.experience("Sarah mentioned something new", user_id="u1")
         mock_storage.recall_tokens.reinforce_tokens.assert_not_awaited()

@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from recollect.core import CognitiveMemory
 from recollect.datetime_utils import now_utc
+from recollect.exceptions import StorageError
 from recollect.models import MemoryTrace, Thought
 
 _EMB_DIM = 768
@@ -34,13 +35,13 @@ class TestExperience:
     async def test_stores_trace(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
     ) -> None:
-        trace = await mem.experience("Hello world")
+        trace = await mem.experience("Hello world", user_id="u1")
         assert trace.content == "Hello world"
         assert trace.strength == 0.3
         mock_trace_store.store_trace.assert_awaited_once()
 
     async def test_adds_to_working_memory(self, mem: CognitiveMemory) -> None:
-        trace = await mem.experience("Hello")
+        trace = await mem.experience("Hello", user_id="u1")
         active = mem.active_traces()
         assert len(active) == 1
         assert active[0].id == trace.id
@@ -49,16 +50,30 @@ class TestExperience:
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
     ) -> None:
         for i in range(7):
-            await mem.experience(f"Memory {i}")
+            await mem.experience(f"Memory {i}", user_id="u1")
         mock_trace_store.update_trace_strength.reset_mock()
-        await mem.experience("Overflow")
+        await mem.experience("Overflow", user_id="u1")
         mock_trace_store.update_trace_strength.assert_awaited()
+
+    async def test_store_failure_leaves_working_memory_consistent(
+        self, mem: CognitiveMemory, mock_trace_store: AsyncMock
+    ) -> None:
+        for i in range(7):
+            await mem.experience(f"Memory {i}", user_id="u1")
+        mock_trace_store.store_trace.side_effect = StorageError("down")
+        mock_trace_store.update_trace_strength.reset_mock()
+        with pytest.raises(StorageError):
+            await mem.experience("Doomed", user_id="u1")
+        contents = [t.content for t in mem.active_traces()]
+        assert "Doomed" not in contents
+        assert len(contents) == 7
+        mock_trace_store.update_trace_strength.assert_not_awaited()
 
     async def test_temporal_association(
         self, mem: CognitiveMemory, mock_association_store: AsyncMock
     ) -> None:
-        await mem.experience("First")
-        await mem.experience("Second")
+        await mem.experience("First", user_id="u1")
+        await mem.experience("Second", user_id="u1")
         mock_association_store.store_association.assert_awaited()
         assoc = mock_association_store.store_association.call_args[0][0]
         assert assoc.association_type == "temporal"
@@ -66,7 +81,7 @@ class TestExperience:
     async def test_extracts_patterns(
         self, mem: CognitiveMemory, mock_extractor: AsyncMock
     ) -> None:
-        trace = await mem.experience("Important meeting")
+        trace = await mem.experience("Important meeting", user_id="u1")
         mock_extractor.extract.assert_awaited_once_with("Important meeting")
         assert "concepts" in trace.pattern
 

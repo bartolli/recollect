@@ -410,6 +410,19 @@ class CognitiveMemory:
         """
         if not content or not content.strip():
             raise ValueError("Content must be a non-empty string")
+        # No extractor => no persona facts => nothing to lose; gate only the
+        # lossy path. persona_facts.user_id is NOT NULL, so a user-less write
+        # would silently drop every promoted relation.
+        if (
+            user_id is None
+            and self._extractor is not None
+            and self._config.get("persona.auto_extract", True)
+        ):
+            raise ValueError(
+                "user_id is required when persona.auto_extract is enabled: "
+                "persona facts are user-owned. Pass user_id or set "
+                "persona.auto_extract=false."
+            )
 
         result = await self._extract_pattern(content)
         embedding = await self._embeddings.generate_embedding(
@@ -438,14 +451,18 @@ class CognitiveMemory:
         if session_id is not None:
             await self._ensure_session(session_id, user_id)
 
+        # Buffer ⊆ memory_traces invariant: the INSERT precedes the buffer
+        # add, so a storage failure cannot strand an unpersisted trace in
+        # working memory or persist displacement decay for a write that
+        # never happened.
+        await self._storage.traces.store_trace(trace)
+
         displaced = self._buffer.add(trace)
         if displaced is not None:
             decayed = apply_displacement_decay(displaced)
             await self._storage.traces.update_trace_strength(
                 displaced.id, decayed.strength
             )
-
-        await self._storage.traces.store_trace(trace)
 
         # Independent operations: temporal link + extraction links + concept embeddings
         await asyncio.gather(
@@ -1141,11 +1158,17 @@ class CognitiveMemory:
                 context_tags=rel.context_tags,
                 embedding=fact_embedding,
             )
-            await self._store_or_promote_fact(fact)
-            await self._embed_fact_tags(fact)
+            stored = await self._store_or_promote_fact(fact)
+            if stored is not None:
+                await self._embed_fact_tags(stored)
 
-    async def _store_or_promote_fact(self, fact: PersonaFact) -> None:
-        """Store a new fact or promote an existing candidate."""
+    async def _store_or_promote_fact(self, fact: PersonaFact) -> PersonaFact | None:
+        """Store a new fact or promote an existing candidate.
+
+        Returns the fact iff a new row was written; None on the duplicate
+        and failure paths. Derived writes (tag embeddings) key off this --
+        embedding tags for a never-stored fact id orphans them.
+        """
         try:
             existing = await self._storage.facts.get_persona_facts(subject=fact.subject)
             duplicate = _find_exact_duplicate(existing, fact)
@@ -1164,12 +1187,12 @@ class CognitiveMemory:
                         duplicate.object,
                         new_count,
                     )
-                return
+                return None
             contradicting = _find_contradicting_fact(existing, fact)
             if contradicting:
-                await self._check_predicate_similarity(contradicting, fact)
-            else:
-                await self._storage.facts.store_persona_fact(fact)
+                return await self._check_predicate_similarity(contradicting, fact)
+            await self._storage.facts.store_persona_fact(fact)
+            return fact
         except (StorageError, OSError):
             logger.exception(
                 "Failed to store/promote fact: %s %s %s",
@@ -1177,14 +1200,18 @@ class CognitiveMemory:
                 fact.predicate,
                 fact.object,
             )
+            return None
 
     async def _check_predicate_similarity(
         self, old_fact: PersonaFact, new_fact: PersonaFact
-    ) -> None:
-        """Supersede if predicates match exactly or by embedding similarity."""
+    ) -> PersonaFact:
+        """Supersede if predicates match exactly or by embedding similarity.
+
+        Every branch writes new_fact; returns it for derived-write gating.
+        """
         if old_fact.predicate == new_fact.predicate:
             await self._storage.facts.supersede_persona_fact(old_fact.id, new_fact)
-            return
+            return new_fact
         threshold = float(
             self._config.get("persona.predicate_similarity_threshold", 0.8)
         )
@@ -1198,6 +1225,7 @@ class CognitiveMemory:
             await self._storage.facts.supersede_persona_fact(old_fact.id, new_fact)
         else:
             await self._storage.facts.store_persona_fact(new_fact)
+        return new_fact
 
     async def _extract_entity_relations(
         self, trace: MemoryTrace, result: ExtractionResult
