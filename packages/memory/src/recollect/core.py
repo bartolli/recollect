@@ -42,6 +42,7 @@ from recollect.models import (
     EntityRelation,
     FactCategory,
     FactStatus,
+    ForgetResult,
     HealthStatus,
     MemoryStats,
     MemoryTrace,
@@ -685,21 +686,43 @@ class CognitiveMemory:
             still_pending=still_pending,
         )
 
-    async def forget(self, trace_id: str) -> bool:
-        """Forget a memory trace: archived, not hard-deleted.
+    async def forget(
+        self, trace_id: str, *, force: bool = False
+    ) -> ForgetResult:
+        """Forget a memory trace: archive it and its derived facts.
 
-        The trace and every derived row (persona facts, concept
-        embeddings, recall tokens, entity relations) survive as
-        reactivation substrate. Guarded fact archival is the
-        forget-guard story's concern. Hard erasure is erase().
+        Hard-category facts (health/dietary/constraint) and pinned facts
+        are retained unless force -- explicit user state outranks the
+        implicit trace cascade; retained facts ride the result so the
+        caller can surface them. Concept embeddings, recall tokens, and
+        entity relations are preserved (reactivation substrate). Hard
+        erasure is erase().
         """
         if not trace_id:
             raise ValueError("Trace ID must be a non-empty string")
         archived = await self._archive_trace_with_buffer_evict(trace_id)
         if not archived:
             raise TraceNotFoundError(f"Trace {trace_id} not found")
-        logger.debug("Forgot trace: %s", trace_id[:8])
-        return True
+        result = ForgetResult(trace_id=trace_id)
+        facts = await self._storage.facts.get_facts_by_source_trace_id(trace_id)
+        for fact in facts:
+            if fact.status == "archived":
+                continue
+            guarded = (
+                fact.category in _FAST_TRACK_CATEGORIES or fact.status == "pinned"
+            )
+            if guarded and not force:
+                result.retained_facts.append(fact)
+                continue
+            if await self._storage.facts.update_fact_status(fact.id, "archived"):
+                result.archived_fact_ids.append(fact.id)
+        logger.debug(
+            "Forgot trace %s: %d facts archived, %d retained",
+            trace_id[:8],
+            len(result.archived_fact_ids),
+            len(result.retained_facts),
+        )
+        return result
 
     async def erase(self, trace_id: str) -> bool:
         """Hard-delete a trace; bypasses archive. FK cascades fire.
@@ -1217,6 +1240,11 @@ class CognitiveMemory:
         """
         try:
             existing = await self._storage.facts.get_persona_facts(subject=fact.subject)
+            # Archived facts are retractions: matching them swallows the
+            # re-stated mention (increment-on-archived returns None) and
+            # supersede would chain onto a retracted row. Excluded, so new
+            # evidence enters as a fresh active candidate.
+            existing = [f for f in existing if f.status != "archived"]
             duplicate = _find_exact_duplicate(existing, fact)
             if duplicate:
                 new_count = await self._storage.facts.increment_mention_count(

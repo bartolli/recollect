@@ -158,6 +158,12 @@ class PostgresStorage:
         """Get persona facts, optionally filtered by subject."""
         return await self._ctx.facts.get_persona_facts(subject, limit=limit)
 
+    async def get_facts_by_source_trace_id(
+        self, trace_id: str
+    ) -> list[PersonaFact]:
+        """All live facts derived from a trace."""
+        return await self._ctx.facts.get_facts_by_source_trace_id(trace_id)
+
     async def get_persona_facts_by_entities(
         self, entity_names: list[str]
     ) -> list[PersonaFact]:

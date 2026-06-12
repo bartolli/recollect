@@ -192,6 +192,18 @@ class ConsolidationResult(BaseModel):
     still_pending: int = 0
 
 
+class ForgetResult(BaseModel):
+    """Outcome of forget(): trace archived plus per-fact dispositions.
+
+    retained_facts carries the guard refusals (hard categories, pinned)
+    so callers can surface "N facts retained; force to suppress".
+    """
+
+    trace_id: str
+    archived_fact_ids: list[str] = Field(default_factory=list)
+    retained_facts: list[PersonaFact] = Field(default_factory=list)
+
+
 class Session(BaseModel):
     """A conversation session grouping memory traces."""
 

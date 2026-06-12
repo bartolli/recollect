@@ -206,8 +206,9 @@ UNPIN -- Archive a persona fact that is no longer accurate.
   The fact stops surfacing in recall and reflect.
 
 FORGET -- Forget an incorrect or irrelevant memory.
-  The memory trace is archived, not hard-deleted; derived facts are
-  retained.
+  The memory trace is archived, not hard-deleted, and its derived
+  facts archive with it. Safety-critical (health/dietary/constraint)
+  and pinned facts are retained unless force=true.
 
 REFLECT -- Load persona context before responding to the user.
   Call this at the start of every session before your first response.
@@ -395,23 +396,37 @@ async def unpin(
 async def forget(
     trace_id: str,
     ctx: Ctx,
+    force: bool = False,
 ) -> str:
     """Forget an incorrect or irrelevant memory.
 
-    The trace is archived, not hard-deleted: it leaves active
-    maintenance but is retained.
+    The trace is archived, not hard-deleted. Derived facts archive with
+    it, except safety-critical (health/dietary/constraint) and pinned
+    facts, which are retained unless force=true.
 
     Args:
         trace_id: ID of the memory trace to forget.
+        force: Also archive safety-critical and pinned derived facts.
     """
     try:
-        await _get_memory(ctx).forget(trace_id)
-        return f"Trace {trace_id} forgotten."
+        result = await _get_memory(ctx).forget(trace_id, force=force)
     except TraceNotFoundError:
         return f"Trace {trace_id} not found."
     except MemorySDKError as exc:
         logger.exception("SDK error in forget")
         return f"Failed to forget trace {trace_id}: {exc}"
+    parts = [f"Trace {trace_id} forgotten."]
+    if result.archived_fact_ids:
+        parts.append(f"{len(result.archived_fact_ids)} derived facts archived.")
+    if result.retained_facts:
+        kinds = ", ".join(
+            sorted({f.category for f in result.retained_facts})
+        )
+        parts.append(
+            f"{len(result.retained_facts)} facts retained ({kinds}); "
+            "repeat with force=true to also suppress them."
+        )
+    return " ".join(parts)
 
 
 def _format_remember_result(

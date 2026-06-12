@@ -143,6 +143,94 @@ class TestConsolidatorArchive:
         assert await mem.storage.traces.archive_trace(trace.id) is False
 
 
+class TestForgetGuard:
+    async def test_forget_archives_non_safety_fact(
+        self, mem: CognitiveMemory
+    ) -> None:
+        trace = MemoryTrace(content="prefers window seats", strength=0.5)
+        await mem.storage.traces.store_trace(trace)
+        fact = PersonaFact(
+            subject="user",
+            predicate="prefers",
+            object="window seats",
+            category="preference",
+            content="user prefers window seats",
+            source_trace_id=trace.id,
+            status="promoted",
+            user_id="u1",
+        )
+        await mem.storage.facts.store_persona_fact(fact)
+
+        result = await mem.forget(trace.id)
+
+        assert result.archived_fact_ids == [fact.id]
+        rows = await mem.storage.facts.get_facts_by_source_trace_id(trace.id)
+        assert rows[0].status == "archived"
+
+    async def test_hard_fact_retained_then_forced(
+        self, mem: CognitiveMemory
+    ) -> None:
+        trace = MemoryTrace(content="allergic to shellfish", strength=0.5)
+        await mem.storage.traces.store_trace(trace)
+        fact = PersonaFact(
+            subject="user",
+            predicate="is_allergic_to",
+            object="shellfish",
+            category="health",
+            content="user is allergic to shellfish",
+            source_trace_id=trace.id,
+            status="promoted",
+            user_id="u1",
+        )
+        await mem.storage.facts.store_persona_fact(fact)
+
+        result = await mem.forget(trace.id)
+        assert result.archived_fact_ids == []
+        assert [f.id for f in result.retained_facts] == [fact.id]
+        rows = await mem.storage.facts.get_facts_by_source_trace_id(trace.id)
+        assert rows[0].status == "promoted"
+
+        # Forced re-forget: trace already archived -> not-found contract.
+        # Suppression of the retained fact goes through a fresh guard
+        # pass on a still-active trace, so seed a second trace.
+        trace2 = MemoryTrace(content="allergy restated", strength=0.5)
+        await mem.storage.traces.store_trace(trace2)
+        fact2 = fact.model_copy(
+            update={"id": "fact2-hard", "source_trace_id": trace2.id}
+        )
+        await mem.storage.facts.store_persona_fact(fact2)
+        forced = await mem.forget(trace2.id, force=True)
+        assert forced.archived_fact_ids == ["fact2-hard"]
+
+    async def test_restated_retraction_creates_fresh_fact(
+        self, mem: CognitiveMemory
+    ) -> None:
+        archived = PersonaFact(
+            subject="user",
+            predicate="lives_in",
+            object="Lisbon",
+            category="identity",
+            content="user lives in Lisbon",
+            status="archived",
+            user_id="u1",
+        )
+        await mem.storage.facts.store_persona_fact(archived)
+        restated = PersonaFact(
+            subject="user",
+            predicate="lives_in",
+            object="Lisbon",
+            category="identity",
+            content="user lives in Lisbon",
+            status="candidate",
+            user_id="u1",
+        )
+        stored = await mem._store_or_promote_fact(restated)
+        assert stored is not None
+        facts = await mem.storage.facts.get_persona_facts("user")
+        statuses = sorted(f.status for f in facts)
+        assert statuses == ["archived", "candidate"]
+
+
 class TestErase:
     async def test_erase_hard_deletes(self, mem: CognitiveMemory) -> None:
         trace = MemoryTrace(content="gone", strength=0.3)

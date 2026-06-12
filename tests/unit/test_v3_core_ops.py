@@ -27,7 +27,8 @@ class TestForgetAndReinforce:
     async def test_forget_archives_not_deletes(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
     ) -> None:
-        assert await mem.forget("some-id") is True
+        result = await mem.forget("some-id")
+        assert result.trace_id == "some-id"
         mock_trace_store.archive_trace.assert_awaited_once_with("some-id")
         mock_trace_store.delete_trace.assert_not_awaited()
 

@@ -107,6 +107,34 @@ class PgFactStore:
         except asyncpg.PostgresError as exc:
             raise StorageError(f"Failed to get persona facts: {exc}") from exc
 
+    async def get_facts_by_source_trace_id(
+        self, trace_id: str
+    ) -> list[PersonaFact]:
+        """All live facts derived from a trace -- no subject filter, no limit.
+
+        Source-indexed replacement for the limit-50 subject scan that
+        capped the old forget() cleanup. Seq scan acceptable: per-user
+        fact counts are small.
+        """
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                rows = await conn.fetch(
+                    """
+                    SELECT * FROM persona_facts
+                    WHERE source_trace_id = $1 AND superseded_by IS NULL
+                    ORDER BY created_at ASC
+                    """,
+                    trace_id,
+                )
+            return [row_to_persona_fact(dict(r)) for r in rows]
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            raise StorageError(
+                f"Failed to get facts for trace {trace_id}: {exc}"
+            ) from exc
+
     async def get_persona_facts_by_entities(
         self,
         entity_names: list[str],

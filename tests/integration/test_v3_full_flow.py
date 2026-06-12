@@ -77,8 +77,8 @@ class TestFullLifecycle:
 
     async def test_forget_archives_trace(self, mem: CognitiveMemory) -> None:
         trace = await mem.experience("This memory will be forgotten")
-        archived = await mem.forget(trace.id)
-        assert archived is True
+        result = await mem.forget(trace.id)
+        assert result.trace_id == trace.id
 
         # Timeline is status-agnostic introspection: the row survives
         # as reactivation substrate, flagged archived.

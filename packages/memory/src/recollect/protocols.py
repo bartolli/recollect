@@ -277,6 +277,10 @@ class FactStore(Protocol):
         user_id: str | None = None,
     ) -> list[PersonaFact]: ...
 
+    async def get_facts_by_source_trace_id(
+        self, trace_id: str
+    ) -> list[PersonaFact]: ...
+
     async def get_persona_facts_by_entities(
         self,
         entity_names: list[str],

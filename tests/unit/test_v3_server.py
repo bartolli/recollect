@@ -12,6 +12,7 @@ from recollect.exceptions import (
     TraceNotFoundError,
 )
 from recollect.models import (
+    ForgetResult,
     HealthStatus,
     MemoryTrace,
     PersonaFact,
@@ -44,7 +45,7 @@ def mock_memory() -> AsyncMock:
             reconstruction="recalled",
         )
     ]
-    memory.forget.return_value = True
+    memory.forget.return_value = ForgetResult(trace_id="trace-123")
     memory.pin.return_value = [
         PersonaFact(
             subject="Alex",
@@ -176,7 +177,30 @@ async def test_unpin_not_found(
 async def test_forget(ctx: MagicMock, mock_memory: AsyncMock) -> None:
     result = await forget("trace-123", ctx)
     assert "forgotten" in result.lower()
-    mock_memory.forget.assert_awaited_once_with("trace-123")
+    mock_memory.forget.assert_awaited_once_with("trace-123", force=False)
+
+
+async def test_forget_reports_retained_facts(
+    ctx: MagicMock, mock_memory: AsyncMock
+) -> None:
+    mock_memory.forget.return_value = ForgetResult(
+        trace_id="trace-123",
+        archived_fact_ids=["f1"],
+        retained_facts=[
+            PersonaFact(
+                subject="user",
+                predicate="is_allergic_to",
+                object="shellfish",
+                category="health",
+                content="user is allergic to shellfish",
+                status="promoted",
+            )
+        ],
+    )
+    result = await forget("trace-123", ctx)
+    assert "1 derived facts archived" in result
+    assert "retained (health)" in result
+    assert "force=true" in result
 
 
 async def test_forget_not_found(
