@@ -2,7 +2,7 @@
   "arm_name": "eval-baseline",
   "run_index": 1,
   "model": "anthropic:claude-haiku-4-5-20251001",
-  "prompt_version": "1.0.0",
+  "prompt_version": "1.2.1",
   "top_k": 5,
   "ingested": 29,
   "ingest_failures": 0,
@@ -13,23 +13,21 @@
       "error": "",
       "ranked_corpus_ids": [
         "h1",
-        "h4",
-        "d2",
         "h3",
         "d4",
+        "d2",
+        "h4",
+        "h2",
         "d1",
         "p4",
-        "i4",
+        "i2",
         "p3",
         "c1",
-        "p1",
         "c2",
         "g4",
-        "h2",
         "g1",
-        "i2",
-        "g3",
         "i1",
+        "g3",
         "c3",
         "g2"
       ],
@@ -39,7 +37,7 @@
       "expected_category": "health",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 46.13529199559707
+      "latency_ms": 50.038792003761046
     },
     {
       "query_id": "q02",
@@ -47,26 +45,25 @@
       "error": "",
       "ranked_corpus_ids": [
         "h2",
-        "h4",
-        "i3",
         "h1",
-        "p1",
-        "d3",
-        "c2",
-        "i4",
-        "p4",
-        "c1",
-        "r3",
-        "p3",
+        "i3",
+        "h4",
         "h3",
-        "d1",
+        "d3",
+        "i4",
+        "d4",
+        "p1",
+        "r3",
+        "c1",
+        "c2",
         "c3",
-        "g1",
+        "d1",
         "d2",
-        "g4",
+        "g1",
         "g3",
-        "r1",
-        "g2"
+        "g4",
+        "g2",
+        "r1"
       ],
       "relevant_corpus_ids": [
         "h2"
@@ -74,7 +71,7 @@
       "expected_category": "health",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 29.602084003272466
+      "latency_ms": 38.44541699800175
     },
     {
       "query_id": "q03",
@@ -82,23 +79,23 @@
       "error": "",
       "ranked_corpus_ids": [
         "d1",
-        "d2",
-        "d3",
-        "h1",
         "d4",
-        "h2",
-        "c2",
-        "p1",
-        "i4",
-        "r2",
-        "c1",
-        "g1",
-        "p2",
-        "g4",
+        "d2",
+        "h1",
+        "d3",
         "h3",
-        "p3",
+        "h2",
+        "r3",
+        "p1",
+        "c1",
+        "r2",
+        "c2",
+        "g1",
+        "g4",
         "c3",
+        "i1",
         "g2",
+        "i2",
         "g3"
       ],
       "relevant_corpus_ids": [
@@ -107,7 +104,7 @@
       "expected_category": "dietary",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 26.41104199574329
+      "latency_ms": 31.007959005364683
     },
     {
       "query_id": "q04",
@@ -116,22 +113,23 @@
       "ranked_corpus_ids": [
         "d2",
         "d4",
-        "h4",
-        "d3",
         "h1",
-        "d1",
+        "d3",
         "h3",
-        "p3",
-        "c2",
-        "p4",
+        "d1",
+        "h2",
+        "h4",
         "p1",
+        "p3",
         "c1",
-        "g4",
-        "c3",
+        "c2",
         "g1",
+        "c3",
         "i1",
+        "g3",
+        "g4",
         "i2",
-        "g3"
+        "g2"
       ],
       "relevant_corpus_ids": [
         "d2"
@@ -139,7 +137,7 @@
       "expected_category": "dietary",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 22.634875000221655
+      "latency_ms": 28.898749995278195
     },
     {
       "query_id": "q05",
@@ -148,21 +146,25 @@
       "ranked_corpus_ids": [
         "i1",
         "i3",
+        "p2",
         "h3",
         "c1",
-        "i4",
-        "p2",
-        "p4",
-        "c2",
+        "d3",
         "r3",
+        "h2",
+        "c2",
+        "p3",
         "s1",
-        "i2",
-        "c3",
-        "g4",
-        "r1",
-        "g2",
         "g1",
-        "g3"
+        "c3",
+        "g2",
+        "i2",
+        "g4",
+        "g3",
+        "i4",
+        "r1",
+        "s2",
+        "s3"
       ],
       "relevant_corpus_ids": [
         "i1"
@@ -170,7 +172,7 @@
       "expected_category": "identity",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 21.16116699471604
+      "latency_ms": 27.14958300202852
     },
     {
       "query_id": "q06",
@@ -179,24 +181,22 @@
       "ranked_corpus_ids": [
         "i2",
         "h1",
-        "d1",
-        "p4",
-        "h3",
         "h2",
+        "h3",
+        "p4",
+        "d2",
         "i1",
-        "g1",
         "c2",
         "c1",
-        "p1",
+        "s2",
+        "g1",
         "i3",
         "g4",
-        "d2",
-        "g2",
-        "d3",
+        "h4",
         "c3",
-        "i4",
+        "g2",
         "g3",
-        "s2",
+        "i4",
         "s1"
       ],
       "relevant_corpus_ids": [
@@ -205,7 +205,7 @@
       "expected_category": "identity",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 23.185083002317697
+      "latency_ms": 25.880624998535495
     },
     {
       "query_id": "q07",
@@ -213,22 +213,24 @@
       "error": "",
       "ranked_corpus_ids": [
         "r1",
-        "r2",
         "d3",
-        "i2",
-        "h2",
         "i4",
-        "c1",
-        "r3",
-        "c2",
         "h3",
-        "p4",
-        "g4",
-        "c3",
-        "g3",
+        "p2",
+        "c1",
+        "i2",
+        "r3",
+        "r2",
+        "h2",
+        "c2",
         "p1",
+        "g4",
+        "d4",
+        "c3",
+        "g1",
         "g2",
-        "g1"
+        "g3",
+        "i1"
       ],
       "relevant_corpus_ids": [
         "r1"
@@ -236,7 +238,7 @@
       "expected_category": "relationship",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 18.675833998713642
+      "latency_ms": 23.950458999024704
     },
     {
       "query_id": "q08",
@@ -244,23 +246,22 @@
       "error": "",
       "ranked_corpus_ids": [
         "r2",
-        "i2",
-        "r1",
-        "r3",
-        "h4",
-        "p4",
-        "i4",
-        "h1",
         "d3",
+        "r3",
+        "d4",
+        "i2",
+        "p4",
+        "r1",
+        "h4",
+        "p1",
         "c2",
         "c1",
-        "i3",
-        "g4",
         "c3",
         "g1",
-        "g3",
         "g2",
-        "p1"
+        "g4",
+        "g3",
+        "i1"
       ],
       "relevant_corpus_ids": [
         "r2"
@@ -268,7 +269,7 @@
       "expected_category": "relationship",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 19.60812500328757
+      "latency_ms": 26.319249998778105
     },
     {
       "query_id": "q09",
@@ -277,19 +278,18 @@
       "ranked_corpus_ids": [
         "s1",
         "i1",
-        "d1",
-        "p4",
         "i3",
         "c1",
+        "p2",
         "c2",
+        "s2",
         "s3",
         "g4",
-        "i2",
-        "c3",
         "g1",
+        "c3",
         "g2",
-        "g3",
-        "s2"
+        "i2",
+        "g3"
       ],
       "relevant_corpus_ids": [
         "s1"
@@ -297,7 +297,7 @@
       "expected_category": "schedule",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 18.419166997773573
+      "latency_ms": 22.637082998699043
     },
     {
       "query_id": "q10",
@@ -305,18 +305,18 @@
       "error": "",
       "ranked_corpus_ids": [
         "c1",
-        "c2",
-        "c3",
         "d3",
-        "i3",
-        "p4",
+        "c3",
         "i1",
+        "c2",
+        "i3",
+        "h2",
         "p3",
-        "d4",
-        "s2",
         "s3",
-        "g2",
+        "s2",
+        "d4",
         "g4",
+        "g2",
         "g1",
         "g3"
       ],
@@ -326,7 +326,7 @@
       "expected_category": "constraint",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 20.704624999780208
+      "latency_ms": 26.451833997271024
     },
     {
       "query_id": "q11",
@@ -335,19 +335,21 @@
       "ranked_corpus_ids": [
         "h1",
         "d2",
-        "h3",
         "d4",
         "d3",
+        "h3",
         "c2",
-        "r3",
+        "i3",
+        "p1",
         "p3",
-        "s2",
-        "g4",
+        "r3",
         "c1",
         "c3",
+        "d1",
+        "g4",
         "g3",
-        "h2",
         "g1",
+        "h2",
         "g2"
       ],
       "relevant_corpus_ids": [
@@ -356,7 +358,7 @@
       "expected_category": "health",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 23.574499995447695
+      "latency_ms": 31.561791998683475
     },
     {
       "query_id": "q12",
@@ -364,20 +366,21 @@
       "error": "",
       "ranked_corpus_ids": [
         "d1",
-        "d4",
-        "c1",
-        "c2",
-        "g4",
-        "s1",
         "d2",
-        "i1",
+        "d4",
+        "c2",
         "d3",
-        "c3",
+        "c1",
+        "i1",
+        "i4",
         "s2",
-        "s3",
-        "g2",
+        "s1",
+        "g4",
+        "c3",
         "g1",
-        "g3"
+        "g2",
+        "g3",
+        "s3"
       ],
       "relevant_corpus_ids": [
         "d1"
@@ -385,7 +388,7 @@
       "expected_category": "dietary",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 18.14058399759233
+      "latency_ms": 25.711333997605834
     },
     {
       "query_id": "q13",
@@ -393,20 +396,22 @@
       "error": "",
       "ranked_corpus_ids": [
         "d3",
-        "d1",
         "c1",
-        "c2",
         "i3",
-        "d4",
-        "c3",
-        "g4",
-        "s2",
-        "g2",
-        "s3",
-        "s1",
-        "g1",
+        "c2",
+        "h4",
         "i1",
-        "g3"
+        "c3",
+        "p3",
+        "s2",
+        "g4",
+        "s1",
+        "d4",
+        "g2",
+        "g1",
+        "g3",
+        "i4",
+        "r1"
       ],
       "relevant_corpus_ids": [
         "d3"
@@ -414,7 +419,7 @@
       "expected_category": "dietary",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 24.992084014229476
+      "latency_ms": 26.185916998656467
     },
     {
       "query_id": "q14",
@@ -422,23 +427,22 @@
       "error": "",
       "ranked_corpus_ids": [
         "i1",
-        "s1",
         "p2",
         "p4",
-        "c1",
-        "s3",
-        "h4",
-        "i4",
-        "h2",
-        "c3",
-        "i2",
-        "c2",
-        "g1",
-        "g4",
         "i3",
+        "c1",
+        "s1",
+        "i4",
+        "s2",
+        "c3",
+        "s3",
+        "c2",
+        "g4",
+        "g1",
+        "i2",
         "g2",
         "g3",
-        "s2"
+        "p3"
       ],
       "relevant_corpus_ids": [
         "i1"
@@ -446,7 +450,7 @@
       "expected_category": "identity",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 28.91145899775438
+      "latency_ms": 30.60429100150941
     },
     {
       "query_id": "q15",
@@ -456,17 +460,17 @@
         "p3",
         "c2",
         "c1",
-        "g4",
         "d3",
-        "r2",
         "i3",
+        "p1",
         "c3",
+        "g4",
         "s1",
         "s3",
-        "p4",
-        "g3",
         "g2",
-        "g1"
+        "g1",
+        "g3",
+        "p4"
       ],
       "relevant_corpus_ids": [
         "p3"
@@ -474,7 +478,7 @@
       "expected_category": "preference",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 18.19341699592769
+      "latency_ms": 22.640958995907567
     },
     {
       "query_id": "q16",
@@ -484,15 +488,15 @@
         "c1",
         "c2",
         "c3",
-        "g4",
+        "i1",
         "p3",
+        "g4",
+        "s2",
+        "s1",
         "s3",
         "g2",
-        "s2",
-        "i4",
-        "s1",
-        "g3",
-        "g1"
+        "g1",
+        "g3"
       ],
       "relevant_corpus_ids": [
         "c1"
@@ -500,7 +504,7 @@
       "expected_category": "constraint",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 24.68433399917558
+      "latency_ms": 25.74675000505522
     },
     {
       "query_id": "q17",
@@ -508,21 +512,23 @@
       "error": "",
       "ranked_corpus_ids": [
         "c2",
-        "d3",
-        "h2",
         "i3",
         "s1",
+        "d3",
         "p3",
-        "g4",
-        "s3",
-        "r1",
-        "c3",
         "c1",
-        "g1",
+        "i1",
+        "s3",
         "s2",
+        "h2",
+        "p1",
+        "c3",
+        "g4",
+        "g1",
         "g3",
+        "g2",
         "i4",
-        "g2"
+        "r1"
       ],
       "relevant_corpus_ids": [
         "c2"
@@ -530,7 +536,7 @@
       "expected_category": "constraint",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 24.248542002169415
+      "latency_ms": 29.269540995301213
     },
     {
       "query_id": "q18",
@@ -538,19 +544,20 @@
       "error": "",
       "ranked_corpus_ids": [
         "h3",
-        "h1",
         "h4",
-        "h2",
-        "g3",
-        "p3",
-        "i3",
-        "c1",
-        "c2",
+        "h1",
         "d4",
+        "d2",
+        "i3",
+        "h2",
+        "p3",
+        "p1",
+        "c2",
+        "c1",
+        "g3",
+        "g1",
         "g4",
         "c3",
-        "g1",
-        "d2",
         "g2",
         "d1"
       ],
@@ -560,7 +567,7 @@
       "expected_category": "health",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 22.91933400556445
+      "latency_ms": 26.537208999798167
     },
     {
       "query_id": "q19",
@@ -568,23 +575,23 @@
       "error": "",
       "ranked_corpus_ids": [
         "p4",
-        "p2",
-        "d2",
-        "h4",
-        "s1",
-        "i4",
         "i3",
+        "i2",
+        "i4",
+        "p2",
+        "h4",
         "i1",
-        "r2",
-        "c2",
+        "d3",
         "c1",
-        "g4",
+        "c2",
+        "s1",
+        "r2",
         "c3",
-        "d1",
-        "r3",
+        "g4",
         "g2",
         "g1",
-        "p1",
+        "g3",
+        "r1",
         "s2"
       ],
       "relevant_corpus_ids": [
@@ -593,7 +600,7 @@
       "expected_category": "preference",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 20.976250001695007
+      "latency_ms": 23.514332999184262
     },
     {
       "query_id": "q20",
@@ -602,20 +609,23 @@
       "ranked_corpus_ids": [
         "i3",
         "c2",
-        "p1",
-        "s1",
-        "h4",
-        "s3",
         "p2",
-        "g4",
+        "h4",
+        "d3",
+        "h2",
+        "s1",
+        "c1",
+        "p1",
         "p3",
+        "s3",
+        "g4",
+        "c3",
         "g1",
-        "r1",
         "g2",
         "g3",
         "i4",
-        "s2",
-        "c3"
+        "r1",
+        "s2"
       ],
       "relevant_corpus_ids": [
         "i3",
@@ -624,30 +634,29 @@
       "expected_category": "identity",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 17.732542008161545
+      "latency_ms": 25.120625003182795
     },
     {
       "query_id": "q21",
       "success": true,
       "error": "",
       "ranked_corpus_ids": [
-        "r1",
-        "c2",
-        "r2",
         "d3",
-        "h2",
-        "r3",
-        "i4",
+        "c2",
+        "r1",
         "i1",
+        "r3",
         "c1",
+        "i3",
+        "h2",
+        "i4",
+        "r2",
         "c3",
-        "p4",
-        "s3",
-        "g4",
         "d4",
         "g1",
-        "g2",
-        "g3"
+        "g4",
+        "g3",
+        "g2"
       ],
       "relevant_corpus_ids": [
         "r1",
@@ -656,7 +665,7 @@
       "expected_category": "relationship",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 22.193249998963438
+      "latency_ms": 25.461750003159977
     },
     {
       "query_id": "q22",
@@ -665,19 +674,21 @@
       "ranked_corpus_ids": [
         "p2",
         "d3",
-        "g2",
-        "g4",
-        "p4",
         "i1",
-        "r1",
+        "i2",
+        "p4",
         "c1",
-        "g1",
-        "c2",
         "p3",
-        "c3",
-        "s3",
+        "h2",
+        "c2",
+        "g4",
+        "g1",
         "s1",
-        "g3"
+        "c3",
+        "g2",
+        "i3",
+        "g3",
+        "d4"
       ],
       "relevant_corpus_ids": [
         "p2"
@@ -685,25 +696,25 @@
       "expected_category": "preference",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 19.722791999811307
+      "latency_ms": 23.58437499788124
     },
     {
       "query_id": "q23",
       "success": true,
       "error": "",
       "ranked_corpus_ids": [
-        "s3",
         "g4",
-        "g3",
-        "r3",
+        "s3",
         "c1",
+        "i3",
+        "p4",
+        "i4",
         "c2",
         "s2",
-        "r2",
-        "i3",
-        "i4",
-        "c3",
+        "r3",
+        "g3",
         "g2",
+        "c3",
         "g1"
       ],
       "relevant_corpus_ids": [
@@ -713,7 +724,7 @@
       "expected_category": "schedule",
       "is_distractor": false,
       "persona_fact_count": 0,
-      "latency_ms": 21.50408399756998
+      "latency_ms": 24.36787500482751
     },
     {
       "query_id": "q24",
@@ -723,86 +734,84 @@
         "i4",
         "i3",
         "i2",
-        "c1",
+        "d3",
         "p4",
-        "h4",
+        "c1",
         "r3",
+        "i1",
         "r2",
-        "s2",
         "c2",
+        "s2",
         "g4",
         "c3",
-        "r1",
-        "s3",
         "g1",
-        "g3",
         "g2",
-        "p1"
+        "g3",
+        "r1"
       ],
       "relevant_corpus_ids": [],
       "expected_category": null,
       "is_distractor": true,
       "persona_fact_count": 0,
-      "latency_ms": 21.25504199648276
+      "latency_ms": 22.675917003653012
     },
     {
       "query_id": "q25",
       "success": true,
       "error": "",
       "ranked_corpus_ids": [
-        "p4",
         "i1",
-        "h1",
-        "r1",
-        "h4",
         "p2",
-        "c1",
-        "g4",
-        "i4",
         "i2",
-        "r3",
-        "c2",
-        "g1",
         "i3",
+        "c1",
+        "r3",
+        "r1",
+        "c2",
+        "g4",
+        "g1",
+        "s1",
+        "c3",
+        "p4",
         "g3",
-        "g2"
+        "g2",
+        "p3"
       ],
       "relevant_corpus_ids": [],
       "expected_category": null,
       "is_distractor": true,
       "persona_fact_count": 0,
-      "latency_ms": 20.460750005440786
+      "latency_ms": 24.76691699848743
     },
     {
       "query_id": "q26",
       "success": true,
       "error": "",
       "ranked_corpus_ids": [
-        "d2",
-        "d4",
         "p4",
-        "d1",
-        "i2",
+        "d4",
         "p2",
-        "i1",
-        "r2",
-        "c2",
-        "c1",
-        "g4",
         "r3",
+        "i3",
+        "d3",
+        "i2",
         "p1",
-        "g2",
+        "c1",
+        "r2",
+        "g4",
+        "c2",
         "g1",
+        "g2",
         "c3",
-        "s2",
         "g3",
-        "s1"
+        "s1",
+        "s2"
       ],
       "relevant_corpus_ids": [],
       "expected_category": null,
       "is_distractor": true,
       "persona_fact_count": 0,
-      "latency_ms": 21.864750000531785
+      "latency_ms": 23.912374999781605
     },
     {
       "query_id": "q27",
@@ -810,29 +819,31 @@
       "error": "",
       "ranked_corpus_ids": [
         "p4",
-        "d1",
-        "r1",
-        "r2",
         "h4",
         "i4",
-        "c2",
-        "c1",
+        "d1",
+        "d3",
+        "i3",
         "r3",
         "i1",
-        "g3",
-        "g4",
-        "d2",
-        "c3",
+        "c1",
+        "c2",
         "s1",
-        "g2",
+        "c3",
+        "g4",
         "g1",
+        "g3",
+        "d2",
+        "g2",
+        "r1",
+        "r2",
         "s2"
       ],
       "relevant_corpus_ids": [],
       "expected_category": null,
       "is_distractor": true,
       "persona_fact_count": 0,
-      "latency_ms": 19.85129198874347
+      "latency_ms": 26.570417001494206
     },
     {
       "query_id": "q28",
@@ -840,51 +851,55 @@
       "error": "",
       "ranked_corpus_ids": [
         "d4",
-        "c1",
-        "d1",
-        "d2",
-        "c2",
-        "s2",
-        "i4",
         "p4",
+        "c1",
+        "d3",
+        "i3",
         "p3",
-        "g2",
+        "r3",
+        "p1",
+        "s2",
+        "c2",
         "r2",
-        "g4",
-        "c3",
-        "g3",
         "g1",
+        "c3",
+        "g2",
+        "g4",
         "i1",
+        "g3",
         "i2",
-        "s3"
+        "s1"
       ],
       "relevant_corpus_ids": [],
       "expected_category": null,
       "is_distractor": true,
       "persona_fact_count": 0,
-      "latency_ms": 21.58691600197926
+      "latency_ms": 25.70991600077832
     },
     {
       "query_id": "q29",
       "success": true,
       "error": "",
       "ranked_corpus_ids": [
+        "h1",
         "d2",
+        "i1",
+        "p2",
         "h2",
         "c1",
-        "h1",
-        "i1",
-        "p1",
         "p3",
+        "p1",
         "c2",
-        "i2",
-        "g1",
-        "p4",
-        "r2",
-        "g4",
         "c3",
-        "i3",
+        "g1",
+        "g4",
         "g3",
+        "d4",
+        "i3",
+        "d3",
+        "p4",
+        "d1",
+        "i2",
         "g2",
         "s1"
       ],
@@ -892,41 +907,40 @@
       "expected_category": null,
       "is_distractor": true,
       "persona_fact_count": 0,
-      "latency_ms": 19.921832994441502
+      "latency_ms": 26.78149999701418
     },
     {
       "query_id": "q30",
       "success": true,
       "error": "",
       "ranked_corpus_ids": [
-        "i3",
-        "p4",
-        "h4",
-        "h2",
-        "i2",
-        "d3",
         "p2",
         "h1",
+        "h4",
+        "p4",
+        "i3",
+        "d3",
         "c1",
+        "i2",
         "i1",
+        "s1",
         "c2",
-        "d2",
-        "d1",
         "g4",
         "c3",
-        "i4",
-        "r1",
         "g1",
+        "d2",
         "g3",
-        "s1",
+        "d1",
+        "i4",
         "g2",
+        "r1",
         "s2"
       ],
       "relevant_corpus_ids": [],
       "expected_category": null,
       "is_distractor": true,
       "persona_fact_count": 0,
-      "latency_ms": 19.77129199076444
+      "latency_ms": 28.843209001934156
     }
   ]
 }

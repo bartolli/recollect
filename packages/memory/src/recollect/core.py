@@ -1928,10 +1928,10 @@ class CognitiveMemory:
     ) -> list[tuple[MemoryTrace, float]]:
         """Compute fused scores with concept-primary blend, clamped to [0, 1].
 
-        When concept embeddings exist for a trace, base cosine similarity
-        is blended with concept max-sim (weight*concept + (1-weight)*base).
-        This mirrors attention: concept scores modulate rather than add.
-        Entity bonus remains gated by concept similarity.
+        Blend is monotonic in tag presence: effective = max(base,
+        weight*concept + (1-weight)*base) -- blend wins iff concept > base,
+        so weak concepts (extraction noise) never score below the untagged
+        twin. Entity bonus remains gated by concept similarity.
         """
         if concept_sims is None:
             concept_sims = {}
@@ -1940,14 +1940,12 @@ class CognitiveMemory:
             trace = traces_by_id.get(trace_id)
             if trace is None:
                 continue
-            # Concept-primary blend: concept attention modulates base
-            # similarity instead of adding to it. When concept embeddings
-            # exist, effective_sim = weight*concept + (1-weight)*base.
             concept_sim = concept_sims.get(trace_id, 0.0)
             if concept_sim > 0.0 and concept_weight > 0.0:
-                effective_sim = (
-                    concept_weight * concept_sim + (1.0 - concept_weight) * base
-                )
+                blended = concept_weight * concept_sim + (1.0 - concept_weight) * base
+                # max(base, blended): monotonic in tag presence -- extraction
+                # noise on concepts cannot penalize an otherwise-strong match.
+                effective_sim = max(base, blended)
             else:
                 effective_sim = base
             significance_boost = trace.significance * significance_weight
@@ -2127,7 +2125,8 @@ class CognitiveMemory:
         irrelevant facts score low and get cut by rank, not by threshold.
 
         Scoring uses concept attention (ColBERT-style max-sim on LLM-extracted
-        tags, 0.7 weight) blended with bi-encoder similarity (0.3 weight).
+        tags, 0.7 weight) blended with bi-encoder similarity (0.3 weight);
+        monotonic -- the blend never drops a fact below bi-encoder alone.
 
         Primary: embed(query) vs embed(fact.context) via pgvector.
         Supplement: entity name match adds structurally-related facts.
@@ -2196,7 +2195,9 @@ class CognitiveMemory:
                     )
                     for fid, csim in fact_concept_sims.items():
                         bi_sim = semantic_scores.get(fid, 0.0)
-                        semantic_scores[fid] = 0.7 * csim + 0.3 * bi_sim
+                        # max(bi, blend): weak tags never demote a fact below
+                        # its bi-encoder score (mirrors the trace path).
+                        semantic_scores[fid] = max(bi_sim, 0.7 * csim + 0.3 * bi_sim)
             except (StorageError, OSError):
                 logger.exception("Fact concept attention lookup failed")
 
@@ -2225,11 +2226,15 @@ class CognitiveMemory:
         limit: int,
         semantic_scores: dict[str, float] | None = None,
     ) -> list[PersonaFact]:
-        """Rank facts by semantic similarity to the query, then limit."""
+        """Rank facts by _compute_fact_relevance, then limit.
 
-        def sort_key(f: PersonaFact) -> tuple[float, float]:
+        Selection and assembly share this one ordering predicate -- a fact
+        cut here cannot leapfrog at assembly via a different score.
+        """
+
+        def sort_key(f: PersonaFact) -> float:
             sim = (semantic_scores or {}).get(f.id, 0.0)
-            return (-sim, -f.confidence)
+            return -CognitiveMemory._compute_fact_relevance(f, sim)
 
         return sorted(facts, key=sort_key)[:limit]
 
@@ -2300,10 +2305,13 @@ class CognitiveMemory:
         fact: PersonaFact,
         semantic_similarity: float = 0.0,
     ) -> float:
-        """Compute fact relevance blending confidence with semantic similarity."""
-        if semantic_similarity > 0.0:
-            return 0.3 * fact.confidence + 0.7 * semantic_similarity
-        return fact.confidence
+        """Single fact-ordering predicate: 0.3*confidence + 0.7*similarity.
+
+        Unconditional -- an embedding-less fact (similarity 0) scores
+        0.3*confidence and cannot inflate past semantically-matched facts
+        via raw confidence.
+        """
+        return 0.3 * fact.confidence + 0.7 * semantic_similarity
 
     # -- Private: consolidation helpers --
 

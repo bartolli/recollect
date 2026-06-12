@@ -99,35 +99,39 @@ class TestRelevanceStrategy:
 
 
 class TestHybridStrategy:
-    async def test_high_confidence_pinned(
+    async def test_no_scores_high_confidence_not_pinned(
         self,
         mock_storage: MagicMock,
         mock_embeddings: AsyncMock,
     ) -> None:
+        """Embedding-less facts cannot pin via raw confidence."""
         mem = _make_mem(mock_storage, mock_embeddings, "hybrid", 0.6)
         thoughts = mem._persona_facts_to_thoughts(_make_facts())
-        assert thoughts[0].pinned is True  # 0.9 >= 0.6
-        assert thoughts[1].pinned is False  # 0.4 < 0.6
+        assert thoughts[0].pinned is False  # 0.3 * 0.9 = 0.27 < 0.6
+        assert thoughts[1].pinned is False  # 0.3 * 0.4 = 0.12 < 0.6
 
-    async def test_relevance_equals_confidence(
+    async def test_no_scores_relevance_is_dampened_confidence(
         self,
         mock_storage: MagicMock,
         mock_embeddings: AsyncMock,
     ) -> None:
         mem = _make_mem(mock_storage, mock_embeddings, "hybrid")
         thoughts = mem._persona_facts_to_thoughts(_make_facts())
-        assert thoughts[0].relevance == 0.9
-        assert thoughts[1].relevance == 0.4
+        assert abs(thoughts[0].relevance - 0.27) < 1e-9
+        assert abs(thoughts[1].relevance - 0.12) < 1e-9
 
     async def test_at_threshold_is_pinned(
         self,
         mock_storage: MagicMock,
         mock_embeddings: AsyncMock,
     ) -> None:
-        mem = _make_mem(mock_storage, mock_embeddings, "hybrid", 0.9)
-        thoughts = mem._persona_facts_to_thoughts(_make_facts())
-        assert thoughts[0].pinned is True  # 0.9 == 0.9
-        assert thoughts[1].pinned is False  # 0.4 < 0.9
+        mem = _make_mem(mock_storage, mock_embeddings, "hybrid", 0.75)
+        facts = _make_facts()
+        scores = {facts[1].id: 0.9}
+        thoughts = mem._persona_facts_to_thoughts(facts, semantic_scores=scores)
+        # facts[1]: 0.3 * 0.4 + 0.7 * 0.9 = 0.75 == threshold
+        assert thoughts[1].pinned is True
+        assert thoughts[0].pinned is False  # 0.27 < 0.75
 
 
 class TestAssembleWithTraceGuarantee:
@@ -219,11 +223,30 @@ class TestRankAndLimitFacts:
         result = CognitiveMemory._rank_and_limit_facts([gen, health], 10, None)
         assert result[0].id == "g"
 
+    def test_selection_order_matches_assembly_relevance(self) -> None:
+        """One predicate: embedding-less high-confidence fact cannot win
+        selection over a semantically-matched low-confidence fact, nor
+        leapfrog it at assembly."""
+        blind = _fact("blind", confidence=0.95)  # no score: 0.3*0.95 = 0.285
+        scored = _fact("scored", confidence=0.3)  # 0.3*0.3 + 0.7*0.6 = 0.51
+        scores = {"scored": 0.6}
+        selection = CognitiveMemory._rank_and_limit_facts([blind, scored], 10, scores)
+        assembly = sorted(
+            [blind, scored],
+            key=lambda f: (
+                -CognitiveMemory._compute_fact_relevance(f, scores.get(f.id, 0.0))
+            ),
+        )
+        assert [f.id for f in selection] == [f.id for f in assembly]
+        assert selection[0].id == "scored"
+
 
 class TestComputeFactRelevance:
-    def test_no_similarity_returns_confidence(self) -> None:
+    def test_no_similarity_dampens_confidence(self) -> None:
+        """sim=0 yields 0.3*confidence -- raw confidence never inflates."""
         fact = _fact("x", confidence=0.8)
-        assert CognitiveMemory._compute_fact_relevance(fact, 0.0) == 0.8
+        result = CognitiveMemory._compute_fact_relevance(fact, 0.0)
+        assert abs(result - 0.24) < 1e-9
 
     def test_with_similarity_blends_weighted(self) -> None:
         fact = _fact("x", confidence=0.8)

@@ -156,37 +156,3 @@ class TestConceptGatingInFusion:
         )
         # blend: 0.7*0.5 + 0.3*0.4 = 0.47
         assert abs(result[0][1] - 0.47) < 1e-9
-
-
-class TestFactConceptAttention:
-    """Read path: concept attention rescues facts with low bi-encoder scores."""
-
-    @pytest.mark.asyncio()
-    @pytest.mark.parametrize(
-        ("bi_score", "concept_score", "expected"),
-        [(0.2, 0.7, 0.55), (0.9, 0.3, 0.48)],
-        ids=["concept_primary", "concept_demotes"],
-    )
-    async def test_blend_of_concept_and_biencoder(
-        self,
-        mock_storage: MagicMock,
-        mock_embeddings: AsyncMock,
-        bi_score: float,
-        concept_score: float,
-        expected: float,
-    ) -> None:
-        """0.7*concept + 0.3*bi-encoder determines final semantic score."""
-        f = PersonaFact(**_FK, content="t", confidence=0.5, embedding=_emb())
-        scores: dict[str, float] = {f.id: bi_score}
-        mock_storage.concept_embeddings.get_max_sim_per_owner = AsyncMock(
-            return_value={f.id: concept_score}
-        )
-        sims = await mock_storage.concept_embeddings.get_max_sim_per_owner(
-            _emb(),
-            owner_type="fact",
-            owner_ids=[f.id],
-        )
-        for fid, csim in sims.items():
-            bi_sim = scores.get(fid, 0.0)
-            scores[fid] = 0.7 * csim + 0.3 * bi_sim
-        assert abs(scores[f.id] - expected) < 1e-9
