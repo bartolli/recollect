@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS memory_traces (
     retrieval_count INTEGER DEFAULT 0,
     last_activation TIMESTAMPTZ,
     last_retrieval TIMESTAMPTZ,
+    last_decayed_at TIMESTAMPTZ,
     consolidated BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     decay_rate FLOAT DEFAULT 0.1,

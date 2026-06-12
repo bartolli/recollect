@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 
 import asyncpg
 
@@ -137,6 +138,33 @@ class PgTraceStore:
         except asyncpg.PostgresError as exc:
             logger.exception("Failed to apply strength factor")
             raise StorageError(f"Failed to apply strength factor: {exc}") from exc
+
+    async def apply_decay_factor(
+        self, trace_id: str, factor: float, decayed_at: datetime
+    ) -> None:
+        """Decay write: clamped multiplicative factor + telescoping stamp.
+
+        Stamping last_decayed_at in the same statement keeps window
+        bookkeeping atomic with the strength write. Boost factors go
+        through apply_strength_factor and must not touch the stamp --
+        a stamped boost would shrink the next decay window.
+        """
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                await conn.execute(
+                    "UPDATE memory_traces SET strength = "
+                    "LEAST(1.0, GREATEST(0.0, strength * $1)), "
+                    "last_decayed_at = $2 WHERE id = $3",
+                    factor,
+                    decayed_at,
+                    trace_id,
+                )
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            logger.exception("Failed to apply decay factor")
+            raise StorageError(f"Failed to apply decay factor: {exc}") from exc
 
     async def mark_activated(self, trace_id: str) -> None:
         """Increment activation counter and update timestamp."""

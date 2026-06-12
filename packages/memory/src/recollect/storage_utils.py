@@ -80,6 +80,9 @@ def row_to_trace(row: dict[str, Any]) -> MemoryTrace:
         retrieval_count=row.get("retrieval_count", 0),
         last_activation=row.get("last_activation"),
         last_retrieval=row.get("last_retrieval"),
+        # Decay bookkeeping: written only by apply_decay_factor, never
+        # client-supplied -- absent from trace_to_params by design.
+        last_decayed_at=row.get("last_decayed_at"),
         consolidated=row.get("consolidated", False),
         created_at=row["created_at"],
         decay_rate=row.get("decay_rate", 0.1),

@@ -6,6 +6,8 @@ use StorageContext directly via create_storage_context().
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from recollect.models import (
     Association,
     EntityRelation,
@@ -53,6 +55,12 @@ class PostgresStorage:
     async def apply_strength_factor(self, trace_id: str, factor: float) -> None:
         """Multiply a trace's strength atomically, clamped to [0, 1]."""
         await self._ctx.traces.apply_strength_factor(trace_id, factor)
+
+    async def apply_decay_factor(
+        self, trace_id: str, factor: float, decayed_at: datetime
+    ) -> None:
+        """Decay write: clamped factor + last_decayed_at stamp, one statement."""
+        await self._ctx.traces.apply_decay_factor(trace_id, factor, decayed_at)
 
     async def mark_activated(self, trace_id: str) -> None:
         """Increment activation counter and update timestamp."""

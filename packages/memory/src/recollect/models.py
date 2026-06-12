@@ -30,6 +30,7 @@ class MemoryTrace(BaseModel):
     retrieval_count: int = Field(default=0, ge=0)
     last_activation: dt | None = None
     last_retrieval: dt | None = None
+    last_decayed_at: dt | None = None
     consolidated: bool = False
     created_at: dt = Field(default_factory=memory_timestamp_for_storage)
     decay_rate: float = Field(default=0.1, ge=0.0)
@@ -277,14 +278,33 @@ def apply_displacement_decay(trace: MemoryTrace) -> MemoryTrace:
     )
 
 
-def apply_time_decay(trace: MemoryTrace) -> MemoryTrace:
-    """Apply exponential time decay based on age.
+def recency_anchor(trace: MemoryTrace) -> dt:
+    """Latest touch: max of last_retrieval, last_activation, created_at.
 
-    Formula: strength * exp(-decay_rate * hours_since_creation)
+    Shared by decay and the consolidation grace check -- anchored
+    differently, a reactivated trace past-grace re-archives on the
+    very next pass. Excludes last_decayed_at: a decay stamp feeding
+    grace would reset the forget clock every pass (immortality).
+    """
+    anchors = (trace.last_retrieval, trace.last_activation, trace.created_at)
+    return max(
+        memory_timestamp_for_comparison(ts) for ts in anchors if ts is not None
+    )
+
+
+def apply_time_decay(trace: MemoryTrace) -> MemoryTrace:
+    """Apply exponential decay over the telescoping recency window.
+
+    Formula: strength * exp(-decay_rate * hours_passed), windowed from
+    max(recency_anchor, last_decayed_at). The decay stamp clips the
+    window so per-pass factors telescope -- exp(-r*d1) * exp(-r*d2) ==
+    exp(-r*(d1+d2)) -- instead of re-decaying the full age each pass.
     """
     now = memory_timestamp_for_comparison(now_utc())
-    created = memory_timestamp_for_comparison(trace.created_at)
-    hours_passed = (now - created).total_seconds() / 3600.0
+    start = recency_anchor(trace)
+    if trace.last_decayed_at is not None:
+        start = max(start, memory_timestamp_for_comparison(trace.last_decayed_at))
+    hours_passed = (now - start).total_seconds() / 3600.0
 
     decay_rate = trace.decay_rate or float(config.get("memory.decay_rate", 0.1))
     decay_factor = math.exp(-decay_rate * hours_passed)

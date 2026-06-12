@@ -55,6 +55,7 @@ from recollect.models import (
     activation_boost_factor,
     apply_time_decay,
     displacement_decay_factor,
+    recency_anchor,
     retrieval_boost_factor,
 )
 from recollect.prompts import LoadedPrompt, load_packaged_default, load_prompt_file
@@ -2308,24 +2309,32 @@ class CognitiveMemory:
 
         Returns 'consolidated', 'forgotten', or 'pending'.
         """
-        # Naive full-age factor: re-decays from creation each pass
-        # (compounding). Per-pass telescoping requires a decay-anchor
-        # column; the atomic factor shape here is anchor-agnostic.
+        # Telescoping factor: apply_time_decay windows from
+        # max(recency_anchor, last_decayed_at); apply_decay_factor stamps
+        # the window end, so per-pass factors compose to the single-pass
+        # value -- exp(-r*d1) * exp(-r*d2) == exp(-r*(d1+d2)).
         decay_factor = (
             decayed.strength / trace.strength if trace.strength > 0.0 else 0.0
         )
+        decayed_at = now_utc()
         if decayed.strength >= threshold:
-            await self._storage.traces.apply_strength_factor(trace.id, decay_factor)
+            await self._storage.traces.apply_decay_factor(
+                trace.id, decay_factor, decayed_at
+            )
             await self._storage.traces.mark_consolidated(trace.id)
             return "consolidated"
 
-        now = memory_timestamp_for_comparison(now_utc())
-        created = memory_timestamp_for_comparison(trace.created_at)
-        age_hours = (now - created).total_seconds() / 3600.0
+        # Grace from the recency anchor, NOT last_decayed_at -- the decay
+        # stamp feeding grace would reset the forget clock every pass.
+        now = memory_timestamp_for_comparison(decayed_at)
+        anchor = recency_anchor(trace)
+        age_hours = (now - anchor).total_seconds() / 3600.0
 
         if age_hours >= grace_hours:
             await self._delete_trace_with_buffer_evict(trace.id)
             return "forgotten"
 
-        await self._storage.traces.apply_strength_factor(trace.id, decay_factor)
+        await self._storage.traces.apply_decay_factor(
+            trace.id, decay_factor, decayed_at
+        )
         return "pending"
