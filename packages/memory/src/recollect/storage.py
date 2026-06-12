@@ -78,6 +78,14 @@ class PostgresStorage:
         """Archive an active trace. Returns False when no active row matches."""
         return await self._ctx.traces.archive_trace(trace_id)
 
+    async def reactivate_trace(
+        self, trace_id: str, *, min_strength: float, activated_at: datetime
+    ) -> bool:
+        """Revive an archived trace. Returns False unless a row flipped."""
+        return await self._ctx.traces.reactivate_trace(
+            trace_id, min_strength=min_strength, activated_at=activated_at
+        )
+
     async def get_recent_traces(self, limit: int = 20) -> list[MemoryTrace]:
         """Get most recently created traces."""
         return await self._ctx.traces.get_recent_traces(limit)

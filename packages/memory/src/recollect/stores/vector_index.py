@@ -89,7 +89,7 @@ class PgVectorIndex:
                                strength, activation_count, retrieval_count,
                                last_activation, last_retrieval, consolidated,
                                created_at, decay_rate, emotional_valence,
-                               significance, session_id, user_id,
+                               significance, session_id, user_id, status,
                                1.0::float AS activation_level,
                                0 AS depth
                         FROM memory_traces WHERE id = $1
@@ -103,7 +103,7 @@ class PgVectorIndex:
                                mt.last_retrieval, mt.consolidated,
                                mt.created_at, mt.decay_rate,
                                mt.emotional_valence, mt.significance,
-                               mt.session_id, mt.user_id,
+                               mt.session_id, mt.user_id, mt.status,
                                (a.activation_level * $2 *
                                 CASE WHEN assoc.source_trace_id = a.id
                                      THEN assoc.forward_strength

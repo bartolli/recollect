@@ -22,6 +22,7 @@ def mock_trace_store() -> AsyncMock:
     s.get_traces_bulk = AsyncMock(return_value=[])
     s.delete_trace = AsyncMock(return_value=True)
     s.archive_trace = AsyncMock(return_value=True)
+    s.reactivate_trace = AsyncMock(return_value=True)
     s.apply_strength_factor = AsyncMock()
     s.apply_decay_factor = AsyncMock()
     s.mark_activated = AsyncMock()

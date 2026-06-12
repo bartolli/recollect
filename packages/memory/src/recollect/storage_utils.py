@@ -90,7 +90,9 @@ def row_to_trace(row: dict[str, Any]) -> MemoryTrace:
         significance=row.get("significance", 0.1),
         session_id=row.get("session_id"),
         user_id=row.get("user_id"),
-        # Explicit-column reads (spread CTE) omit status; absent means active.
+        # Absent status means active; every trace read (incl. the spread
+        # CTE) must SELECT status or archived rows masquerade as active
+        # and the reactivation hook never fires.
         status=row.get("status", "active"),
     )
 

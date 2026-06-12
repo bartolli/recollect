@@ -562,6 +562,8 @@ class CognitiveMemory:
                 (t, s) for t, s in all_candidates if t.session_id == session_id
             ]
 
+        all_candidates = await self._reactivate_archived_candidates(all_candidates)
+
         selected = self._select_within_budget(all_candidates, token_budget)
 
         thoughts = await self._boost_and_build_thoughts(selected)
@@ -737,6 +739,38 @@ class CognitiveMemory:
         if deleted:
             self._buffer.evict(trace_id)
         return deleted
+
+    async def _reactivate_archived_candidates(
+        self, candidates: list[tuple[MemoryTrace, float]]
+    ) -> list[tuple[MemoryTrace, float]]:
+        # Relevance revives: an archived candidate whose blended score
+        # clears the floor flips active before final ranking, whichever
+        # channel surfaced it. The floor is a SIMILARITY gate on the
+        # fused score; selection_threshold is a STRENGTH gate. Below the
+        # floor the candidate passes through unchanged -- noise does not
+        # revive substrate.
+        floor = float(self._config.get("retrieval.reactivation_floor", 0.3))
+        out: list[tuple[MemoryTrace, float]] = []
+        for trace, score in candidates:
+            if trace.status == "archived" and score >= floor:
+                revived = await self._storage.traces.reactivate_trace(
+                    trace.id,
+                    min_strength=trace.significance,
+                    activated_at=now_utc(),
+                )
+                if revived:
+                    # In-turn display copy mirrors the SQL reset; the DB
+                    # row is authoritative (atomic-factors posture).
+                    trace = trace.model_copy(
+                        update={
+                            "status": "active",
+                            "consolidated": False,
+                            "strength": max(trace.strength, trace.significance),
+                        }
+                    )
+                    logger.debug("Reactivated trace: %s", trace.id[:8])
+            out.append((trace, score))
+        return out
 
     async def _archive_trace_with_buffer_evict(self, trace_id: str) -> bool:
         # Buffer ⊆ memory_traces invariant: archive-first, evict-iff-archived.

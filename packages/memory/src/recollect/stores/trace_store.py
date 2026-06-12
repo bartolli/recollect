@@ -137,6 +137,40 @@ class PgTraceStore:
             logger.exception("Failed to archive trace")
             raise StorageError(f"Failed to archive trace {trace_id}: {exc}") from exc
 
+    async def reactivate_trace(
+        self, trace_id: str, *, min_strength: float, activated_at: datetime
+    ) -> bool:
+        """Revive an archived trace. Returns False unless a row flipped.
+
+        GREATEST is a monotone reset to significance (token-store
+        pattern), computed in-statement -- no stale in-memory read feeds
+        it. consolidated=FALSE re-enters the scan so a revived trace can
+        re-fade; without it a force-archived consolidated trace is
+        immortal. WHERE status='archived' makes concurrent hits
+        idempotent: exactly one applies.
+        """
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                result = await conn.execute(
+                    "UPDATE memory_traces SET status = 'active', "
+                    "consolidated = FALSE, "
+                    "strength = GREATEST(strength, $2), "
+                    "last_activation = $3 "
+                    "WHERE id = $1 AND status = 'archived'",
+                    trace_id,
+                    min_strength,
+                    activated_at,
+                )
+            return result == "UPDATE 1"
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            logger.exception("Failed to reactivate trace")
+            raise StorageError(
+                f"Failed to reactivate trace {trace_id}: {exc}"
+            ) from exc
+
     async def apply_strength_factor(self, trace_id: str, factor: float) -> None:
         """Multiply a trace's strength atomically, clamped to [0, 1].
 
