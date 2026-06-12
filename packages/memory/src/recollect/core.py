@@ -738,6 +738,12 @@ class CognitiveMemory:
         deleted = await self._storage.traces.delete_trace(trace_id)
         if deleted:
             self._buffer.evict(trace_id)
+            # concept_embeddings has no FK on its polymorphic owner --
+            # cascades miss it. Without this, erased content survives as
+            # orphaned concept text and probe cleanup accumulates rows.
+            await self._storage.concept_embeddings.delete_by_owner(
+                "trace", trace_id
+            )
         return deleted
 
     async def _reactivate_archived_candidates(

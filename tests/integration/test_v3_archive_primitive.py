@@ -232,11 +232,33 @@ class TestForgetGuard:
 
 
 class TestErase:
-    async def test_erase_hard_deletes(self, mem: CognitiveMemory) -> None:
+    async def test_erase_hard_deletes_including_concept_rows(
+        self, mem: CognitiveMemory, scratch_db: str
+    ) -> None:
         trace = MemoryTrace(content="gone", strength=0.3)
         await mem.storage.traces.store_trace(trace)
+        await mem.storage.concept_embeddings.store_concept_embeddings(
+            [
+                ConceptEmbedding(
+                    concept="content-derived phrase",
+                    owner_type="trace",
+                    owner_id=trace.id,
+                    embedding=[0.1] * 768,
+                )
+            ]
+        )
         assert await mem.erase(trace.id) is True
         assert await mem.storage.traces.get_trace(trace.id) is None
+        conn = await asyncpg.connect(scratch_db)
+        try:
+            leaked = await conn.fetchval(
+                "SELECT count(*) FROM concept_embeddings "
+                "WHERE owner_type = 'trace' AND owner_id = $1",
+                trace.id,
+            )
+        finally:
+            await conn.close()
+        assert leaked == 0
 
     async def test_forget_then_recallable_until_reactivation_story(
         self, mem: CognitiveMemory
