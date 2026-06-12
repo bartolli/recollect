@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS memory_traces (
     significance FLOAT DEFAULT 0.1,
     session_id TEXT,
     user_id TEXT,
+    status TEXT NOT NULL DEFAULT 'active',
     content_tsv tsvector GENERATED ALWAYS AS (
         to_tsvector('english', COALESCE(content, ''))
     ) STORED

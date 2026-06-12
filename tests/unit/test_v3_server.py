@@ -45,13 +45,15 @@ def mock_memory() -> AsyncMock:
         )
     ]
     memory.forget.return_value = True
-    memory.pin.return_value = PersonaFact(
-        subject="Alex",
-        predicate="likes",
-        object="coffee",
-        content="Alex likes coffee",
-        status="pinned",
-    )
+    memory.pin.return_value = [
+        PersonaFact(
+            subject="Alex",
+            predicate="likes",
+            object="coffee",
+            content="Alex likes coffee",
+            status="pinned",
+        )
+    ]
     memory.unpin.return_value = True
     memory.facts.return_value = [
         PersonaFact(
@@ -152,13 +154,14 @@ async def test_recall_custom_budget(
 
 async def test_pin(ctx: MagicMock, mock_memory: AsyncMock) -> None:
     result = await pin("trace-123", ctx)
-    assert isinstance(result, PersonaFact)
+    assert isinstance(result, list)
+    assert all(isinstance(f, PersonaFact) for f in result)
     mock_memory.pin.assert_awaited_once_with("trace-123")
 
 
 async def test_unpin_found(ctx: MagicMock, mock_memory: AsyncMock) -> None:
     result = await unpin("fact-123", ctx)
-    assert "unpinned" in result.lower()
+    assert "archived" in result.lower()
 
 
 async def test_unpin_not_found(

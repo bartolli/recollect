@@ -33,10 +33,12 @@ class PgTraceStore:
                         id, content, pattern, context, embedding, strength,
                         activation_count, retrieval_count, last_activation,
                         last_retrieval, consolidated, created_at, decay_rate,
-                        emotional_valence, significance, session_id, user_id
+                        emotional_valence, significance, session_id, user_id,
+                        status
                     ) VALUES (
                         $1, $2, $3::jsonb, $4::jsonb, $5::vector, $6,
-                        $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
+                        $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
+                        $18
                     )
                     """,
                     params["id"],
@@ -56,6 +58,7 @@ class PgTraceStore:
                     params["significance"],
                     params["session_id"],
                     params["user_id"],
+                    params["status"],
                 )
             return trace.id
         except StorageError:

@@ -113,11 +113,18 @@ class PgEntityIndex:
             raise StorageError(f"Failed to get traces by concept: {exc}") from exc
 
     async def match_entities(
-        self, names: list[str], *, limit: int = 20
+        self,
+        names: list[str],
+        *,
+        limit: int = 20,
+        user_id: str | None = None,
     ) -> list[tuple[str, float]]:
         """Match entity names using trigram similarity.
 
         Returns (trace_id, similarity_score) pairs ordered by score.
+        user_id restricts matches to traces owned by that user
+        (trace_entities carries no user column; the owning trace does).
+        None means no filter.
         """
         if not names:
             return []
@@ -130,9 +137,11 @@ class PgEntityIndex:
                     SELECT te.trace_id,
                            MAX(similarity(LOWER(te.entity_name), LOWER(n)))
                                AS sim
-                    FROM trace_entities te,
+                    FROM trace_entities te
+                    JOIN memory_traces mt ON mt.id = te.trace_id,
                          UNNEST($1::text[]) AS n
                     WHERE similarity(LOWER(te.entity_name), LOWER(n)) > $2
+                      AND ($4::text IS NULL OR mt.user_id = $4)
                     GROUP BY te.trace_id
                     ORDER BY sim DESC
                     LIMIT $3
@@ -140,6 +149,7 @@ class PgEntityIndex:
                     names,
                     threshold,
                     limit,
+                    user_id,
                 )
             return [(row["trace_id"], float(row["sim"])) for row in rows]
         except StorageError:

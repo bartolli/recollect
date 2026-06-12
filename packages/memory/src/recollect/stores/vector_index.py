@@ -63,12 +63,18 @@ class PgVectorIndex:
             raise StorageError(f"Failed to search: {exc}") from exc
 
     async def spread_activation(
-        self, seed_id: str, max_depth: int = 2
+        self,
+        seed_id: str,
+        max_depth: int = 2,
+        *,
+        user_id: str | None = None,
     ) -> list[tuple[MemoryTrace, float]]:
         """Spread activation from seed trace through associations.
 
         Returns connected traces with their activation levels,
-        decaying by weight at each hop.
+        decaying by weight at each hop. user_id excludes other users'
+        traces from traversal entirely -- a cross-user trace cannot
+        act as a bridge. None means no filter.
         """
         try:
             decay = float(config.get("activation.activation_decay", 0.7))
@@ -116,6 +122,7 @@ class PgVectorIndex:
                                 ELSE assoc.source_trace_id
                             END
                         WHERE a.depth < $3
+                          AND ($5::text IS NULL OR mt.user_id = $5)
                           AND a.activation_level * $2 *
                               CASE WHEN assoc.source_trace_id = a.id
                                    THEN assoc.forward_strength
@@ -131,6 +138,7 @@ class PgVectorIndex:
                     decay,
                     max_depth,
                     threshold,
+                    user_id,
                 )
             return [(row_to_trace(dict(r)), float(r["activation_level"])) for r in rows]
         except StorageError:

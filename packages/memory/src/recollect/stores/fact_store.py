@@ -8,7 +8,7 @@ import asyncpg
 
 from recollect.datetime_utils import now_utc
 from recollect.exceptions import StorageError
-from recollect.models import PersonaFact
+from recollect.models import FactStatus, PersonaFact
 from recollect.pool import PoolManager
 from recollect.storage_utils import persona_fact_to_params, row_to_persona_fact
 
@@ -269,12 +269,16 @@ class PgFactStore:
         except asyncpg.PostgresError as exc:
             raise StorageError(f"Failed to increment mention count: {exc}") from exc
 
-    async def update_fact_status(self, fact_id: str, status: str) -> None:
-        """Update the status of a persona fact."""
+    async def update_fact_status(self, fact_id: str, status: FactStatus) -> bool:
+        """Update the status of a persona fact.
+
+        Returns False when no row matched -- a 0-row UPDATE is not-found,
+        not success.
+        """
         try:
             pool = await self._pool_mgr.get_pool()
             async with pool.acquire() as conn:
-                await conn.execute(
+                result = await conn.execute(
                     """
                     UPDATE persona_facts
                     SET status = $2, updated_at = $3
@@ -284,6 +288,7 @@ class PgFactStore:
                     status,
                     now_utc(),
                 )
+            return result != "UPDATE 0"
         except StorageError:
             raise
         except asyncpg.PostgresError as exc:

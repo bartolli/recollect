@@ -7,6 +7,7 @@ task_prefix_version) and the verify-against-stored guard semantics.
 from __future__ import annotations
 
 import pytest
+from recollect.config import MemoryConfig
 from recollect.embeddings import FastEmbedProvider
 from recollect.exceptions import EmbeddingContractError
 from recollect.storage_ops import verify_embedding_contract
@@ -26,6 +27,15 @@ class TestProviderContract:
         provider = FastEmbedProvider(model_name="custom-model")
         model, _ = provider.contract()
         assert model == "custom-model"
+
+    def test_from_config_contract_reflects_configured_model(self) -> None:
+        cfg = MemoryConfig()
+        cfg._set("embedding.model", "custom/from-config-model")
+        provider = FastEmbedProvider.from_config(cfg)
+        assert provider.contract() == (
+            "custom/from-config-model",
+            FastEmbedProvider.TASK_PREFIX_VERSION,
+        )
 
 
 class TestVerifyEmbeddingContract:

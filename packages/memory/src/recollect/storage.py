@@ -9,6 +9,7 @@ from __future__ import annotations
 from recollect.models import (
     Association,
     EntityRelation,
+    FactStatus,
     MemoryTrace,
     PersonaFact,
     TraceConcept,
@@ -177,9 +178,9 @@ class PostgresStorage:
         """Increment mention count for a fact."""
         return await self._ctx.facts.increment_mention_count(fact_id)
 
-    async def update_fact_status(self, fact_id: str, status: str) -> None:
-        """Update fact status."""
-        await self._ctx.facts.update_fact_status(fact_id, status)
+    async def update_fact_status(self, fact_id: str, status: FactStatus) -> bool:
+        """Update fact status. Returns False when the fact does not exist."""
+        return await self._ctx.facts.update_fact_status(fact_id, status)
 
     async def get_facts_by_context(
         self, concepts: list[str], *, limit: int = 10

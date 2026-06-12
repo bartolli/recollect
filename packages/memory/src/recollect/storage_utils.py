@@ -47,6 +47,7 @@ def trace_to_params(trace: MemoryTrace) -> dict[str, Any]:
         "significance": trace.significance,
         "session_id": trace.session_id,
         "user_id": trace.user_id,
+        "status": trace.status,
     }
 
 
@@ -86,6 +87,8 @@ def row_to_trace(row: dict[str, Any]) -> MemoryTrace:
         significance=row.get("significance", 0.1),
         session_id=row.get("session_id"),
         user_id=row.get("user_id"),
+        # Explicit-column reads (spread CTE) omit status; absent means active.
+        status=row.get("status", "active"),
     )
 
 

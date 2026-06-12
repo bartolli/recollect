@@ -16,9 +16,10 @@ import asyncpg
 import pytest
 from recollect.bootstrap.migrations import default_registry
 from recollect.bootstrap.runner import apply
+from recollect.config import config as global_config
 from recollect.core import CognitiveMemory
 from recollect.embeddings import FastEmbedProvider
-from recollect.exceptions import EmbeddingContractError
+from recollect.exceptions import EmbeddingContractError, StorageError
 from recollect.storage_ops import get_embedding_contract
 
 if TYPE_CHECKING:
@@ -93,6 +94,66 @@ class TestM003EmbeddingContract:
                     "INSERT INTO embedding_contract (model, task_prefix_version) "
                     "VALUES ('other', 'other')"
                 )
+
+
+class TestM003ConfiguredModel:
+    async def test_custom_model_bootstraps_and_connects(
+        self, scratch: _ScratchFixture,
+    ) -> None:
+        # Regression: m003 must stamp the configured provider, not the
+        # nomic default -- fresh DBs under a custom embedding.model
+        # refused to start on first connect.
+        pool, dsn = scratch
+        original = global_config.get("embedding.model")
+        global_config._set("embedding.model", "custom/contract-test-model")
+        try:
+            mem = CognitiveMemory()
+            await mem.connect(dsn)
+            await mem.close()
+        finally:
+            global_config._set("embedding.model", original)
+        stored = await get_embedding_contract(pool)
+        assert stored == (
+            "custom/contract-test-model",
+            FastEmbedProvider.TASK_PREFIX_VERSION,
+        )
+
+    async def test_reconfigured_model_refuses_on_stamped_db(
+        self, scratch: _ScratchFixture,
+    ) -> None:
+        # Guard: config-derived stamping must not loosen the mismatch
+        # refusal -- a DB stamped under the default still rejects a
+        # provider reconfigured afterward.
+        pool, dsn = scratch
+        await apply(pool, default_registry())
+        original = global_config.get("embedding.model")
+        global_config._set("embedding.model", "custom/contract-test-model")
+        try:
+            mem = CognitiveMemory()
+            with pytest.raises(EmbeddingContractError, match="re-embed"):
+                await mem.connect(dsn)
+        finally:
+            global_config._set("embedding.model", original)
+
+
+class TestGetEmbeddingContract:
+    async def test_absent_table_returns_none(
+        self, scratch: _ScratchFixture,
+    ) -> None:
+        # Pre-m003 DB: absence means uninitialized, not an error.
+        pool, _ = scratch
+        assert await get_embedding_contract(pool) is None
+
+    async def test_non_absence_error_propagates(
+        self, scratch: _ScratchFixture,
+    ) -> None:
+        # A broken contract table must fail loudly -- swallowing to None
+        # silently skips contract verification at connect.
+        pool, _ = scratch
+        async with pool.acquire() as conn:
+            await conn.execute("CREATE TABLE embedding_contract (wrong TEXT)")
+        with pytest.raises(StorageError, match="embedding contract"):
+            await get_embedding_contract(pool)
 
 
 class TestConnectVerifiesContract:

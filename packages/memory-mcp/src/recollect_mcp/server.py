@@ -112,7 +112,7 @@ async def app_lifespan(
         return await _generate_primer(app)
 
     async def _facts() -> str:
-        all_facts = await app.memory.facts()
+        all_facts = await app.memory.facts(user_id=app.user_id or None)
         active = [f for f in all_facts if f.status in ("promoted", "pinned")]
         return _format_facts(active)
 
@@ -203,7 +203,8 @@ PIN -- Promote a memory to a permanent persona fact.
   Use this for stable truths about the user: allergies, relationships,
   preferences. Pinned facts are always surfaced during relevant recall.
 
-UNPIN -- Remove a persona fact that is no longer accurate.
+UNPIN -- Archive a persona fact that is no longer accurate.
+  The fact stops surfacing in recall and reflect.
 
 FORGET -- Remove an incorrect or irrelevant memory.
 
@@ -337,7 +338,7 @@ async def reflect(ctx: Ctx) -> str:
     app = _get_ctx(ctx)
     app.primed = True
     primer = await _generate_primer(app)
-    all_facts = await app.memory.facts()
+    all_facts = await app.memory.facts(user_id=app.user_id or None)
     active = [f for f in all_facts if f.status in ("promoted", "pinned")]
     facts_text = _format_facts(active)
     return f"{primer}\n\n{facts_text}"
@@ -347,8 +348,8 @@ async def reflect(ctx: Ctx) -> str:
 async def pin(
     trace_id: str,
     ctx: Ctx,
-) -> PersonaFact:
-    """Promote a memory to a permanent persona fact.
+) -> list[PersonaFact]:
+    """Promote a memory's extracted relations to permanent persona facts.
 
     Use for stable truths: allergies, relationships, preferences.
     Pinned facts are always surfaced during relevant recall.
@@ -371,15 +372,18 @@ async def unpin(
     fact_id: str,
     ctx: Ctx,
 ) -> str:
-    """Remove a persona fact that is no longer accurate.
+    """Archive a persona fact that is no longer accurate.
+
+    The fact stops surfacing in recall and reflect; the row is
+    retained for audit.
 
     Args:
-        fact_id: ID of the persona fact to remove.
+        fact_id: ID of the persona fact to archive.
     """
     try:
-        deleted = await _get_memory(ctx).unpin(fact_id)
-        if deleted:
-            return f"Persona fact {fact_id} unpinned."
+        archived = await _get_memory(ctx).unpin(fact_id)
+        if archived:
+            return f"Persona fact {fact_id} archived; it will no longer surface."
         return f"Persona fact {fact_id} not found."
     except MemorySDKError as exc:
         logger.exception("SDK error in unpin")
@@ -489,7 +493,7 @@ def _format_single_fact(fact: PersonaFact) -> str:
 
 async def _generate_primer(app: AppContext) -> str:
     """Generate a two-level relational graph from persona facts."""
-    facts = await app.memory.facts()
+    facts = await app.memory.facts(user_id=app.user_id or None)
     active_facts = [f for f in facts if f.status in ("promoted", "pinned")]
 
     if not active_facts:

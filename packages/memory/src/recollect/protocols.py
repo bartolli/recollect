@@ -13,6 +13,7 @@ if TYPE_CHECKING:
         Association,
         ConceptEmbedding,
         EntityRelation,
+        FactStatus,
         MemoryTrace,
         PersonaFact,
         RecallToken,
@@ -58,7 +59,11 @@ class VectorIndex(Protocol):
     ) -> list[tuple[MemoryTrace, float]]: ...
 
     async def spread_activation(
-        self, seed_id: str, max_depth: int = 2
+        self,
+        seed_id: str,
+        max_depth: int = 2,
+        *,
+        user_id: str | None = None,
     ) -> list[tuple[MemoryTrace, float]]:
         """Return traces with their activation levels."""
         ...
@@ -84,7 +89,11 @@ class EntityIndex(Protocol):
     ) -> list[str]: ...
 
     async def match_entities(
-        self, names: list[str], *, limit: int = 20
+        self,
+        names: list[str],
+        *,
+        limit: int = 20,
+        user_id: str | None = None,
     ) -> list[tuple[str, float]]:
         """Match entity names by trigram similarity."""
         ...
@@ -160,6 +169,7 @@ class RecallTokenStore(Protocol):
         *,
         strength_threshold: float = 0.1,
         include_archived: bool = False,
+        user_id: str | None = None,
     ) -> list[dict[str, object]]:
         """Find existing token groups linked to any of the given traces.
 
@@ -183,6 +193,7 @@ class RecallTokenStore(Protocol):
         seed_trace_ids: list[str],
         *,
         strength_threshold: float = 0.1,
+        user_id: str | None = None,
     ) -> list[tuple[str, str, float, float, str]]:
         """One-hop token activation from seed traces.
 
@@ -290,7 +301,7 @@ class FactStore(Protocol):
 
     async def increment_mention_count(self, fact_id: str) -> int: ...
 
-    async def update_fact_status(self, fact_id: str, status: str) -> None: ...
+    async def update_fact_status(self, fact_id: str, status: FactStatus) -> bool: ...
 
     async def get_facts_by_context(
         self,

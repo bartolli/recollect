@@ -11,6 +11,8 @@ import logging
 import math
 from typing import Any, cast
 
+from pydantic import ValidationError
+
 from recollect.buffer import WorkingMemory
 from recollect.config import MemoryConfig
 from recollect.config import config as default_config
@@ -28,6 +30,7 @@ from recollect.extraction import PatternExtractor
 from recollect.llm.types import (
     ExtractionResult,
     Message,
+    Relation,
     SituationalAssessment,
     TokenAssessment,
 )
@@ -123,6 +126,34 @@ _PREDICATE_ALIASES: dict[str, str] = {
 def _canonicalize_predicate(predicate: str) -> str:
     """Normalize predicate to canonical form via alias lookup."""
     return _PREDICATE_ALIASES.get(predicate, predicate)
+
+
+_SURFACING_RANK: dict[str, int] = {
+    "archived": 0,
+    "candidate": 0,
+    "promoted": 1,
+    "pinned": 2,
+}
+
+
+def _inherit_surfacing_status(old: PersonaFact, new: PersonaFact) -> PersonaFact:
+    # A correction must not demote out of recall: pinned stays pinned,
+    # promoted stays promoted. Archived/candidate old facts inherit nothing.
+    if _SURFACING_RANK[old.status] > _SURFACING_RANK[new.status]:
+        return new.model_copy(update={"status": old.status})
+    return new
+
+
+def _relations_from_pattern(pattern: dict[str, Any]) -> list[Relation]:
+    # trace.pattern persists the full ExtractionResult dump; rows predating
+    # that contract or carrying junk shapes fall back to no relations.
+    relations: list[Relation] = []
+    for item in pattern.get("relations") or []:
+        try:
+            relations.append(Relation.model_validate(item))
+        except ValidationError:
+            continue
+    return relations
 
 
 _CATEGORY_SCOPE_MAP: dict[str, str] = {
@@ -316,13 +347,7 @@ class CognitiveMemory:
     ) -> None:
         self._config = config or default_config
         self._storage = storage or create_storage_context()
-        self._embeddings = embeddings or FastEmbedProvider(
-            model_name=str(
-                self._config.get("embedding.model", "nomic-ai/nomic-embed-text-v1.5")
-            ),
-            dimensions=self._config.embedding_dimensions,
-            cache_dir=str(self._config.get("embedding.cache_dir", "") or "") or None,
-        )
+        self._embeddings = embeddings or FastEmbedProvider.from_config(self._config)
         self._extractor = extractor
         self._buffer = WorkingMemory(self._config.working_memory_capacity)
         self._connected = False
@@ -514,7 +539,7 @@ class CognitiveMemory:
         )
 
         search_limit = int(self._config.get("retrieval.search_limit", 10))
-        wm_candidates = self._search_working_memory(query_embedding)
+        wm_candidates = self._search_working_memory(query_embedding, user_id=user_id)
         storage_scored = await self._storage.vectors.search_semantic(
             query_embedding,
             limit=search_limit,
@@ -523,7 +548,7 @@ class CognitiveMemory:
         )
         storage_candidates = [trace for trace, _ in storage_scored]
 
-        entity_matches = await self._match_query_entities(query)
+        entity_matches = await self._match_query_entities(query, user_id=user_id)
         if entity_matches:
             entity_trace_ids = [tid for tid, _ in entity_matches]
             entity_candidates = await self._storage.traces.get_traces_bulk(
@@ -542,10 +567,12 @@ class CognitiveMemory:
                     seen_ids.add(t.id)
 
         seed_count = int(self._config.get("retrieval.spread_seed_count", 3))
-        activated = await self._spread_from_candidates(storage_candidates[:seed_count])
+        activated = await self._spread_from_candidates(
+            storage_candidates[:seed_count], user_id=user_id
+        )
 
         token_activated = await self._activate_recall_tokens(
-            query_embedding, storage_scored
+            query_embedding, storage_scored, user_id=user_id
         )
 
         all_candidates = await self._merge_candidates(
@@ -555,6 +582,7 @@ class CognitiveMemory:
             activated,
             entity_matches=entity_matches if entity_matches else None,
             token_activated=token_activated,
+            user_id=user_id,
         )
 
         if session_id is not None:
@@ -758,39 +786,59 @@ class CognitiveMemory:
             status="ok" if self._connected else "disconnected",
         )
 
-    async def pin(self, trace_id: str) -> PersonaFact:
-        """Create a persona fact from an existing trace."""
+    async def pin(self, trace_id: str) -> list[PersonaFact]:
+        """Pin a trace's extracted relations as permanent persona facts.
+
+        Promotes what extraction persisted in trace.pattern, bypassing
+        the confidence gate -- pin is the user saying "this matters".
+        The generic `user noted` SPO is only the empty-extraction
+        fallback.
+        """
         if not trace_id:
             raise ValueError("Trace ID must be a non-empty string")
         trace = await self._storage.traces.get_trace(trace_id)
         if trace is None:
             raise TraceNotFoundError(f"Trace {trace_id} not found")
-        fact = PersonaFact(
-            subject="user",
-            predicate="noted",
-            object=trace.content or "",
-            content=trace.content or "",
-            source_trace_id=trace_id,
-            user_id=trace.user_id,
-            confidence=1.0,
-            status="pinned",
-        )
-        await self._storage.facts.store_persona_fact(fact)
-        return fact
+        relations = _relations_from_pattern(trace.pattern)
+        if not relations:
+            fallback = PersonaFact(
+                subject="user",
+                predicate="noted",
+                object=trace.content or "",
+                content=trace.content or "",
+                source_trace_id=trace_id,
+                user_id=trace.user_id,
+                confidence=1.0,
+                status="pinned",
+            )
+            await self._storage.facts.store_persona_fact(fallback)
+            return [fallback]
+        facts: list[PersonaFact] = []
+        for rel in relations:
+            fact = await self._relation_to_fact(rel, trace, status="pinned")
+            await self._storage.facts.store_persona_fact(fact)
+            await self._embed_fact_tags(fact)
+            facts.append(fact)
+        return facts
 
     async def unpin(self, fact_id: str) -> bool:
-        """Demote a pinned fact back to promoted status."""
+        """Archive a persona fact: it leaves every surfacing path.
+
+        The row is retained for audit. Returns False when the fact
+        does not exist.
+        """
         if not fact_id:
             raise ValueError("Fact ID must be a non-empty string")
-        try:
-            await self._storage.facts.update_fact_status(fact_id, "promoted")
-            return True
-        except StorageError:
-            return False
+        return await self._storage.facts.update_fact_status(fact_id, "archived")
 
-    async def facts(self, subject: str | None = None) -> list[PersonaFact]:
-        """List persona facts, optionally filtered by subject."""
-        return await self._storage.facts.get_persona_facts(subject)
+    async def facts(
+        self,
+        subject: str | None = None,
+        *,
+        user_id: str | None = None,
+    ) -> list[PersonaFact]:
+        """List persona facts, optionally filtered by subject and user."""
+        return await self._storage.facts.get_persona_facts(subject, user_id=user_id)
 
     async def start_session(
         self,
@@ -1131,36 +1179,42 @@ class CognitiveMemory:
         for rel in result.relations:
             if rel.confidence < threshold:
                 continue
-            category: FactCategory = rel.category
             status: FactStatus = (
                 "promoted"
-                if _should_fast_track(category, rel.confidence)
+                if _should_fast_track(rel.category, rel.confidence)
                 else "candidate"
             )
-            content = rel.context or f"{rel.source} {rel.relation} {rel.target}"
-            try:
-                fact_embedding = await self._embeddings.generate_embedding(
-                    content, task="search_document"
-                )
-            except (ValueError, RuntimeError, OSError):
-                fact_embedding = None
-            fact = PersonaFact(
-                subject=rel.source,
-                predicate=_canonicalize_predicate(rel.relation),
-                object=rel.target,
-                category=category,
-                content=content,
-                source_trace_id=trace.id,
-                user_id=trace.user_id,
-                confidence=rel.confidence,
-                status=status,
-                scope=_category_to_scope(category),
-                context_tags=rel.context_tags,
-                embedding=fact_embedding,
-            )
+            fact = await self._relation_to_fact(rel, trace, status=status)
             stored = await self._store_or_promote_fact(fact)
             if stored is not None:
                 await self._embed_fact_tags(stored)
+
+    async def _relation_to_fact(
+        self, rel: Relation, trace: MemoryTrace, *, status: FactStatus
+    ) -> PersonaFact:
+        # Single construction path: extraction-time promotion and pin()
+        # must produce identical facts apart from status.
+        content = rel.context or f"{rel.source} {rel.relation} {rel.target}"
+        try:
+            fact_embedding = await self._embeddings.generate_embedding(
+                content, task="search_document"
+            )
+        except (ValueError, RuntimeError, OSError):
+            fact_embedding = None
+        return PersonaFact(
+            subject=rel.source,
+            predicate=_canonicalize_predicate(rel.relation),
+            object=rel.target,
+            category=rel.category,
+            content=content,
+            source_trace_id=trace.id,
+            user_id=trace.user_id,
+            confidence=rel.confidence,
+            status=status,
+            scope=_category_to_scope(rel.category),
+            context_tags=rel.context_tags,
+            embedding=fact_embedding,
+        )
 
     async def _store_or_promote_fact(self, fact: PersonaFact) -> PersonaFact | None:
         """Store a new fact or promote an existing candidate.
@@ -1210,8 +1264,9 @@ class CognitiveMemory:
         Every branch writes new_fact; returns it for derived-write gating.
         """
         if old_fact.predicate == new_fact.predicate:
-            await self._storage.facts.supersede_persona_fact(old_fact.id, new_fact)
-            return new_fact
+            replacement = _inherit_surfacing_status(old_fact, new_fact)
+            await self._storage.facts.supersede_persona_fact(old_fact.id, replacement)
+            return replacement
         threshold = float(
             self._config.get("persona.predicate_similarity_threshold", 0.8)
         )
@@ -1222,9 +1277,10 @@ class CognitiveMemory:
             new_fact.predicate, task="clustering"
         )
         if _cosine_similarity(emb_a, emb_b) >= threshold:
-            await self._storage.facts.supersede_persona_fact(old_fact.id, new_fact)
-        else:
-            await self._storage.facts.store_persona_fact(new_fact)
+            replacement = _inherit_surfacing_status(old_fact, new_fact)
+            await self._storage.facts.supersede_persona_fact(old_fact.id, replacement)
+            return replacement
+        await self._storage.facts.store_persona_fact(new_fact)
         return new_fact
 
     async def _extract_entity_relations(
@@ -1277,14 +1333,16 @@ class CognitiveMemory:
         assert trace.embedding is not None  # Guarded by callers
         top_k = int(self._config.get("recall_tokens.write_time_top_k", 5))
         threshold = float(self._config.get("recall_tokens.write_time_threshold", 0.42))
+        # Scope to the trace's owner: a situational group must never span
+        # users, and a cross-user trace must never anchor group discovery.
         related = await self._find_related_for_tokens(
-            trace.embedding, trace.id, top_k, threshold
+            trace.embedding, trace.id, top_k, threshold, user_id=trace.user_id
         )
         if not related:
             return [], []
         related_ids = [t.id for t, _ in related]
         existing_groups = await self._storage.recall_tokens.find_groups_for_traces(
-            related_ids, include_archived=True
+            related_ids, include_archived=True, user_id=trace.user_id
         )
         return related, existing_groups
 
@@ -1312,10 +1370,12 @@ class CognitiveMemory:
         exclude_id: str,
         top_k: int,
         threshold: float,
+        *,
+        user_id: str | None = None,
     ) -> list[tuple[MemoryTrace, float]]:
         """Find traces related to the new trace above similarity threshold."""
         candidates = await self._storage.vectors.search_semantic(
-            embedding, limit=top_k
+            embedding, limit=top_k, user_id=user_id
         )
         return [
             (trace, sim)
@@ -1509,12 +1569,18 @@ class CognitiveMemory:
     # -- Private: think_about helpers --
 
     def _search_working_memory(
-        self, query_embedding: list[float]
+        self, query_embedding: list[float], *, user_id: str | None = None
     ) -> list[tuple[MemoryTrace, float]]:
-        """Find relevant traces in working memory by embedding similarity."""
+        """Find relevant traces in working memory by embedding similarity.
+
+        The buffer is shared process state, not per-user; user_id filters
+        candidates the same way the storage channels do. None: no filter.
+        """
         wm_threshold = float(self._config.get("retrieval.wm_similarity_threshold", 0.3))
         results: list[tuple[MemoryTrace, float]] = []
         for trace in self._buffer.get_active():
+            if user_id is not None and trace.user_id != user_id:
+                continue
             if trace.embedding is not None:
                 sim = _cosine_similarity(query_embedding, trace.embedding)
                 if sim > wm_threshold:
@@ -1523,13 +1589,15 @@ class CognitiveMemory:
         return results
 
     async def _spread_from_candidates(
-        self, candidates: list[MemoryTrace]
+        self, candidates: list[MemoryTrace], *, user_id: str | None = None
     ) -> list[tuple[MemoryTrace, float]]:
         """Spread activation from top candidates."""
         activated: list[tuple[MemoryTrace, float]] = []
         seen_ids: set[str] = set()
         for candidate in candidates:
-            spreads = await self._storage.vectors.spread_activation(candidate.id)
+            spreads = await self._storage.vectors.spread_activation(
+                candidate.id, user_id=user_id
+            )
             for trace, level in spreads:
                 if trace.id not in seen_ids:
                     activated.append((trace, level))
@@ -1540,6 +1608,8 @@ class CognitiveMemory:
         self,
         query_embedding: list[float],
         storage_scored: list[tuple[MemoryTrace, float]],
+        *,
+        user_id: str | None = None,
     ) -> dict[str, float]:
         """Query-time token activation with iterative re-seeding.
 
@@ -1578,7 +1648,7 @@ class CognitiveMemory:
 
         # Round 1: one-hop from vector results
         round1_props, round1_tokens = await self._token_hop(
-            seed_ids, seed_cosines, hop_decay, strength_threshold
+            seed_ids, seed_cosines, hop_decay, strength_threshold, user_id=user_id
         )
         propagated_sims.update(round1_props)
         all_token_ids.update(round1_tokens)
@@ -1604,6 +1674,7 @@ class CognitiveMemory:
                 hop_decay,
                 strength_threshold,
                 exclude_ids=list(propagated_sims.keys()) + seed_ids,
+                user_id=user_id,
             )
             all_token_ids.update(round_tokens)
             for tid, prop in round_props.items():
@@ -1631,6 +1702,7 @@ class CognitiveMemory:
         strength_threshold: float,
         *,
         exclude_ids: list[str] | None = None,
+        user_id: str | None = None,
     ) -> tuple[dict[str, float], set[str]]:
         """Single hop of token activation from seed traces.
 
@@ -1638,7 +1710,9 @@ class CognitiveMemory:
         """
         try:
             rows = await self._storage.recall_tokens.get_activated_trace_ids(
-                seed_ids, strength_threshold=strength_threshold
+                seed_ids,
+                strength_threshold=strength_threshold,
+                user_id=user_id,
             )
         except (StorageError, OSError):
             logger.exception("Token hop activation failed")
@@ -1691,6 +1765,8 @@ class CognitiveMemory:
         activated: list[tuple[MemoryTrace, float]],
         entity_matches: list[tuple[str, float]] | None = None,
         token_activated: dict[str, float] | None = None,
+        *,
+        user_id: str | None = None,
     ) -> list[tuple[MemoryTrace, float]]:
         """Merge candidates from all sources using weighted max-score fusion.
 
@@ -1743,7 +1819,11 @@ class CognitiveMemory:
 
         token_bonuses: dict[str, float] = token_activated or {}
         await self._fetch_token_traces(
-            query_embedding, token_bonuses, traces_by_id, scores_by_id
+            query_embedding,
+            token_bonuses,
+            traces_by_id,
+            scores_by_id,
+            user_id=user_id,
         )
 
         propagation_blend = float(
@@ -1790,8 +1870,14 @@ class CognitiveMemory:
         token_bonuses: dict[str, float],
         traces_by_id: dict[str, MemoryTrace],
         scores_by_id: dict[str, float],
+        *,
+        user_id: str | None = None,
     ) -> None:
-        """Fetch token-activated traces not yet in the candidate pool."""
+        """Fetch token-activated traces not yet in the candidate pool.
+
+        user_id post-filter: get_traces_bulk fetches by ID with no user
+        predicate; guard the pool even if a caller feeds unscoped IDs.
+        """
         if not token_bonuses:
             return
         missing = [tid for tid in token_bonuses if tid not in traces_by_id]
@@ -1800,6 +1886,8 @@ class CognitiveMemory:
         try:
             token_traces = await self._storage.traces.get_traces_bulk(missing)
             for t in token_traces:
+                if user_id is not None and t.user_id != user_id:
+                    continue
                 traces_by_id[t.id] = t
                 if t.embedding is not None:
                     scores_by_id[t.id] = _cosine_similarity(
@@ -1926,7 +2014,9 @@ class CognitiveMemory:
                 )
                 await self._storage.traces.mark_activated(trace.id)
 
-    async def _match_query_entities(self, query: str) -> list[tuple[str, float]]:
+    async def _match_query_entities(
+        self, query: str, *, user_id: str | None = None
+    ) -> list[tuple[str, float]]:
         """Find trace IDs for entities mentioned in the query.
 
         Extracts candidate entity names from query text, then uses
@@ -1936,7 +2026,9 @@ class CognitiveMemory:
         if not names:
             return []
         try:
-            return await self._storage.entities.match_entities(names)
+            return await self._storage.entities.match_entities(
+                names, user_id=user_id
+            )
         except (StorageError, OSError):
             logger.exception("Entity matching failed for query")
             return []

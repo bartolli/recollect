@@ -4,8 +4,9 @@ Single-row table holds (model, task_prefix_version, applied_at). CHECK
 constraint enforces singletonness. Subsequent connects compare the row
 to the running provider via verify_embedding_contract().
 
-`get_current_contract` is injectable for testing; default reads from a
-fresh FastEmbedProvider instance.
+`get_current_contract` is injectable for testing; default derives the
+provider from config — the same construction path as CognitiveMemory,
+so the stamp matches what connect() verifies against.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from typing import Any
 
 import asyncpg
 
+from recollect.config import config
 from recollect.embeddings import FastEmbedProvider
 
 _CREATE_TABLE = """
@@ -28,7 +30,7 @@ CREATE TABLE IF NOT EXISTS embedding_contract (
 
 
 def _default_contract() -> tuple[str, str]:
-    return FastEmbedProvider().contract()
+    return FastEmbedProvider.from_config(config).contract()
 
 
 class _M003EmbeddingContract:

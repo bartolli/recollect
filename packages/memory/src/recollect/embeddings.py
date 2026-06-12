@@ -10,9 +10,12 @@ from __future__ import annotations
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from recollect.exceptions import EmbeddingError
+
+if TYPE_CHECKING:
+    from recollect.config import MemoryConfig
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +39,18 @@ class FastEmbedProvider:
         self._dimensions = dimensions
         self._cache_dir = self._resolve_cache_dir(cache_dir)
         self._model: Any = None
+
+    @classmethod
+    def from_config(cls, config: MemoryConfig) -> FastEmbedProvider:
+        # Single construction path: CognitiveMemory and the m003 contract
+        # stamp must build identical providers or fresh DBs refuse to start.
+        return cls(
+            model_name=str(
+                config.get("embedding.model", "nomic-ai/nomic-embed-text-v1.5")
+            ),
+            dimensions=config.embedding_dimensions,
+            cache_dir=str(config.get("embedding.cache_dir", "") or "") or None,
+        )
 
     @staticmethod
     def _resolve_cache_dir(cache_dir: str | None) -> str:

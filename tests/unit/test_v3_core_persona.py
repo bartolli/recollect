@@ -171,23 +171,36 @@ class TestPinUnpinFacts:
         trace = MemoryTrace(content="Remember this", id="trace-1")
         mock_trace_store.get_trace.return_value = trace
         mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
-        fact = await mem.pin("trace-1")
-        assert fact.content == "Remember this"
-        assert fact.confidence == 1.0
+        facts = await mem.pin("trace-1")
+        # Empty pattern: the generic noted SPO is the fallback, as a list.
+        assert len(facts) == 1
+        assert facts[0].content == "Remember this"
+        assert facts[0].confidence == 1.0
         mock_fact_store.store_persona_fact.assert_awaited_once()
 
-    async def test_unpin_demotes_to_promoted(
+    async def test_unpin_archives_fact(
         self,
         mock_storage: MagicMock,
         mock_embeddings: AsyncMock,
         mock_fact_store: AsyncMock,
     ) -> None:
+        mock_fact_store.update_fact_status.return_value = True
         mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
         result = await mem.unpin("fact-1")
         assert result is True
         mock_fact_store.update_fact_status.assert_awaited_once_with(
-            "fact-1", "promoted"
+            "fact-1", "archived"
         )
+
+    async def test_unpin_missing_fact_returns_false(
+        self,
+        mock_storage: MagicMock,
+        mock_embeddings: AsyncMock,
+        mock_fact_store: AsyncMock,
+    ) -> None:
+        mock_fact_store.update_fact_status.return_value = False
+        mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
+        assert await mem.unpin("no-such-id") is False
 
     async def test_facts_delegates_to_storage(
         self,
@@ -196,5 +209,7 @@ class TestPinUnpinFacts:
         mock_fact_store: AsyncMock,
     ) -> None:
         mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
-        await mem.facts("Sarah")
-        mock_fact_store.get_persona_facts.assert_awaited_once_with("Sarah")
+        await mem.facts("Sarah", user_id="alex")
+        mock_fact_store.get_persona_facts.assert_awaited_once_with(
+            "Sarah", user_id="alex"
+        )

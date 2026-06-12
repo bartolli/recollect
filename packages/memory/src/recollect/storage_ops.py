@@ -6,12 +6,13 @@ embedding provider and the bootstrap-owned embedding_contract table.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import logging
 
-from recollect.exceptions import EmbeddingContractError
+import asyncpg
 
-if TYPE_CHECKING:
-    import asyncpg
+from recollect.exceptions import EmbeddingContractError, StorageError
+
+logger = logging.getLogger(__name__)
 
 
 async def get_embedding_contract(
@@ -20,15 +21,22 @@ async def get_embedding_contract(
     """Read the single embedding_contract row.
 
     Returns (model, task_prefix_version) or None if the table is absent
-    (pre-m003 DB) or has no row (m003 not yet applied).
+    (pre-m003 DB) or has no row (m003 not yet applied). Only absence is
+    swallowed -- any other DB error propagates so connect() cannot
+    silently skip contract verification.
     """
     async with pool.acquire() as conn:
         try:
             row = await conn.fetchrow(
                 "SELECT model, task_prefix_version FROM embedding_contract"
             )
-        except Exception:  # noqa: BLE001
+        except asyncpg.UndefinedTableError:
             return None
+        except asyncpg.PostgresError as exc:
+            logger.exception("Failed to read embedding contract")
+            raise StorageError(
+                f"Failed to read embedding contract: {exc}"
+            ) from exc
     if row is None:
         return None
     return (row["model"], row["task_prefix_version"])

@@ -37,6 +37,7 @@ class MemoryTrace(BaseModel):
     significance: float = Field(default=0.1, ge=0.0, le=1.0)
     session_id: str | None = None
     user_id: str | None = None
+    status: Literal["active", "archived"] = "active"
 
     @property
     def confidence(self) -> str:
@@ -78,7 +79,7 @@ class Association(BaseModel):
     created_at: dt = Field(default_factory=memory_timestamp_for_storage)
 
 
-FactStatus = Literal["candidate", "promoted", "pinned"]
+FactStatus = Literal["candidate", "promoted", "pinned", "archived"]
 
 FactCategory = Literal[
     "health",

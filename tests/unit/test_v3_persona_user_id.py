@@ -59,7 +59,7 @@ class TestFactWriteUserId:
             content="Remember this", id="t1", user_id="u1"
         )
         mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
-        fact = await mem.pin("t1")
-        assert fact.user_id == "u1"
+        facts = await mem.pin("t1")
+        assert facts[0].user_id == "u1"
         stored = mock_fact_store.store_persona_fact.call_args.args[0]
         assert stored.user_id == "u1"

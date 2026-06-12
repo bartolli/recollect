@@ -106,11 +106,14 @@ class PgRecallTokenStore:
         *,
         strength_threshold: float = 0.1,
         include_archived: bool = False,
+        user_id: str | None = None,
     ) -> list[dict[str, object]]:
         """Find existing token groups linked to any of the given traces.
 
         Returns list of dicts with keys:
             token_id, label, strength, significance, status, stamped_trace_ids
+        user_id restricts stamps to traces owned by that user, regardless
+        of caller input hygiene. None means no filter.
         """
         if not trace_ids:
             return []
@@ -122,9 +125,11 @@ class PgRecallTokenStore:
                            rt.status, array_agg(ts.trace_id) AS stamped_ids
                     FROM recall_tokens rt
                     JOIN token_stamps ts ON ts.token_id = rt.id
+                    JOIN memory_traces mt ON mt.id = ts.trace_id
                     WHERE ts.trace_id = ANY($1::text[])
+                      AND ($2::text IS NULL OR mt.user_id = $2)
                 """
-                params: list[object] = [trace_ids]
+                params: list[object] = [trace_ids, user_id]
                 if include_archived:
                     # Return both active and archived, skip strength filter
                     pass
@@ -160,13 +165,16 @@ class PgRecallTokenStore:
         seed_trace_ids: list[str],
         *,
         strength_threshold: float = 0.1,
+        user_id: str | None = None,
     ) -> list[tuple[str, str, float, float, str]]:
         """One-hop token activation from seed traces.
 
         Returns (trace_id, token_label, token_strength, token_significance,
         anchor_trace_id) for traces linked via shared tokens but NOT in
         the seed set. anchor_trace_id is the seed trace that carried the
-        token into the result set.
+        token into the result set. user_id restricts hop targets to that
+        user's traces -- a token stamped across users never bridges them.
+        None means no filter.
         """
         if not seed_trace_ids:
             return []
@@ -183,13 +191,16 @@ class PgRecallTokenStore:
                     JOIN token_stamps seed_stamps
                         ON seed_stamps.token_id = t.token_id
                         AND seed_stamps.trace_id = ANY($1::text[])
+                    JOIN memory_traces mt ON mt.id = t.trace_id
                     WHERE t.trace_id != ALL($1::text[])
                     AND rt.strength > $2
                     AND rt.status = 'active'
+                    AND ($3::text IS NULL OR mt.user_id = $3)
                     ORDER BY rt.strength DESC
                     """,
                     seed_trace_ids,
                     strength_threshold,
+                    user_id,
                 )
             return [
                 (
