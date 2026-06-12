@@ -344,7 +344,10 @@ class SituationalArmRunner:
 
     @staticmethod
     async def _cleanup_eval_trace(memory: CognitiveMemory, trace_id: str) -> None:
+        # Hard erase, not forget(): forget archives, and archived eval
+        # traces accumulate across seed-once-eval-N runs as stale-state
+        # retrieval pollution. erase() also evicts the buffer slot.
         try:
-            await memory.forget(trace_id)
+            await memory.erase(trace_id)
         except MemorySDKError:
-            logger.exception("cleanup forget failed for %s", trace_id)
+            logger.exception("cleanup erase failed for %s", trace_id)

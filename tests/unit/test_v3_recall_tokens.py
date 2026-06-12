@@ -223,12 +223,11 @@ class TestStaticHelpers:
 
 
 class TestForgetCleanup:
-    async def test_forget_deletes_token_stamps(self, mem, mock_storage):
-        mock_storage.traces.delete_trace.return_value = True
+    async def test_forget_preserves_token_stamps(self, mem, mock_storage):
+        # Archive-not-delete: stamps are reactivation substrate.
+        mock_storage.traces.archive_trace.return_value = True
         await mem.forget("trace-abc-123")
-        mock_storage.recall_tokens.delete_by_trace.assert_awaited_once_with(
-            "trace-abc-123"
-        )
+        mock_storage.recall_tokens.delete_by_trace.assert_not_awaited()
 
 
 class TestTokenArchiving:

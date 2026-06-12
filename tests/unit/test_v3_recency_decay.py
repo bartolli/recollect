@@ -118,7 +118,7 @@ class TestGraceAnchor:
         mock_trace_store.get_unconsolidated_traces.return_value = [trace]
         result = await mem.consolidate()
         assert result.still_pending == 1
-        mock_trace_store.delete_trace.assert_not_awaited()
+        mock_trace_store.archive_trace.assert_not_awaited()
         mock_trace_store.apply_decay_factor.assert_awaited_once()
 
     async def test_touched_then_idle_forgets_from_last_touch(
@@ -133,7 +133,7 @@ class TestGraceAnchor:
         mock_trace_store.get_unconsolidated_traces.return_value = [trace]
         result = await mem.consolidate()
         assert result.forgotten == 1
-        mock_trace_store.delete_trace.assert_awaited_once()
+        mock_trace_store.archive_trace.assert_awaited_once()
 
     async def test_decay_stamp_does_not_reset_grace(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock

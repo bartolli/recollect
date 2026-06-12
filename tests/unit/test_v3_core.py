@@ -163,7 +163,8 @@ class TestConsolidate:
         mock_trace_store.get_unconsolidated_traces.return_value = [old]
         result = await mem.consolidate()
         assert result.forgotten == 1
-        mock_trace_store.delete_trace.assert_awaited_once()
+        mock_trace_store.archive_trace.assert_awaited_once()
+        mock_trace_store.delete_trace.assert_not_awaited()
 
     async def test_keeps_young_weak_pending(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
@@ -172,7 +173,7 @@ class TestConsolidate:
         mock_trace_store.get_unconsolidated_traces.return_value = [young]
         result = await mem.consolidate()
         assert result.still_pending == 1
-        mock_trace_store.delete_trace.assert_not_awaited()
+        mock_trace_store.archive_trace.assert_not_awaited()
 
     async def test_forget_path_evicts_buffered_aged_trace(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock

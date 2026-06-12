@@ -24,18 +24,39 @@ def mem(
 
 
 class TestForgetAndReinforce:
-    async def test_forget_deletes(
+    async def test_forget_archives_not_deletes(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
     ) -> None:
         assert await mem.forget("some-id") is True
-        mock_trace_store.delete_trace.assert_awaited_once_with("some-id")
+        mock_trace_store.archive_trace.assert_awaited_once_with("some-id")
+        mock_trace_store.delete_trace.assert_not_awaited()
 
     async def test_forget_raises_not_found(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
     ) -> None:
-        mock_trace_store.delete_trace.return_value = False
+        mock_trace_store.archive_trace.return_value = False
         with pytest.raises(TraceNotFoundError):
             await mem.forget("nonexistent")
+
+    async def test_erase_hard_deletes_and_evicts(
+        self, mem: CognitiveMemory, mock_trace_store: AsyncMock
+    ) -> None:
+        trace = MemoryTrace(id="erase-1", content="x")
+        mem._buffer.add(trace)
+        assert await mem.erase("erase-1") is True
+        mock_trace_store.delete_trace.assert_awaited_once_with("erase-1")
+        mock_trace_store.archive_trace.assert_not_awaited()
+        assert all(t.id != "erase-1" for t in mem._buffer.get_active())
+
+    async def test_erase_missing_returns_false(
+        self, mem: CognitiveMemory, mock_trace_store: AsyncMock
+    ) -> None:
+        mock_trace_store.delete_trace.return_value = False
+        assert await mem.erase("nonexistent") is False
+
+    async def test_erase_rejects_empty_id(self, mem: CognitiveMemory) -> None:
+        with pytest.raises(ValueError, match="non-empty"):
+            await mem.erase("")
 
     async def test_forget_evicts_buffered_trace(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock

@@ -205,7 +205,9 @@ PIN -- Promote a memory to a permanent persona fact.
 UNPIN -- Archive a persona fact that is no longer accurate.
   The fact stops surfacing in recall and reflect.
 
-FORGET -- Remove an incorrect or irrelevant memory.
+FORGET -- Forget an incorrect or irrelevant memory.
+  The memory trace is archived, not hard-deleted; derived facts are
+  retained.
 
 REFLECT -- Load persona context before responding to the user.
   Call this at the start of every session before your first response.
@@ -394,7 +396,10 @@ async def forget(
     trace_id: str,
     ctx: Ctx,
 ) -> str:
-    """Remove an incorrect or irrelevant memory.
+    """Forget an incorrect or irrelevant memory.
+
+    The trace is archived, not hard-deleted: it leaves active
+    maintenance but is retained.
 
     Args:
         trace_id: ID of the memory trace to forget.

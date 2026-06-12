@@ -686,41 +686,44 @@ class CognitiveMemory:
         )
 
     async def forget(self, trace_id: str) -> bool:
-        """Explicitly forget a memory trace and its derived facts."""
+        """Forget a memory trace: archived, not hard-deleted.
+
+        The trace and every derived row (persona facts, concept
+        embeddings, recall tokens, entity relations) survive as
+        reactivation substrate. Guarded fact archival is the
+        forget-guard story's concern. Hard erasure is erase().
+        """
         if not trace_id:
             raise ValueError("Trace ID must be a non-empty string")
-        deleted = await self._delete_trace_with_buffer_evict(trace_id)
-        if not deleted:
+        archived = await self._archive_trace_with_buffer_evict(trace_id)
+        if not archived:
             raise TraceNotFoundError(f"Trace {trace_id} not found")
-        await self._cleanup_trace_facts(trace_id)
         logger.debug("Forgot trace: %s", trace_id[:8])
         return True
 
-    async def _delete_trace_with_buffer_evict(self, trace_id: str) -> bool:
+    async def erase(self, trace_id: str) -> bool:
+        """Hard-delete a trace; bypasses archive. FK cascades fire.
+
+        Erasure/probe escape hatch -- the cognitive path is forget().
+        Returns False when the trace does not exist.
+        """
+        if not trace_id:
+            raise ValueError("Trace ID must be a non-empty string")
         # Buffer ⊆ memory_traces invariant: dangling refs FK-violate temporal assoc.
         deleted = await self._storage.traces.delete_trace(trace_id)
         if deleted:
             self._buffer.evict(trace_id)
         return deleted
 
-    async def _cleanup_trace_facts(self, trace_id: str) -> None:
-        """Remove persona facts and entity relations linked to a trace."""
-        try:
-            facts = await self._storage.facts.get_persona_facts()
-            for fact in facts:
-                if fact.source_trace_id == trace_id:
-                    await self._storage.concept_embeddings.delete_by_owner(
-                        "fact", fact.id
-                    )
-                    await self._storage.facts.delete_persona_fact(fact.id)
-            await self._storage.concept_embeddings.delete_by_owner("trace", trace_id)
-            await self._storage.entity_relations.delete_by_trace(trace_id)
-            await self._storage.recall_tokens.delete_by_trace(trace_id)
-        except (StorageError, OSError):
-            logger.exception(
-                "Cleanup of derived data failed for trace %s",
-                trace_id[:8],
-            )
+    async def _archive_trace_with_buffer_evict(self, trace_id: str) -> bool:
+        # Buffer ⊆ memory_traces invariant: archive-first, evict-iff-archived.
+        # Derived rows are preserved deliberately (reactivation substrate);
+        # concept_embeddings has no FK, so preserving here is what closes
+        # the consolidate-forgotten orphan leak structurally.
+        archived = await self._storage.traces.archive_trace(trace_id)
+        if archived:
+            self._buffer.evict(trace_id)
+        return archived
 
     async def reinforce(self, trace_id: str, *, factor: float = 1.1) -> MemoryTrace:
         """Manually strengthen a memory trace."""
@@ -2331,7 +2334,7 @@ class CognitiveMemory:
         age_hours = (now - anchor).total_seconds() / 3600.0
 
         if age_hours >= grace_hours:
-            await self._delete_trace_with_buffer_evict(trace.id)
+            await self._archive_trace_with_buffer_evict(trace.id)
             return "forgotten"
 
         await self._storage.traces.apply_decay_factor(

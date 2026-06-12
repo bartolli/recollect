@@ -102,7 +102,7 @@ class PgTraceStore:
             raise StorageError(f"Failed to get traces in bulk: {exc}") from exc
 
     async def delete_trace(self, trace_id: str) -> bool:
-        """Delete a trace by ID. Returns True if deleted."""
+        """Hard delete; bypasses archive. FK cascades fire. Returns True if deleted."""
         try:
             pool = await self._pool_mgr.get_pool()
             async with pool.acquire() as conn:
@@ -115,6 +115,27 @@ class PgTraceStore:
         except asyncpg.PostgresError as exc:
             logger.exception("Failed to delete trace")
             raise StorageError(f"Failed to delete trace {trace_id}: {exc}") from exc
+
+    async def archive_trace(self, trace_id: str) -> bool:
+        """Archive an active trace. Returns False when no active row matches.
+
+        UPDATE, not DELETE: derived rows (facts, concept embeddings,
+        recall tokens, entity relations) survive as reactivation substrate.
+        """
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                result = await conn.execute(
+                    "UPDATE memory_traces SET status = 'archived' "
+                    "WHERE id = $1 AND status = 'active'",
+                    trace_id,
+                )
+            return result == "UPDATE 1"
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            logger.exception("Failed to archive trace")
+            raise StorageError(f"Failed to archive trace {trace_id}: {exc}") from exc
 
     async def apply_strength_factor(self, trace_id: str, factor: float) -> None:
         """Multiply a trace's strength atomically, clamped to [0, 1].
@@ -235,7 +256,7 @@ class PgTraceStore:
                 rows = await conn.fetch(
                     """
                     SELECT * FROM memory_traces
-                    WHERE consolidated = FALSE
+                    WHERE consolidated = FALSE AND status = 'active'
                     ORDER BY created_at ASC
                     LIMIT $1
                     """,

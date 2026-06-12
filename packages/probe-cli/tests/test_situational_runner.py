@@ -37,7 +37,7 @@ def _memory_with_assessment(outcome: SituationalAssessment | None) -> MagicMock:
     mem = MagicMock()
     mem.experience = AsyncMock(return_value=MemoryTrace(id="uuid-eval", content="x"))
     mem.assess_situational = AsyncMock(return_value=outcome)
-    mem.forget = AsyncMock()
+    mem.erase = AsyncMock()
     return mem
 
 
@@ -100,7 +100,7 @@ class TestAssessOne:
         assert result.actual_implication == "ok"
         assert result.actual_significance == pytest.approx(0.7)
         assert result.success
-        mem.forget.assert_awaited_once_with("uuid-eval")
+        mem.erase.assert_awaited_once_with("uuid-eval")
 
     async def test_records_none_when_no_related(self) -> None:
         runner = _runner()
@@ -115,14 +115,14 @@ class TestAssessOne:
         assert result.actual_action == "none"
         assert result.actual_group_id is None
         assert result.success
-        mem.forget.assert_awaited_once()
+        mem.erase.assert_awaited_once()
 
     async def test_records_ingest_failure(self) -> None:
         runner = _runner()
         mem = MagicMock()
         mem.experience = AsyncMock(side_effect=StorageError("db down"))
         mem.assess_situational = AsyncMock()
-        mem.forget = AsyncMock()
+        mem.erase = AsyncMock()
         result = await runner._assess_one(
             mem,
             _entry("extend", "G1"),
@@ -133,7 +133,7 @@ class TestAssessOne:
         assert not result.success
         assert "ingest" in result.error
         mem.assess_situational.assert_not_awaited()
-        mem.forget.assert_not_awaited()
+        mem.erase.assert_not_awaited()
 
     async def test_records_assessment_failure_and_cleans_up(self) -> None:
         runner = _runner()
@@ -142,7 +142,7 @@ class TestAssessOne:
             return_value=MemoryTrace(id="uuid-eval", content="x")
         )
         mem.assess_situational = AsyncMock(side_effect=StorageError("llm boom"))
-        mem.forget = AsyncMock()
+        mem.erase = AsyncMock()
         result = await runner._assess_one(
             mem,
             _entry("extend", "G1"),
@@ -152,7 +152,7 @@ class TestAssessOne:
         )
         assert not result.success
         assert "assess" in result.error
-        mem.forget.assert_awaited_once_with("uuid-eval")
+        mem.erase.assert_awaited_once_with("uuid-eval")
 
     async def test_unresolved_group_records_none_target_marker(self) -> None:
         # LLM returned group_number that maps via candidate_token_ids to a token

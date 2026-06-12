@@ -71,8 +71,12 @@ class PostgresStorage:
         await self._ctx.traces.mark_retrieved(trace_id)
 
     async def delete_trace(self, trace_id: str) -> bool:
-        """Delete a trace by ID. Returns True if deleted."""
+        """Hard delete; bypasses archive. Returns True if deleted."""
         return await self._ctx.traces.delete_trace(trace_id)
+
+    async def archive_trace(self, trace_id: str) -> bool:
+        """Archive an active trace. Returns False when no active row matches."""
+        return await self._ctx.traces.archive_trace(trace_id)
 
     async def get_recent_traces(self, limit: int = 20) -> list[MemoryTrace]:
         """Get most recently created traces."""
