@@ -70,4 +70,4 @@ uv.lock
 .fastembed_cache/*
 .fastembed_cache
 
-
+out/

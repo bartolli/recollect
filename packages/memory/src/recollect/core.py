@@ -150,6 +150,17 @@ _FAST_TRACK_CATEGORIES: frozenset[str] = frozenset(
     }
 )
 
+# Recall-local safety bypass (adr-recall-surfacing-gate ruling 3): narrower than
+# _FAST_TRACK_CATEGORIES because constraint is process-governance-overloaded and
+# would flood every recall. The global set (write-path, forget-guard, extraction
+# fast-track) is unchanged; only recall surfacing narrows.
+_RECALL_SAFETY_BYPASS: frozenset[str] = frozenset(
+    {
+        "health",
+        "dietary",
+    }
+)
+
 # Write-time safety surfacing is recall-maximal by the design asymmetry: an extra
 # ignored line of context costs nothing, a silent safety miss costs the feature.
 # Every safety-relevant domain surfaces ALL safety categories; the runtime LLM
@@ -574,6 +585,7 @@ class CognitiveMemory:
             query_embedding,
             user_id=user_id,
         )
+        persona_facts = self._apply_recall_floor(persona_facts, semantic_scores)
         if persona_facts:
             fact_thoughts = self._persona_facts_to_thoughts(
                 persona_facts,
@@ -2301,6 +2313,32 @@ class CognitiveMemory:
 
         return sorted(facts, key=sort_key)[:limit]
 
+    def _apply_recall_floor(
+        self,
+        facts: list[PersonaFact],
+        scores: dict[str, float],
+    ) -> list[PersonaFact]:
+        """Drop recall persona facts below the absolute floor; safety bypasses.
+
+        Floors on blended S (scores), not _compute_fact_relevance: the
+        0.3*confidence term would lift a low-similarity fact past the floor
+        (adr-recall-surfacing-gate ruling 2). Ranking stays relevance-ordered;
+        only surfacing is floored. Bypass is the recall-local
+        _RECALL_SAFETY_BYPASS ({health, dietary}), narrower than the global set.
+
+        Pins are floor-exempt only when ranked: facts here are already the
+        top-max_facts_per_query set, so a pin that reached this point ranked
+        top-k (adr-recall-surfacing-gate ruling 4). A rank-cut pin never
+        arrives -- no reserved slots; the primer owns the always-available pin.
+        """
+        floor = float(self._config.get("persona.recall_relevance_floor", 0.65))
+        return [
+            f
+            for f in facts
+            if f.category in _RECALL_SAFETY_BYPASS
+            or f.status == "pinned"
+            or scores.get(f.id, 0.0) >= floor
+        ]
 
     def _extract_entity_names_from_query(self, query: str) -> list[str]:
         """Extract potential entity names from query text.

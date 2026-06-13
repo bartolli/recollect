@@ -163,3 +163,53 @@ def test_situational_defaults_when_absent(tmp_path: Path) -> None:
     arm = load_arm(p)
     assert arm.situational.enabled is False
     assert arm.situational.seed_traces_path == ""
+
+
+def test_db_url_expands_env_var(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Fixtures reference the probe DB by env name; the connection string lives
+    # in .env, never inline in a committed TOML.
+    monkeypatch.setenv("RECOLLECT_PROBE_DB_URL", "postgresql://localhost/probe_eval")
+    p = _write_arm(
+        tmp_path,
+        '[arm]\nname = "x"\n[corpus]\npath = "x.jsonl"\n'
+        "[retrieval]\nenabled = true\n"
+        'db_url = "${RECOLLECT_PROBE_DB_URL}"\n'
+        'traces_corpus_path = "t.jsonl"\n'
+        'query_corpus_path = "q.jsonl"\n',
+    )
+    arm = load_arm(p)
+    assert arm.retrieval.db_url == "postgresql://localhost/probe_eval"
+
+
+def test_db_url_unexpanded_var_raises(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # An unset var would otherwise reach connect() as a literal "${...}" DSN
+    # and fail cryptically; fail at load with the var name instead.
+    monkeypatch.delenv("RECOLLECT_PROBE_DB_URL", raising=False)
+    p = _write_arm(
+        tmp_path,
+        '[arm]\nname = "x"\n[corpus]\npath = "x.jsonl"\n'
+        "[retrieval]\nenabled = true\n"
+        'db_url = "${RECOLLECT_PROBE_DB_URL}"\n'
+        'traces_corpus_path = "t.jsonl"\n'
+        'query_corpus_path = "q.jsonl"\n',
+    )
+    with pytest.raises(ValueError, match="RECOLLECT_PROBE_DB_URL"):
+        load_arm(p)
+
+
+def test_db_url_literal_unchanged(tmp_path: Path) -> None:
+    # A literal (no-$) db_url passes through expansion untouched.
+    p = _write_arm(
+        tmp_path,
+        '[arm]\nname = "x"\n[corpus]\npath = "x.jsonl"\n'
+        "[surfacing]\nenabled = true\n"
+        'db_url = "postgresql://localhost/probe_eval"\n'
+        'traces_corpus_path = "t.jsonl"\n'
+        'query_corpus_path = "q.jsonl"\n',
+    )
+    arm = load_arm(p)
+    assert arm.surfacing.db_url == "postgresql://localhost/probe_eval"

@@ -16,7 +16,7 @@ path = "packages/probe-cli/fixtures/eval_traces.jsonl"
 
 [retrieval]
 enabled = true
-db_url = "postgresql://bartolli@localhost:5432/probe_eval"
+db_url = "${RECOLLECT_PROBE_DB_URL}"
 traces_corpus_path = "packages/probe-cli/fixtures/eval_traces.jsonl"
 query_corpus_path = "packages/probe-cli/fixtures/eval_queries.jsonl"
 token_budget = 100000

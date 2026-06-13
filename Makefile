@@ -3,7 +3,7 @@
        db-start db-stop db-status db-setup db-reset re-embed \
        db-bootstrap db-bootstrap-check \
        probe-db-setup probe-db-reset probe-baseline probe-dense probe-dense-tagembed \
-       probe-baseline-k3 probe-dense-k3 probe-dense-tagembed-k3 \
+       probe-baseline-k3 probe-dense-k3 probe-dense-tagembed-k3 probe-surfacing \
        probe-situational-db-setup probe-situational-db-reset probe-situational \
        probe-situational-sonnet probe-situational-gemma probe-situational-openrouter \
        serve-stdio serve-http \
@@ -120,6 +120,11 @@ probe-dense-k3: probe-db-reset
 
 probe-dense-tagembed-k3: probe-db-reset
 	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/dense-retrieval-tag-embed-k3.toml
+
+# Read-path persona-fact surfacing precision (story-1 probe arm).
+# user_id is time-suffixed -> the reset is for a clean DB, not run isolation.
+probe-surfacing: probe-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/surfacing.toml
 
 # -- P6 situational arm (separate DB; seed groups restored, eval Mode-A) --
 

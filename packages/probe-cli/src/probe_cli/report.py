@@ -13,6 +13,8 @@ from probe_cli.metrics import (
 )
 from probe_cli.situational_metrics import SituationalAggregate
 from probe_cli.situational_runner import SituationalRunReport
+from probe_cli.surfacing_metrics import SurfacingMetrics
+from probe_cli.surfacing_runner import SurfacingRunReport
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +76,28 @@ def write_situational_summary(
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / "situational_summary.json"
+    path.write_text(metrics.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_surfacing_run_report(
+    report: SurfacingRunReport, output_dir: Path | str
+) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "surfacing_run.json"
+    path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_surfacing_summary(
+    metrics: SurfacingMetrics, output_dir: Path | str
+) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "surfacing_summary.json"
     path.write_text(metrics.model_dump_json(indent=2), encoding="utf-8")
     logger.info("wrote %s", path)
     return path

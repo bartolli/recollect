@@ -29,6 +29,8 @@ from probe_cli.report import (
     write_situational_run_report,
     write_situational_summary,
     write_summary,
+    write_surfacing_run_report,
+    write_surfacing_summary,
 )
 from probe_cli.runner import ArmRunner, RetrievalArmRunner
 from probe_cli.situational_metrics import (
@@ -36,6 +38,8 @@ from probe_cli.situational_metrics import (
     aggregate_situational_runs,
 )
 from probe_cli.situational_runner import SituationalArmRunner, SituationalRunReport
+from probe_cli.surfacing_metrics import SurfacingMetrics, compute_surfacing_metrics
+from probe_cli.surfacing_runner import SurfacingArmRunner, SurfacingRunReport
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +99,8 @@ async def _run_arm(arm_path: Path, *, model_override: str | None) -> int:
     )
     out_dir = Path(arm.output.dir) / arm.name
 
+    if arm.surfacing.enabled:
+        return await _run_surfacing_arm(arm, provider, out_dir)
     if arm.situational.enabled:
         return await _run_situational_arm(arm, provider, out_dir)
     if arm.retrieval.enabled:
@@ -135,6 +141,19 @@ async def _run_situational_arm(
     summary = aggregate_situational_runs(arm.name, runner.model, reports)
     write_situational_summary(summary, out_dir)
     _print_situational_summary(arm, summary, reports)
+    return 0
+
+
+async def _run_surfacing_arm(
+    arm: Arm, provider: PydanticAIProvider, out_dir: Path
+) -> int:
+    runner = SurfacingArmRunner.from_arm(arm, provider)
+    report = await runner.run()
+    write_surfacing_run_report(report, out_dir)
+
+    metrics = compute_surfacing_metrics(report)
+    write_surfacing_summary(metrics, out_dir)
+    _print_surfacing_summary(arm, report, metrics)
     return 0
 
 
@@ -302,6 +321,53 @@ def _print_situational_summary(
     )
     if reports and reports[0].seed_traces_ingested == 0:
         print("  WARN: no seed traces ingested in run 0", file=sys.stderr)
+
+
+def _print_surfacing_summary(
+    arm: Arm,
+    report: SurfacingRunReport,
+    metrics: SurfacingMetrics,
+) -> None:
+    print(f"\nArm: {arm.name} (surfacing)", file=sys.stderr)
+    print(
+        f"  model={report.model}  seeded={report.seeded_traces}"
+        f"  promoted={report.promoted_facts}",
+        file=sys.stderr,
+    )
+    print(
+        f"  relevant   S: n={metrics.relevant.n}"
+        f"  mean={metrics.relevant.mean:.3f}  median={metrics.relevant.median:.3f}",
+        file=sys.stderr,
+    )
+    print(
+        f"  distractor S: n={metrics.distractor.n}"
+        f"  mean={metrics.distractor.mean:.3f}"
+        f"  median={metrics.distractor.median:.3f}",
+        file=sys.stderr,
+    )
+    print(
+        f"  overlap: max(dis)={metrics.overlap_max_distractor:.3f}"
+        f"  min(rel)={metrics.overlap_min_relevant:.3f}"
+        f"  separable={metrics.separable}",
+        file=sys.stderr,
+    )
+    print(
+        f"  block_precision = {metrics.block_precision_mean:.3f}"
+        f"  (n={metrics.block_precision_n} non-distractor queries)",
+        file=sys.stderr,
+    )
+    print(
+        f"  distractor queries: {metrics.distractor_query_count}"
+        f"  ({metrics.distractor_queries_with_surfaced} surfaced >=1 fact)",
+        file=sys.stderr,
+    )
+    print("  threshold sweep (T: precision / recall):", file=sys.stderr)
+    for p in metrics.threshold_sweep:
+        print(
+            f"    {p.threshold:.2f}  prec={p.precision:.3f}  recall={p.recall:.3f}"
+            f"  (rel={p.kept_relevant} dis={p.kept_distractor})",
+            file=sys.stderr,
+        )
 
 
 def _print_failure_samples(reports: list[RunReport], limit: int = 3) -> None:

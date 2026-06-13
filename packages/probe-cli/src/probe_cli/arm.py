@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -47,6 +48,13 @@ class SituationalConfig(BaseModel):
     eval_corpus_path: str = ""
 
 
+class SurfacingConfig(BaseModel):
+    enabled: bool = False
+    db_url: str = ""
+    traces_corpus_path: str = ""
+    query_corpus_path: str = ""
+
+
 class Arm(BaseModel):
     name: str
     runs: int = Field(default=3, ge=1)
@@ -55,6 +63,7 @@ class Arm(BaseModel):
     output: OutputConfig = Field(default_factory=OutputConfig)
     retrieval: RetrievalConfig = Field(default_factory=RetrievalConfig)
     situational: SituationalConfig = Field(default_factory=SituationalConfig)
+    surfacing: SurfacingConfig = Field(default_factory=SurfacingConfig)
     recollect_overrides: dict[str, Any] = Field(default_factory=dict)
 
     def to_memory_config(self) -> MemoryConfig:
@@ -84,7 +93,7 @@ def load_arm(path: Path | str) -> Arm:
     with p.open("rb") as f:
         data = tomllib.load(f)
     arm_block = data.get("arm", {})
-    return Arm(
+    arm = Arm(
         name=arm_block.get("name", p.stem),
         runs=arm_block.get("runs", 3),
         extraction=ExtractionConfig(**data.get("extraction", {})),
@@ -92,5 +101,22 @@ def load_arm(path: Path | str) -> Arm:
         output=OutputConfig(**data.get("output", {})),
         retrieval=RetrievalConfig(**data.get("retrieval", {})),
         situational=SituationalConfig(**data.get("situational", {})),
+        surfacing=SurfacingConfig(**data.get("surfacing", {})),
         recollect_overrides=data.get("recollect_overrides", {}),
     )
+    # Probe DB URLs reference env (.env) by name, never inlined in a committed
+    # fixture; expandvars is a no-op on literal (no-$) values.
+    arm.retrieval.db_url = os.path.expandvars(arm.retrieval.db_url)
+    arm.situational.db_url = os.path.expandvars(arm.situational.db_url)
+    arm.surfacing.db_url = os.path.expandvars(arm.surfacing.db_url)
+    for db_url in (
+        arm.retrieval.db_url,
+        arm.situational.db_url,
+        arm.surfacing.db_url,
+    ):
+        if "${" in db_url:
+            raise ValueError(
+                f"db_url has an unset env var: {db_url} -- set it in .env "
+                "(see .env.example)"
+            )
+    return arm

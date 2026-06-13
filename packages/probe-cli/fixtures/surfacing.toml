@@ -1,0 +1,28 @@
+# Read-path persona-fact surfacing arm: measures IMPORTANT CONTEXT precision.
+#   make probe-surfacing   (resets probe_eval, then runs this)
+# Seeds eval_traces, force-promotes candidate facts, probes
+# _find_relevant_persona_facts per query; user_id is time-suffixed so re-runs
+# wall off without a reset. Default config (no overrides) -- persona extraction
+# on, matching the validated spike (relevant mean ~0.73, distractor ~0.55).
+# Requires: live Postgres at [surfacing].db_url + provider keys in .env.
+
+[arm]
+name = "surfacing-baseline"
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+max_concepts = 5
+max_relations = 3
+
+[corpus]
+# Schema-required; surfacing path uses [surfacing].*_corpus_path instead.
+path = "packages/probe-cli/fixtures/eval_traces.jsonl"
+
+[surfacing]
+enabled = true
+db_url = "${RECOLLECT_PROBE_DB_URL}"
+traces_corpus_path = "packages/probe-cli/fixtures/eval_traces.jsonl"
+query_corpus_path = "packages/probe-cli/fixtures/eval_queries.jsonl"
+
+[output]
+dir = "out"
