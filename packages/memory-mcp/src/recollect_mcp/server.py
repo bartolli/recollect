@@ -206,9 +206,10 @@ UNPIN -- Archive a persona fact that is no longer accurate.
   The fact stops surfacing in recall and reflect.
 
 FORGET -- Forget an incorrect or irrelevant memory.
-  The memory trace is archived, not hard-deleted, and its derived
-  facts archive with it. Safety-critical (health/dietary/constraint)
-  and pinned facts are retained unless force=true.
+  The memory trace stops surfacing in recall and never auto-revives;
+  the row is retained, not hard-deleted. Derived facts archive with
+  it. Safety-critical (health/dietary/constraint) and pinned facts
+  are retained unless force=true.
 
 REFLECT -- Load persona context before responding to the user.
   Call this at the start of every session before your first response.
@@ -400,8 +401,9 @@ async def forget(
 ) -> str:
     """Forget an incorrect or irrelevant memory.
 
-    The trace is archived, not hard-deleted. Derived facts archive with
-    it, except safety-critical (health/dietary/constraint) and pinned
+    The trace stops surfacing in recall and never auto-revives; the
+    row is retained, not hard-deleted. Derived facts archive with it,
+    except safety-critical (health/dietary/constraint) and pinned
     facts, which are retained unless force=true.
 
     Args:

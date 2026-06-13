@@ -130,6 +130,20 @@ class TestReactivationMatrix:
         assert neighbor.id in by_id
         assert by_id[neighbor.id].status == "archived"
 
+    async def test_reactivate_refuses_forgotten(self, mem: CognitiveMemory) -> None:
+        trace = MemoryTrace(content="retracted", strength=0.5)
+        await mem.storage.traces.store_trace(trace)
+        await mem.storage.traces.forget_trace(trace.id)
+        assert (
+            await mem.storage.traces.reactivate_trace(
+                trace.id, min_strength=0.6, activated_at=now_utc()
+            )
+            is False
+        )
+        stored = await mem.storage.traces.get_trace(trace.id)
+        assert stored is not None
+        assert stored.status == "forgotten"
+
     async def test_reactivate_idempotent_and_resets(
         self, mem: CognitiveMemory
     ) -> None:

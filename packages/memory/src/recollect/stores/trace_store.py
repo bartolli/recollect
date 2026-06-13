@@ -137,6 +137,29 @@ class PgTraceStore:
             logger.exception("Failed to archive trace")
             raise StorageError(f"Failed to archive trace {trace_id}: {exc}") from exc
 
+    async def forget_trace(self, trace_id: str) -> bool:
+        """Mark an active trace forgotten. Returns False unless a row flipped.
+
+        Distinct from archive: forgotten is explicit retraction. The
+        lifecycle gate drops it from retrieval results, and
+        reactivate_trace (WHERE status='archived') never revives it.
+        Row and derived rows retained for audit; erase() is removal.
+        """
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                result = await conn.execute(
+                    "UPDATE memory_traces SET status = 'forgotten' "
+                    "WHERE id = $1 AND status = 'active'",
+                    trace_id,
+                )
+            return result == "UPDATE 1"
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            logger.exception("Failed to forget trace")
+            raise StorageError(f"Failed to forget trace {trace_id}: {exc}") from exc
+
     async def reactivate_trace(
         self, trace_id: str, *, min_strength: float, activated_at: datetime
     ) -> bool:

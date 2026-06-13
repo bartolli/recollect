@@ -1,6 +1,6 @@
 """Reactivation hook -- floor gate, channel-agnostic revival, lost races.
 
-_reactivate_archived_candidates runs on the merged candidate list: any
+_gate_retired_candidates runs on the merged candidate list: any
 archived candidate whose blended score clears retrieval.reactivation_floor
 flips active (DB write + in-turn display copy); below the floor it passes
 through unchanged. think_about wires the hook before selection.
@@ -50,7 +50,7 @@ class TestReactivationHook:
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
     ) -> None:
         trace = _archived()
-        out = await mem._reactivate_archived_candidates([(trace, 0.5)])
+        out = await mem._gate_retired_candidates([(trace, 0.5)])
         mock_trace_store.reactivate_trace.assert_awaited_once()
         kwargs = mock_trace_store.reactivate_trace.await_args.kwargs
         assert kwargs["min_strength"] == pytest.approx(0.6)
@@ -64,7 +64,7 @@ class TestReactivationHook:
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
     ) -> None:
         trace = _archived()
-        out = await mem._reactivate_archived_candidates([(trace, 0.2)])
+        out = await mem._gate_retired_candidates([(trace, 0.2)])
         mock_trace_store.reactivate_trace.assert_not_awaited()
         assert out[0][0].status == "archived"
 
@@ -72,7 +72,7 @@ class TestReactivationHook:
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
     ) -> None:
         trace = MemoryTrace(content="live", strength=0.5)
-        out = await mem._reactivate_archived_candidates([(trace, 0.9)])
+        out = await mem._gate_retired_candidates([(trace, 0.9)])
         mock_trace_store.reactivate_trace.assert_not_awaited()
         assert out[0][0] is trace
 
@@ -82,8 +82,20 @@ class TestReactivationHook:
         # Concurrent hit already revived it: UPDATE 0 -> no display copy.
         mock_trace_store.reactivate_trace.return_value = False
         trace = _archived()
-        out = await mem._reactivate_archived_candidates([(trace, 0.5)])
+        out = await mem._gate_retired_candidates([(trace, 0.5)])
         assert out[0][0] is trace
+
+    async def test_forgotten_dropped_regardless_of_score(
+        self, mem: CognitiveMemory, mock_trace_store: AsyncMock
+    ) -> None:
+        # Explicit retraction: a high-relevance recall must not undo
+        # the forget by reviving or even surfacing the trace.
+        trace = MemoryTrace(
+            content="retracted", strength=0.8, status="forgotten"
+        )
+        out = await mem._gate_retired_candidates([(trace, 0.95)])
+        assert out == []
+        mock_trace_store.reactivate_trace.assert_not_awaited()
 
 
 class TestThinkAboutWiring:

@@ -171,7 +171,7 @@ Traces follow the same Hebbian arc as tokens. Decay is recency-anchored: a memor
 
 Archival is reversible by relevance. When any retrieval path -- semantic, entity, spreading activation, or a token group -- surfaces an archived trace above a similarity floor, it revives: status flips back to active, strength resets to its significance, and the normal reinforcement loop takes over. A revived memory that keeps getting used ratchets toward permanence; one that doesn't re-fades.
 
-Explicit forgetting rides the same machinery. `forget` archives a trace and its derived facts -- but safety-critical facts (health, dietary, constraints) and anything the user explicitly pinned are retained unless forced. True deletion exists only as a separate, deliberate escape hatch.
+Explicit forgetting is stronger than fade. A forgotten trace stops surfacing and never auto-revives -- retraction is not undone by asking about it. Its derived facts archive too, but safety-critical facts (health, dietary, constraints) and anything the user explicitly pinned are retained unless forced. True deletion exists only as a separate, deliberate escape hatch.
 
 ## Status
 

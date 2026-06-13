@@ -260,19 +260,30 @@ class TestErase:
             await conn.close()
         assert leaked == 0
 
-    async def test_forget_then_recallable_until_reactivation_story(
+    async def test_forgotten_excluded_from_recall_and_never_revived(
         self, mem: CognitiveMemory
     ) -> None:
-        # Locks the accepted interim: retrieval is status-agnostic, so an
-        # archived trace still surfaces (it is reactivation substrate).
-        vec = await mem._embeddings.generate_embedding("archived but present")
+        # The Claude Desktop incident regression: forget, then recall the
+        # exact content. The trace must not surface, must not revive, and
+        # must not be strengthened by the verification query itself.
+        vec = await mem._embeddings.generate_embedding("retracted but relevant")
         trace = MemoryTrace(
-            content="archived but present", embedding=vec, strength=0.8
+            content="retracted but relevant", embedding=vec, strength=0.8
         )
         await mem.storage.traces.store_trace(trace)
         await mem.forget(trace.id)
+
+        thoughts = await mem.think_about("retracted but relevant")
+        assert trace.id not in {t.trace.id for t in thoughts}
+        stored = await mem.storage.traces.get_trace(trace.id)
+        assert stored is not None
+        assert stored.status == "forgotten"
+        assert stored.strength == pytest.approx(0.8)
+
+        # Retrieval paths stay status-agnostic -- the storage layer still
+        # sees the row; only the central lifecycle gate drops it.
         query = await mem._embeddings.generate_embedding(
-            "archived but present", task="search_query"
+            "retracted but relevant", task="search_query"
         )
         results = await mem.storage.vectors.search_semantic(query, limit=10)
         assert trace.id in {t.id for t, _ in results}

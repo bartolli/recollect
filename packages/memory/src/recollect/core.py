@@ -562,7 +562,7 @@ class CognitiveMemory:
                 (t, s) for t, s in all_candidates if t.session_id == session_id
             ]
 
-        all_candidates = await self._reactivate_archived_candidates(all_candidates)
+        all_candidates = await self._gate_retired_candidates(all_candidates)
 
         selected = self._select_within_budget(all_candidates, token_budget)
 
@@ -691,19 +691,22 @@ class CognitiveMemory:
     async def forget(
         self, trace_id: str, *, force: bool = False
     ) -> ForgetResult:
-        """Forget a memory trace: archive it and its derived facts.
+        """Forget a memory trace: explicit retraction, plus derived facts.
 
-        Hard-category facts (health/dietary/constraint) and pinned facts
-        are retained unless force -- explicit user state outranks the
-        implicit trace cascade; retained facts ride the result so the
-        caller can surface them. Concept embeddings, recall tokens, and
-        entity relations are preserved (reactivation substrate). Hard
-        erasure is erase().
+        The trace flips to 'forgotten': it stops surfacing in retrieval
+        and never auto-revives (unlike consolidation's 'archived', which
+        returns on relevance). Hard-category facts (health/dietary/
+        constraint) and pinned facts are retained unless force --
+        explicit user state outranks the implicit trace cascade; retained
+        facts ride the result so the caller can surface them. Rows are
+        kept for audit; hard erasure is erase().
         """
         if not trace_id:
             raise ValueError("Trace ID must be a non-empty string")
-        archived = await self._archive_trace_with_buffer_evict(trace_id)
-        if not archived:
+        retired = await self._retire_trace_with_buffer_evict(
+            trace_id, forgotten=True
+        )
+        if not retired:
             raise TraceNotFoundError(f"Trace {trace_id} not found")
         result = ForgetResult(trace_id=trace_id)
         facts = await self._storage.facts.get_facts_by_source_trace_id(trace_id)
@@ -746,18 +749,21 @@ class CognitiveMemory:
             )
         return deleted
 
-    async def _reactivate_archived_candidates(
+    async def _gate_retired_candidates(
         self, candidates: list[tuple[MemoryTrace, float]]
     ) -> list[tuple[MemoryTrace, float]]:
-        # Relevance revives: an archived candidate whose blended score
-        # clears the floor flips active before final ranking, whichever
-        # channel surfaced it. The floor is a SIMILARITY gate on the
-        # fused score; selection_threshold is a STRENGTH gate. Below the
-        # floor the candidate passes through unchanged -- noise does not
-        # revive substrate.
+        # Lifecycle gate on the merged list -- the ONE status-aware site;
+        # retrieval paths stay status-agnostic. Forgotten candidates are
+        # dropped regardless of score: explicit retraction must neither
+        # resurface nor revive (a high-relevance recall would otherwise
+        # undo the forget). Archived candidates above the floor revive
+        # (fade-and-return). The floor is a SIMILARITY gate on the fused
+        # score; selection_threshold is a STRENGTH gate.
         floor = float(self._config.get("retrieval.reactivation_floor", 0.3))
         out: list[tuple[MemoryTrace, float]] = []
         for trace, score in candidates:
+            if trace.status == "forgotten":
+                continue
             if trace.status == "archived" and score >= floor:
                 revived = await self._storage.traces.reactivate_trace(
                     trace.id,
@@ -778,15 +784,21 @@ class CognitiveMemory:
             out.append((trace, score))
         return out
 
-    async def _archive_trace_with_buffer_evict(self, trace_id: str) -> bool:
-        # Buffer ⊆ memory_traces invariant: archive-first, evict-iff-archived.
-        # Derived rows are preserved deliberately (reactivation substrate);
-        # concept_embeddings has no FK, so preserving here is what closes
-        # the consolidate-forgotten orphan leak structurally.
-        archived = await self._storage.traces.archive_trace(trace_id)
-        if archived:
+    async def _retire_trace_with_buffer_evict(
+        self, trace_id: str, *, forgotten: bool = False
+    ) -> bool:
+        # Buffer ⊆ memory_traces invariant: retire-first, evict-iff-retired.
+        # Both edges preserve derived rows (concept_embeddings has no FK --
+        # preservation closes the orphan leak). archived = natural fade,
+        # revivable on relevance; forgotten = explicit retraction, gated
+        # out of results and never revived.
+        if forgotten:
+            retired = await self._storage.traces.forget_trace(trace_id)
+        else:
+            retired = await self._storage.traces.archive_trace(trace_id)
+        if retired:
             self._buffer.evict(trace_id)
-        return archived
+        return retired
 
     async def reinforce(self, trace_id: str, *, factor: float = 1.1) -> MemoryTrace:
         """Manually strengthen a memory trace."""
@@ -2402,7 +2414,7 @@ class CognitiveMemory:
         age_hours = (now - anchor).total_seconds() / 3600.0
 
         if age_hours >= grace_hours:
-            await self._archive_trace_with_buffer_evict(trace.id)
+            await self._retire_trace_with_buffer_evict(trace.id)
             return "forgotten"
 
         await self._storage.traces.apply_decay_factor(

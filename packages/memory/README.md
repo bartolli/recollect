@@ -39,7 +39,7 @@ asyncio.run(main())
 | `experience(content)` | Store a memory trace. LLM extracts entities, concepts, significance. |
 | `think_about(query, token_budget)` | Retrieve memories that fit within a token limit. Returns `list[Thought]`. |
 | `consolidate(threshold=None)` | Decay, consolidate, or archive traces past their grace period. |
-| `forget(trace_id, force=False)` | Archive a trace and its derived facts. Safety-critical and pinned facts are retained unless `force=True`. Returns `ForgetResult` with per-fact dispositions. |
+| `forget(trace_id, force=False)` | Forget a trace: it stops surfacing and never auto-revives. Derived facts archive; safety-critical and pinned facts are retained unless `force=True`. Returns `ForgetResult`. |
 | `erase(trace_id)` | Hard-delete a trace and its derived rows. The escape hatch; `forget()` is the normal path. |
 | `reinforce(trace_id, factor=1.1)` | Strengthen a trace. |
 | `pin(trace_id)` | Promote a trace's extracted relations to permanent persona facts. Returns the promoted facts. |
@@ -50,7 +50,9 @@ asyncio.run(main())
 
 ### Memory lifecycle
 
-Forgetting is reversible. Weak traces past their grace period are archived, not deleted -- the trace and everything derived from it (facts, concept embeddings, situational tokens) survive as substrate. When an archived trace becomes relevant to a query again, it revives automatically: status flips back to active, strength resets to its significance, and the normal reinforcement loop takes over. Memories fade when unused and return when they matter. `erase()` is the only true deletion.
+Decay is reversible. Weak traces past their grace period are archived, not deleted -- the trace and everything derived from it (facts, concept embeddings, situational tokens) survive as substrate. When an archived trace becomes relevant to a query again, it revives automatically: status flips back to active, strength resets to its significance, and the normal reinforcement loop takes over. Memories fade when unused and return when they matter.
+
+Explicit `forget()` is stronger than fade: a forgotten trace stops surfacing and never auto-revives, though the row is kept. `erase()` is the only true deletion.
 
 ## Environment Variables
 

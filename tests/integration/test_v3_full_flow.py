@@ -75,17 +75,17 @@ class TestFullLifecycle:
         assert recent_contents[0] == "Third experience for timeline"
         assert recent_contents[2] == "First experience for timeline"
 
-    async def test_forget_archives_trace(self, mem: CognitiveMemory) -> None:
+    async def test_forget_marks_trace_forgotten(self, mem: CognitiveMemory) -> None:
         trace = await mem.experience("This memory will be forgotten")
         result = await mem.forget(trace.id)
         assert result.trace_id == trace.id
 
         # Timeline is status-agnostic introspection: the row survives
-        # as reactivation substrate, flagged archived.
+        # for audit, flagged forgotten.
         recent = await mem.timeline(limit=50)
         by_id = {t.id: t for t in recent}
         assert trace.id in by_id
-        assert by_id[trace.id].status == "archived"
+        assert by_id[trace.id].status == "forgotten"
 
     async def test_erase_removes_trace(self, mem: CognitiveMemory) -> None:
         trace = await mem.experience("This memory will be erased")

@@ -24,18 +24,19 @@ def mem(
 
 
 class TestForgetAndReinforce:
-    async def test_forget_archives_not_deletes(
+    async def test_forget_marks_forgotten_not_archived(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
     ) -> None:
         result = await mem.forget("some-id")
         assert result.trace_id == "some-id"
-        mock_trace_store.archive_trace.assert_awaited_once_with("some-id")
+        mock_trace_store.forget_trace.assert_awaited_once_with("some-id")
+        mock_trace_store.archive_trace.assert_not_awaited()
         mock_trace_store.delete_trace.assert_not_awaited()
 
     async def test_forget_raises_not_found(
         self, mem: CognitiveMemory, mock_trace_store: AsyncMock
     ) -> None:
-        mock_trace_store.archive_trace.return_value = False
+        mock_trace_store.forget_trace.return_value = False
         with pytest.raises(TraceNotFoundError):
             await mem.forget("nonexistent")
 

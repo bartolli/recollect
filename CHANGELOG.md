@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.11.0] - 2026-06-12
+
+### Added
+- `MemoryTrace.status` extended with `"forgotten"`: explicit user retraction; never auto-revives (unlike `"archived"`, which revives on relevance)
+- `forget_trace(trace_id)`: `UPDATE ... SET status='forgotten' WHERE status='active'`; `reactivate_trace` (WHERE status='archived') never touches forgotten rows
+- `_gate_retired_candidates`: single lifecycle gate on merged candidates -- `forgotten` dropped regardless of score, `archived` revive above `reactivation_floor`
+
+### Changed
+- `forget()` flips the trace to `'forgotten'` (explicit retraction), not `'archived'` (natural fade); semantics surfaced in MCP tool description
+
 ## [v0.10.0] - 2026-06-12
 
 ### Added

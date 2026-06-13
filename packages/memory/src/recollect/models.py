@@ -38,7 +38,7 @@ class MemoryTrace(BaseModel):
     significance: float = Field(default=0.1, ge=0.0, le=1.0)
     session_id: str | None = None
     user_id: str | None = None
-    status: Literal["active", "archived"] = "active"
+    status: Literal["active", "archived", "forgotten"] = "active"
 
     @property
     def confidence(self) -> str:

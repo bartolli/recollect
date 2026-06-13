@@ -30,7 +30,7 @@ recollect-mcp --log-file logs/mcp.jsonl --verbose
 | `reflect` | -- | Load persona context for the current session. Call before responding to any user message. |
 | `pin` | `trace_id: str` | Promote a memory's extracted relations to permanent persona facts. |
 | `unpin` | `fact_id: str` | Archive a persona fact. It stops surfacing in recall and reflect; the row is retained. |
-| `forget` | `trace_id: str`, `force: bool = false` | Archive a memory trace and its derived facts. Safety-critical (health/dietary/constraint) and pinned facts are retained unless `force=true`. Nothing is hard-deleted. |
+| `forget` | `trace_id: str`, `force: bool = false` | Forget a memory trace: it stops surfacing in recall and never auto-revives. Derived facts archive; safety-critical (health/dietary/constraint) and pinned facts are retained unless `force=true`. Nothing is hard-deleted. |
 
 ## Resources
 

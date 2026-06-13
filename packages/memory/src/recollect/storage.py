@@ -78,6 +78,10 @@ class PostgresStorage:
         """Archive an active trace. Returns False when no active row matches."""
         return await self._ctx.traces.archive_trace(trace_id)
 
+    async def forget_trace(self, trace_id: str) -> bool:
+        """Mark an active trace forgotten (explicit retraction; never revives)."""
+        return await self._ctx.traces.forget_trace(trace_id)
+
     async def reactivate_trace(
         self, trace_id: str, *, min_strength: float, activated_at: datetime
     ) -> bool:
