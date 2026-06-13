@@ -74,7 +74,9 @@ $$s_{\text{concept}} = \max_{i} \cos(q,\; c_i)$$
 
 This blends with the standard bi-encoder score:
 
-$$s_{\text{eff}} = 0.7 \cdot s_{\text{concept}} + 0.3 \cdot s_{\text{bienc}}$$
+$$s_{\text{eff}} = \max\big(s_{\text{bienc}},\; 0.7 \cdot s_{\text{concept}} + 0.3 \cdot s_{\text{bienc}}\big)$$
+
+The max keeps the blend monotonic: concept attention can only lift a trace above its bi-encoder score, never penalize it. A trace with no concept overlap falls back to plain similarity.
 
 The full ranking score adds significance, valence, spreading activation, entity matching, and token propagation:
 
@@ -141,11 +143,13 @@ Two tables, a strength float, and four actions: `create`, `extend`, `revise`, `n
 
 Tokens follow a Hebbian-inspired lifecycle — connections that get used get stronger, connections that don't get used fade.
 
-**Reinforcement.** When a token participates in successful recall, its strength increments:
+**Reinforcement.** When a token actually contributes to recall -- it pulled in at least one trace the query would not have found otherwise -- its strength increments:
 
 $$s \leftarrow \min(1.0,\; s + 0.1)$$
 
-**Decay.** Each consolidation pass, all active tokens lose a fraction of their strength:
+Tokens that merely sit on already-found traces earn nothing; reinforcement is gated on contribution.
+
+**Decay.** Tokens idle for more than 30 minutes lose a fraction of their strength at each consolidation pass:
 
 $$s \leftarrow s \times 0.9$$
 
@@ -161,13 +165,21 @@ The result: frequently useful situational groups strengthen over time, unused li
 
 **Iterative propagation.** At query time, token activation doesn't stop at one hop. Top discovered traces become seeds for the next round, up to 3 re-seeding iterations, stopping early when top-K ranking stabilizes (>= 95% overlap between rounds).
 
+## Memories fade and return
+
+Traces follow the same Hebbian arc as tokens. Decay is recency-anchored: a memory you keep touching holds its strength; one you ignore fades from its last touch, not its creation date. When a faded trace drops below threshold past its grace period, it is **archived** -- never deleted. Everything derived from it (facts, concept embeddings, situational tokens) stays intact as substrate.
+
+Archival is reversible by relevance. When any retrieval path -- semantic, entity, spreading activation, or a token group -- surfaces an archived trace above a similarity floor, it revives: status flips back to active, strength resets to its significance, and the normal reinforcement loop takes over. A revived memory that keeps getting used ratchets toward permanence; one that doesn't re-fades.
+
+Explicit forgetting rides the same machinery. `forget` archives a trace and its derived facts -- but safety-critical facts (health, dietary, constraints) and anything the user explicitly pinned are retained unless forced. True deletion exists only as a separate, deliberate escape hatch.
+
 ## Status
 
-Working. Context priming via MCP, write-time extraction and concept decomposition, fused retrieval, full token lifecycle (create, propagate, reinforce, decay, archive, reactivate).
+Working. Context priming via MCP, write-time extraction and concept decomposition, fused retrieval, full token lifecycle (create, propagate, reinforce, decay, archive, reactivate), and the full trace lifecycle (recency-anchored decay, archive-not-delete, relevance reactivation, guarded forgetting).
 
 Open: longitudinal reinforcement validation, density inflection characterization.
 
-> Installation docs in progress. Open an issue if you want to run it.
+Install and configuration docs live in the package READMEs: [`recollect`](packages/memory/) and [`recollect-mcp`](packages/memory-mcp/).
 
 ## Stack
 

@@ -26,11 +26,11 @@ recollect-mcp --log-file logs/mcp.jsonl --verbose
 | Tool | Parameters | Description |
 |------|------------|-------------|
 | `remember` | `content: str` | Store an experience. LLM extracts entities, concepts, significance, and persona facts. |
-| `recall` | `query: str` | Retrieve relevant memories. Returns persona facts as context followed by matching traces. |
+| `recall` | `query: str`, `token_budget: int = 2000` | Retrieve relevant memories. Returns persona facts as context followed by matching traces. |
 | `reflect` | -- | Load persona context for the current session. Call before responding to any user message. |
-| `pin` | `content: str` | Promote a statement to a permanent persona fact. |
-| `unpin` | `fact_id: str` | Remove a persona fact. |
-| `forget` | `trace_id: str` | Delete a memory trace. |
+| `pin` | `trace_id: str` | Promote a memory's extracted relations to permanent persona facts. |
+| `unpin` | `fact_id: str` | Archive a persona fact. It stops surfacing in recall and reflect; the row is retained. |
+| `forget` | `trace_id: str`, `force: bool = false` | Archive a memory trace and its derived facts. Safety-critical (health/dietary/constraint) and pinned facts are retained unless `force=true`. Nothing is hard-deleted. |
 
 ## Resources
 
@@ -44,24 +44,34 @@ Clients that support MCP resources get session priming automatically via `primer
 
 ## Client configuration
 
-Add to `.mcp.json` (Claude Code) or `claude_desktop_config.json` (Claude Desktop):
+Add to `.mcp.json` (Claude Code) or `claude_desktop_config.json` (Claude Desktop). Keep API keys out of the JSON: put them in an env file and pass it with `--env-file`. Use an absolute path -- the client spawns the server from its own working directory.
 
 ```json
 {
   "mcpServers": {
     "memory": {
       "command": "uvx",
-      "args": ["recollect-mcp"],
+      "args": [
+        "--env-file",
+        "/Users/you/.config/recollect/recollect.env",
+        "recollect-mcp"
+      ],
       "env": {
         "MEMORY_USER_ID": "your-user-id",
         "DATABASE_URL": "postgresql://user@localhost:5432/dbname",
-        "PYDANTIC_AI_MODEL": "anthropic:claude-haiku-4-5-20251001",
-        "ANTHROPIC_API_KEY": "sk-ant-..."
+        "PYDANTIC_AI_MODEL": "anthropic:claude-haiku-4-5-20251001"
       }
     }
   }
 }
 ```
+
+```bash
+# /Users/you/.config/recollect/recollect.env -- secrets only, chmod 600
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Variables in the `env` block take precedence over the env file, so define each in one place only.
 
 ## Environment Variables
 
