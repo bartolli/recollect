@@ -62,6 +62,7 @@ max_facts_per_query = 5
 surface_relevance_floor = 0.5  # Min blended score for non-safety write-time fact surfacing (search_query mode)
 max_surfaced_facts = 3  # Cap on non-safety facts surfaced per write (safety facts uncapped)
 recall_relevance_floor = 0.65  # Min blended S for non-safety recall-time fact surfacing; safety categories bypass
+bridge_activation_floor = 0.0  # Situational-grounding bridge: min source_trace propagated_sim to recover a below-floor fact. <=0 disables (ships OFF -- prod propagated_sim is uncalibrated; observe the distribution, then set >0 to enable). Corpus-validated clean band was ~0.35
 
 [decay]
 significance_reduction = 0.7  # sig=1.0 reduces decay by 70%

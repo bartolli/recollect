@@ -585,7 +585,9 @@ class CognitiveMemory:
             query_embedding,
             user_id=user_id,
         )
-        persona_facts = self._apply_recall_floor(persona_facts, semantic_scores)
+        persona_facts = self._apply_recall_floor(
+            persona_facts, semantic_scores, token_activated
+        )
         if persona_facts:
             fact_thoughts = self._persona_facts_to_thoughts(
                 persona_facts,
@@ -2317,6 +2319,7 @@ class CognitiveMemory:
         self,
         facts: list[PersonaFact],
         scores: dict[str, float],
+        token_activated: dict[str, float],
     ) -> list[PersonaFact]:
         """Drop recall persona facts below the absolute floor; safety bypasses.
 
@@ -2330,15 +2333,42 @@ class CognitiveMemory:
         top-max_facts_per_query set, so a pin that reached this point ranked
         top-k (adr-recall-surfacing-gate ruling 4). A rank-cut pin never
         arrives -- no reserved slots; the primer owns the always-available pin.
+
+        Situational grounding (ruling 5): a below-floor fact also surfaces when
+        its source_trace is STRONGLY token-activated (propagated_sim >=
+        bridge_activation_floor). The strength gate is load-bearing -- weak
+        incidental activation floods and cross-activates same-name referents
+        (slice-1c); only strong activation marks a genuine situational link.
         """
         floor = float(self._config.get("persona.recall_relevance_floor", 0.65))
+        bridge_floor = float(
+            self._config.get("persona.bridge_activation_floor", 0.0)
+        )
         return [
             f
             for f in facts
             if f.category in _RECALL_SAFETY_BYPASS
             or f.status == "pinned"
             or scores.get(f.id, 0.0) >= floor
+            or self._situationally_grounded(f, token_activated, bridge_floor)
         ]
+
+    @staticmethod
+    def _situationally_grounded(
+        fact: PersonaFact,
+        token_activated: dict[str, float],
+        bridge_floor: float,
+    ) -> bool:
+        """Source_trace token-activated above the bridge floor (ruling 5).
+
+        bridge_floor <= 0 disables the bridge: activation strength is always > 0,
+        so a 0 floor would recover every activated fact (the slice-1c flood). The
+        off-switch is explicit, not a 0 threshold.
+        """
+        if bridge_floor <= 0.0:
+            return False
+        tid = fact.source_trace_id
+        return tid in token_activated and token_activated[tid] >= bridge_floor
 
     def _extract_entity_names_from_query(self, query: str) -> list[str]:
         """Extract potential entity names from query text.
