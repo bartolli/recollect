@@ -868,8 +868,9 @@ class CognitiveMemory:
 
         Promotes what extraction persisted in trace.pattern, bypassing
         the confidence gate -- pin is the user saying "this matters".
-        The generic `user noted` SPO is only the empty-extraction
-        fallback.
+        Reconciles against existing facts (flip a live twin to pinned,
+        insert only an unmatched relation) so re-pin does not duplicate.
+        The generic `user noted` SPO is only the empty-extraction fallback.
         """
         if not trace_id:
             raise ValueError("Trace ID must be a non-empty string")
@@ -893,10 +894,32 @@ class CognitiveMemory:
         facts: list[PersonaFact] = []
         for rel in relations:
             fact = await self._relation_to_fact(rel, trace, status="pinned")
-            await self._storage.facts.store_persona_fact(fact)
-            await self._embed_fact_tags(fact)
-            facts.append(fact)
+            facts.append(await self._pin_relation_fact(fact))
         return facts
+
+    async def _pin_relation_fact(self, fact: PersonaFact) -> PersonaFact:
+        """Flip an existing non-archived twin to pinned, else insert.
+
+        Matches _store_or_promote_fact's key (subject+predicate+object over
+        non-archived rows) so pin reconciles with extraction-time facts
+        instead of duplicating them, but scoped to the trace's user_id: the
+        dedup read must not cross users (adr-retrieval-user-isolation), and
+        every relation under subject "user" would otherwise collide
+        table-wide. Archived rows are retractions -- never flipped; absent a
+        live twin a fresh pinned row re-asserts, retaining the archived row
+        for audit (adr-pin-upsert-semantics).
+        """
+        existing = await self._storage.facts.get_persona_facts(
+            subject=fact.subject, user_id=fact.user_id
+        )
+        live = [f for f in existing if f.status != "archived"]
+        match = _find_exact_duplicate(live, fact)
+        if match is not None:
+            await self._storage.facts.update_fact_status(match.id, "pinned")
+            return match.model_copy(update={"status": "pinned"})
+        await self._storage.facts.store_persona_fact(fact)
+        await self._embed_fact_tags(fact)
+        return fact
 
     async def unpin(self, fact_id: str) -> bool:
         """Archive a persona fact: it leaves every surfacing path.

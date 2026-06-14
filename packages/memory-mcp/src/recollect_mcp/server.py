@@ -349,7 +349,7 @@ async def reflect(ctx: Ctx) -> str:
 async def pin(
     trace_id: str,
     ctx: Ctx,
-) -> list[PersonaFact]:
+) -> str:
     """Promote a memory's extracted relations to permanent persona facts.
 
     Use for stable truths: allergies, relationships, preferences.
@@ -359,7 +359,7 @@ async def pin(
         trace_id: ID of the memory trace to pin.
     """
     try:
-        return await _get_memory(ctx).pin(trace_id)
+        return _format_pin_result(await _get_memory(ctx).pin(trace_id))
     except TraceNotFoundError:
         logger.exception("Trace not found for pin")
         raise
@@ -536,6 +536,21 @@ def _format_facts(facts: list[PersonaFact]) -> str:
     if not facts:
         return "No persona facts yet."
     lines = [f"PERSONA FACTS ({promoted} promoted, {pinned} pinned):"]
+    for fact in facts:
+        lines.append("")
+        lines.append(_format_single_fact(fact))
+    return "\n".join(lines)
+
+
+def _format_pin_result(facts: list[PersonaFact]) -> str:
+    """Confirm pinned facts as compact text -- never serialize embeddings.
+
+    pin() returns PersonaFact models carrying 768-float embeddings; returning
+    them raw overflowed the MCP result cap (adr-pin-upsert-semantics).
+    """
+    if not facts:
+        return "Nothing to pin."
+    lines = [f"Pinned {len(facts)} persona fact(s):"]
     for fact in facts:
         lines.append("")
         lines.append(_format_single_fact(fact))

@@ -207,9 +207,21 @@ async def test_recall_surfaces_gated_persona_fact_as_important_context(
 
 
 async def test_pin(ctx: MagicMock, mock_memory: AsyncMock) -> None:
+    mock_memory.pin.return_value = [
+        PersonaFact(
+            subject="Alex",
+            predicate="likes",
+            object="coffee",
+            content="Alex likes coffee",
+            status="pinned",
+            embedding=[0.1] * 768,
+        )
+    ]
     result = await pin("trace-123", ctx)
-    assert isinstance(result, list)
-    assert all(isinstance(f, PersonaFact) for f in result)
+    assert isinstance(result, str)
+    assert "Pinned 1 persona fact" in result
+    assert "Alex likes coffee" in result
+    assert "0.1" not in result  # embeddings projected out of the MCP payload
     mock_memory.pin.assert_awaited_once_with("trace-123")
 
 

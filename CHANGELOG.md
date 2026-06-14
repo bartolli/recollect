@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.13.0] - 2026-06-14
+
+### Changed
+- `pin` (`recollect-mcp`) returns formatted text; persona-fact embeddings no longer serialize into the tool result (was `list[PersonaFact]`). SDK `pin() -> list[PersonaFact]` contract unchanged
+
+### Fixed
+- `pin(trace_id)` reconciles per relation against extraction-time facts: a live non-archived subject+predicate+object twin flips to `pinned` in place, only an unmatched relation inserts -- first pin of an extraction-backed trace no longer duplicates the candidate fact or its concept embeddings
+- `pin` reconcile read scoped to the trace's `user_id`; the `subject="user"` match no longer crosses users
+- re-pin over an archived twin inserts a fresh `pinned` row and retains the archived row
+
 ## [v0.12.0] - 2026-06-14
 
 ### Added

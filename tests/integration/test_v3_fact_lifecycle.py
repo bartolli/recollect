@@ -74,6 +74,7 @@ async def _seed_fact(
     obj: str,
     status: FactStatus,
     predicate: str = "lives_in",
+    user_id: str = "u1",
 ) -> PersonaFact:
     fact = PersonaFact(
         subject="user",
@@ -81,7 +82,7 @@ async def _seed_fact(
         object=obj,
         content=f"user {predicate} {obj}",
         status=status,
-        user_id="u1",
+        user_id=user_id,
     )
     await mem.storage.facts.store_persona_fact(fact)
     return fact
@@ -203,6 +204,51 @@ class TestPinPromotesRelations:
         assert fact.category == "preference"
         assert fact.status == "pinned"
         assert fact.embedding is not None
+
+    async def test_pin_flips_existing_candidate_without_duplicating(
+        self, mem: tuple[CognitiveMemory, AsyncMock],
+    ) -> None:
+        # Regression: pin INSERTed from trace.pattern, duplicating the
+        # candidate extraction already wrote (adr-pin-upsert-semantics).
+        m, extractor = mem
+        _wire_extraction(extractor, _BERLIN)
+        trace = await m.experience("I moved to Berlin", user_id="u1")
+        before = await m.facts(user_id="u1")
+        assert [(f.object, f.status) for f in before] == [("Berlin", "candidate")]
+
+        pinned = await m.pin(trace.id)
+        assert [f.object for f in pinned] == ["Berlin"]
+
+        after = await m.facts(user_id="u1")
+        assert len(after) == 1  # flipped in place, not duplicated
+        assert after[0].status == "pinned"
+        assert after[0].id == before[0].id
+
+    async def test_pin_match_is_user_scoped(
+        self, mem: tuple[CognitiveMemory, AsyncMock],
+    ) -> None:
+        # Cross-user guard: pinning u1's trace must insert u1's own fact and
+        # leave u2's same-SPO fact untouched (adr-retrieval-user-isolation).
+        # Unscoped, the subject="user" match flips u2's row instead.
+        m, extractor = mem
+        other = await _seed_fact(
+            m, obj="cycling", status="pinned", predicate="prefers", user_id="u2"
+        )
+        _wire_extraction(extractor, _CYCLING)
+        trace = await m.experience("I love cycling on weekends", user_id="u1")
+        assert await m.facts(user_id="u1") == []  # confidence-gated: no u1 fact yet
+
+        await m.pin(trace.id)
+
+        u1 = await m.facts(user_id="u1")
+        assert len(u1) == 1
+        assert (u1[0].user_id, u1[0].object, u1[0].status) == (
+            "u1",
+            "cycling",
+            "pinned",
+        )
+        u2 = await m.facts(user_id="u2")
+        assert [(f.id, f.status) for f in u2] == [(other.id, "pinned")]
 
     async def test_pin_empty_extraction_falls_back_to_noted(
         self, mem: tuple[CognitiveMemory, AsyncMock],
