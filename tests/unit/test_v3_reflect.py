@@ -112,11 +112,16 @@ async def test_reflect_idempotent(
     assert first == second
 
 
-async def test_recall_without_reflect_prepends_primer(
+async def test_recall_without_reflect_no_primer_dump(
     ctx: MagicMock,
     mock_memory: AsyncMock,
 ) -> None:
-    """First recall without reflect should auto-prime with primer."""
+    """Unreflected recall surfaces gated thoughts only -- never the full primer graph.
+
+    The full promoted+pinned graph is reflect's job; recall's persona channel
+    is the recall-floored think_about output. The one-shot primed marker still
+    flips (story-2's safety-net seam).
+    """
     mock_memory.think_about.return_value = [
         Thought(
             trace=MemoryTrace(content="dinner recipe"),
@@ -126,7 +131,7 @@ async def test_recall_without_reflect_prepends_primer(
         )
     ]
     result = await recall("dinner ideas", ctx)
-    assert "KNOWN FACTS AND RELATIONSHIPS" in result
+    assert "KNOWN FACTS AND RELATIONSHIPS" not in result
     assert "dinner recipe" in result
     app = ctx.request_context.lifespan_context
     assert app.primed is True

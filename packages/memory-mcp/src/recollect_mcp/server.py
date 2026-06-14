@@ -8,7 +8,7 @@ Supports stdio and streamable-http transports.
 """
 
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -300,23 +300,21 @@ async def recall(
     """
     app = _get_ctx(ctx)
     try:
-        if not app.primed:
+        # Persona facts surface through the recall-floored think_about output;
+        # the full promoted+pinned graph is reflect's job. On the first
+        # (unreflected) recall, prepend a narrow safety net -- pinned + recall
+        # safety-bypass facts -- so safety-critical context is never dropped
+        # when an agent skips reflect.
+        surface_safety = not app.primed
+        if surface_safety:
             app.primed = True
-            primer = await _generate_primer(app)
-            primer_tokens = len(primer) // 4
-            adjusted_budget = max(token_budget - primer_tokens, 500)
-            thoughts = await app.memory.think_about(
-                query,
-                token_budget=adjusted_budget,
-                user_id=app.user_id or None,
-            )
-            return f"{primer}\n\n{_format_thoughts(thoughts)}"
         thoughts = await app.memory.think_about(
             query,
             token_budget=token_budget,
             user_id=app.user_id or None,
         )
-        return _format_thoughts(thoughts)
+        safety_facts = await _safety_net_facts(app) if surface_safety else ()
+        return _format_thoughts(thoughts, safety_facts=safety_facts)
     except StorageError as exc:
         logger.exception("Storage error in recall")
         return f"Recall failed: {exc}"
@@ -459,9 +457,55 @@ def _format_remember_result(
     return f"{confirmation}\n\n" + "\n".join(block)
 
 
-def _format_thoughts(thoughts: list[Thought]) -> str:
-    """Format thoughts with IMPORTANT CONTEXT section for persona facts."""
-    important: list[str] = []
+_RECALL_SAFETY_NET_CATEGORIES = frozenset({"health", "dietary"})
+
+
+async def _safety_net_facts(app: AppContext) -> list[PersonaFact]:
+    """Pinned + recall-safety-bypass facts -- the skip-reflect always-on surface.
+
+    Mirrors the recall floor's exemptions (pinned floor-exemption + {health,
+    dietary} bypass) so the unreflected path never silently drops
+    safety-critical context. Candidates and archived facts excluded.
+    """
+    facts = await app.memory.facts(user_id=app.user_id or None)
+    return [
+        f
+        for f in facts
+        if f.status in ("promoted", "pinned")
+        and (f.status == "pinned" or f.category in _RECALL_SAFETY_NET_CATEGORIES)
+    ]
+
+
+def _safety_net_line(fact: PersonaFact) -> str:
+    triple = f"{fact.subject} {fact.predicate} {fact.object}"
+    tag = "pinned" if fact.status == "pinned" else fact.category
+    if fact.content and fact.content != triple:
+        return f"[{tag}] {triple} -- {fact.content}"
+    return f"[{tag}] {triple}"
+
+
+def _format_thoughts(
+    thoughts: list[Thought],
+    *,
+    safety_facts: Sequence[PersonaFact] = (),
+) -> str:
+    """Format thoughts with IMPORTANT CONTEXT section for persona facts.
+
+    safety_facts are the skip-reflect safety net (pinned + recall safety-bypass);
+    surfaced under IMPORTANT CONTEXT ahead of the gated persona facts.
+    """
+    # Dedup the safety net against facts the gate already surfaced: a persona
+    # thought's reconstruction embeds its "subject predicate object" triple.
+    gated_recons = [
+        t.reconstruction for t in thoughts if t.trace.pattern.get("persona_fact")
+    ]
+    important: list[str] = [
+        _safety_net_line(f)
+        for f in safety_facts
+        if not any(
+            f"{f.subject} {f.predicate} {f.object}" in recon for recon in gated_recons
+        )
+    ]
     regular: list[str] = []
 
     for thought in thoughts:

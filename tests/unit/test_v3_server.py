@@ -153,6 +153,59 @@ async def test_recall_custom_budget(
     assert mock_memory.think_about.call_args.kwargs["token_budget"] == 500
 
 
+async def test_recall_unprimed_does_not_leak_promoted_facts(
+    ctx: MagicMock,
+    mock_memory: AsyncMock,
+) -> None:
+    """Unreflected recall never injects the promoted graph via the primer.
+
+    The persona channel is the recall-floored think_about output; recall must
+    not surface the full promoted+pinned graph. Guards against re-adding an
+    ungated prepend -- the probe surfacing arm bypasses MCP composition, so
+    this coverage exists nowhere else. Durable across story-2: a promoted
+    non-safety fact is neither pinned nor health/dietary, so the safety net
+    never surfaces it either.
+    """
+    mock_memory.facts.return_value = [
+        PersonaFact(
+            subject="Angel",
+            predicate="implements_rule",
+            object="hypothesis independence",
+            content="Angel implements the hypothesis-independence rule",
+            status="promoted",
+            category="constraint",
+        )
+    ]
+    result = await recall("dinner ideas", ctx)
+    assert "KNOWN FACTS AND RELATIONSHIPS" not in result
+    assert "hypothesis independence" not in result
+
+
+async def test_recall_surfaces_gated_persona_fact_as_important_context(
+    ctx: MagicMock,
+    mock_memory: AsyncMock,
+) -> None:
+    """A persona-fact thought from think_about renders under IMPORTANT CONTEXT.
+
+    The gated channel (recall floor + situational grounding, applied inside
+    think_about) is where relevant persona facts surface.
+    """
+    mock_memory.think_about.return_value = [
+        Thought(
+            trace=MemoryTrace(
+                content="Angel is allergic to penicillin",
+                pattern={"persona_fact": True},
+            ),
+            relevance=0.95,
+            token_count=10,
+            reconstruction="Angel is allergic to penicillin",
+        )
+    ]
+    result = await recall("any drug allergies?", ctx)
+    assert "IMPORTANT CONTEXT:" in result
+    assert "penicillin" in result
+
+
 async def test_pin(ctx: MagicMock, mock_memory: AsyncMock) -> None:
     result = await pin("trace-123", ctx)
     assert isinstance(result, list)
