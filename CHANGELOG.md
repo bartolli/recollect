@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.12.0] - 2026-06-14
+
+### Added
+- `persona.recall_relevance_floor` (0.65): absolute blended-`S` floor on non-safety persona facts at recall; `{health,dietary}` categories and pinned-when-ranked bypass it
+- `persona.bridge_activation_floor` (0.0 = OFF): situational-grounding bridge recovers a below-floor persona fact whose `source_trace` is token-activated at `propagated_sim >= floor`; `<= 0` disables
+
+### Changed
+- `recall` (`recollect-mcp`) surfaces persona facts only through the recall-floored `think_about` path; the first unreflected call surfaces a safety net (pinned + health/dietary) instead of the full persona graph -- full relational context is `reflect` / the `primer` resource
+
 ## [v0.11.0] - 2026-06-12
 
 ### Added

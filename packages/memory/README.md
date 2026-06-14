@@ -105,7 +105,7 @@ pydantic_ai_model = "ollama:ministral-3"   # pydantic-ai provider:model format
 | `[extraction]` | LLM extraction | `max_tokens`, `max_concepts`, `max_relations`, `pydantic_ai_model`, `template_path`, `embed_relation_tags` |
 | `[extraction.model_settings]` | Provider-specific settings forwarded to pydantic-ai | `openrouter_reasoning`, `anthropic_thinking_budget`, `thinking`, `top_p` |
 | `[embedding]` | Local embedding model | `model`, `dimensions` |
-| `[persona]` | Persona fact management | `auto_extract`, `confidence_threshold`, `ranking_strategy`, `max_facts_per_query` |
+| `[persona]` | Persona fact management | `auto_extract`, `confidence_threshold`, `ranking_strategy`, `max_facts_per_query`, `recall_relevance_floor` |
 | `[recall_tokens]` | Situational grouping at write + propagation at read | `enabled`, `assessment_max_tokens`, `assessment_template_path`, plus strength / decay / propagation knobs (env-var-exposed above) |
 | `[session]` | Session summaries | `summary_strength`, `summary_max_tokens` |
 

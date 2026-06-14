@@ -40,7 +40,7 @@ recollect-mcp --log-file logs/mcp.jsonl --verbose
 | `memory://facts` | All active persona facts with confidence scores and timestamps. |
 | `memory://health` | Server and database health status. |
 
-Clients that support MCP resources get session priming automatically via `primer`. For clients that don't, `reflect` loads the same context as a tool call. If neither is invoked, the server injects the primer on the first tool call of the session.
+Clients that support MCP resources get session priming automatically via `primer`. For clients that don't, `reflect` loads the same context as a tool call. If neither is invoked, the first `recall` of the session still surfaces safety-critical persona facts (pinned, health, dietary) as a fallback -- the full relational context comes from `primer` or `reflect`.
 
 ## Client configuration
 

@@ -31,7 +31,7 @@ Recollect is an experiment in retrieval that handles this.
 pip install recollect    # or: uv add recollect
 ```
 
-**[`recollect-mcp`](packages/memory-mcp/)** — The MCP server. Six tools (`remember`, `recall`, `pin`, `unpin`, `forget`, `reflect`) and three resources (`primer`, `facts`, `health`). Drop it into Claude Desktop, Cursor, or any MCP-compatible client and get persistent memory out of the box. Clients that support MCP resources get session priming automatically via `primer`; for clients that don't, `reflect` loads the same persona context as a tool call. If the agent skips both, the server injects the primer automatically on the first tool call of the session.
+**[`recollect-mcp`](packages/memory-mcp/)** — The MCP server. Six tools (`remember`, `recall`, `pin`, `unpin`, `forget`, `reflect`) and three resources (`primer`, `facts`, `health`). Drop it into Claude Desktop, Cursor, or any MCP-compatible client and get persistent memory out of the box. Clients that support MCP resources get session priming automatically via `primer`; for clients that don't, `reflect` loads the same persona context as a tool call. If the agent skips both, the first `recall` of the session still surfaces safety-critical persona facts (pinned, health, dietary) as a fallback -- the full relational context comes from `primer` or `reflect`.
 
 ```bash
 pip install recollect-mcp    # or: uv add recollect-mcp
