@@ -1,0 +1,44 @@
+# Slice-1c associative-recall validation. See fixtures/associative/DESIGN.md.
+#   make probe-surfacing-associative   (resets probe_eval, then runs this)
+# Seeds the associative corpus clean (recall_tokens off during seed), restores
+# the token groups, enables tokens at query time, scores the ground-truthed
+# queries, and classifies each surfaced persona fact into its case (Axis 1,
+# tokens-on pass). Requires: live Postgres at [surfacing].db_url + .env keys.
+
+[arm]
+name = "surfacing-associative"
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+max_concepts = 5
+max_relations = 3
+
+[corpus]
+# Schema-required; the surfacing path uses [surfacing].*_path instead.
+path = "packages/probe-cli/fixtures/associative/seed_traces.jsonl"
+
+[surfacing]
+enabled = true
+db_url = "${RECOLLECT_PROBE_DB_URL}"
+traces_corpus_path = "packages/probe-cli/fixtures/associative/seed_traces.jsonl"
+query_corpus_path = "packages/probe-cli/fixtures/associative/queries.jsonl"
+seed_groups_path = "packages/probe-cli/fixtures/associative/seed_groups.jsonl"
+ground_truth_path = "packages/probe-cli/fixtures/associative/ground_truth.jsonl"
+
+[recollect_overrides]
+# search_limit small: token activation seeds from the top trace matches only;
+# _token_hop excludes seeds, so a below-floor hop target stays activation-eligible.
+"retrieval.search_limit" = 3
+# max_facts_per_query high: the cohort is the full fact population, not a top-k
+# slice (production slice-2 stays top-5-bounded).
+"persona.max_facts_per_query" = 20
+# reinforce_boost=0: per-query activation is a clean read across the query loop.
+"recall_tokens.reinforce_boost" = 0.0
+# bridge_activation_floor: refined slice-2 -- a below-floor fact recovers only on
+# STRONG activation (propagated_sim >= this). Probe-only knob simulating the
+# proposed slice-2 gate; the operating window measured on this corpus is
+# [0.30, 0.399] (keeps genuine recoveries, drops the weak-prop flood). 0 = bare.
+"persona.bridge_activation_floor" = 0.35
+
+[output]
+dir = "out"

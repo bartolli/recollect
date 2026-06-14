@@ -128,3 +128,16 @@ def load_seed_groups(path: Path | str) -> list[SeedGroup]:
 def load_eval_corpus(path: Path | str) -> list[EvalEntry]:
     entries, _ = _load_jsonl(path, EvalEntry, "eval entry")
     return entries
+
+
+class GroundTruthEntry(BaseModel):
+    # forbid: trace ids whose facts must NOT surface for this query (wrong
+    # referent / disambiguation). The surface set is the query's
+    # relevant_trace_ids; everything else not forbidden is derived noise.
+    query_id: str
+    forbid: list[str] = Field(default_factory=list)
+
+
+def load_ground_truth(path: Path | str) -> list[GroundTruthEntry]:
+    entries, _ = _load_jsonl(path, GroundTruthEntry, "ground truth")
+    return entries

@@ -53,6 +53,13 @@ class SurfacingConfig(BaseModel):
     db_url: str = ""
     traces_corpus_path: str = ""
     query_corpus_path: str = ""
+    # When set, the surfacing arm seeds the token-rich situational substrate
+    # (restore_seed_groups stamps these groups) instead of the organic corpus
+    # -- the slice-1b path. Absent => the plain surfacing arm.
+    seed_groups_path: str = ""
+    # When set, run the slice-1c ground-truth-aware per-case classification
+    # (forbid sets per query). Requires seed_groups_path.
+    ground_truth_path: str = ""
 
 
 class Arm(BaseModel):

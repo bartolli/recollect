@@ -1,0 +1,42 @@
+# Slice-1b substrate check: token-rich situational corpus.
+#   make probe-surfacing-situational   (resets probe_eval, then runs this)
+# Seeds the situational seed traces clean (recall_tokens off during seed),
+# force-promotes facts, reports persona-fact coverage on grouped traces. The
+# presence of seed_groups_path routes the surfacing arm to the situational path.
+# query_corpus_path is the slice-1b.2 bridge-query instrument (not read by the
+# substrate check). Requires: live Postgres at [surfacing].db_url + .env keys.
+
+[arm]
+name = "surfacing-situational"
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+max_concepts = 5
+max_relations = 3
+
+[corpus]
+# Schema-required; the surfacing path uses [surfacing].*_path instead.
+path = "packages/probe-cli/fixtures/situational/seed_traces.jsonl"
+
+[surfacing]
+enabled = true
+db_url = "${RECOLLECT_PROBE_DB_URL}"
+traces_corpus_path = "packages/probe-cli/fixtures/situational/seed_traces.jsonl"
+query_corpus_path = "packages/probe-cli/fixtures/situational/bridge_queries.jsonl"
+seed_groups_path = "packages/probe-cli/fixtures/situational/seed_groups.jsonl"
+
+[recollect_overrides]
+# search_limit=1: slice-1b one-shot disambiguation. Seed token activation from
+# the single top trace match so the below-floor target (c1.2) cannot be a seed
+# (seeds are hop-excluded) -- tests whether it is hop-recoverable in principle.
+# One run, not tune-to-green; revert to 3 (or revisit) after reading the result.
+"retrieval.search_limit" = 1
+# max_facts_per_query high: the below-floor cohort must see the full fact
+# population, not a top-5 rank slice (production slice-2 stays top-5-bounded).
+"persona.max_facts_per_query" = 20
+# reinforce_boost=0: per-query activation is a clean read (the arm calls
+# _activate_recall_tokens per query, which would otherwise Hebbian-drift).
+"recall_tokens.reinforce_boost" = 0.0
+
+[output]
+dir = "out"

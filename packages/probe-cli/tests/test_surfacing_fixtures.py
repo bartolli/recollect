@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pytest
 from probe_cli.arm import load_arm
 from probe_cli.corpus import load_corpus, load_query_corpus
 from probe_cli.surfacing_runner import SurfacingArmRunner
@@ -28,7 +29,10 @@ def test_distractor_queries_present() -> None:
     assert len(distractors) == 7
 
 
-def test_surfacing_arm_toml_loads() -> None:
+def test_surfacing_arm_toml_loads(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The fixture references the probe DB by env name (.env single source of
+    # truth); load_arm's guard raises on an unset var, so provide it here.
+    monkeypatch.setenv("RECOLLECT_PROBE_DB_URL", "postgresql://localhost/probe_eval")
     arm = load_arm(_FIX / "surfacing.toml")
     assert arm.surfacing.enabled is True
     assert arm.surfacing.traces_corpus_path.endswith("eval_traces.jsonl")

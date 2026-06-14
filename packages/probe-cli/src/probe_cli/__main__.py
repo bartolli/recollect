@@ -13,7 +13,12 @@ from recollect.llm.pydantic_ai import PydanticAIProvider
 from recollect.llm.types import CompletionParams
 
 from probe_cli.arm import Arm, load_arm
-from probe_cli.corpus import load_corpus, load_query_corpus
+from probe_cli.corpus import (
+    load_corpus,
+    load_ground_truth,
+    load_query_corpus,
+    load_seed_groups,
+)
 from probe_cli.metrics import (
     AggregateMetrics,
     RetrievalAggregate,
@@ -23,11 +28,14 @@ from probe_cli.metrics import (
     aggregate_runs,
 )
 from probe_cli.report import (
+    write_case_breakdown,
     write_retrieval_run_report,
     write_retrieval_summary,
     write_run_report,
+    write_situational_lift,
     write_situational_run_report,
     write_situational_summary,
+    write_situational_surfacing_report,
     write_summary,
     write_surfacing_run_report,
     write_surfacing_summary,
@@ -38,8 +46,14 @@ from probe_cli.situational_metrics import (
     aggregate_situational_runs,
 )
 from probe_cli.situational_runner import SituationalArmRunner, SituationalRunReport
+from probe_cli.surfacing_cases import CaseBreakdown, classify_cases
 from probe_cli.surfacing_metrics import SurfacingMetrics, compute_surfacing_metrics
 from probe_cli.surfacing_runner import SurfacingArmRunner, SurfacingRunReport
+from probe_cli.surfacing_situational import SituationalLift, compute_situational_lift
+from probe_cli.surfacing_situational_runner import (
+    SituationalSurfacingArmRunner,
+    SituationalSurfacingReport,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +114,8 @@ async def _run_arm(arm_path: Path, *, model_override: str | None) -> int:
     out_dir = Path(arm.output.dir) / arm.name
 
     if arm.surfacing.enabled:
+        if arm.surfacing.seed_groups_path:
+            return await _run_situational_surfacing_arm(arm, provider, out_dir)
         return await _run_surfacing_arm(arm, provider, out_dir)
     if arm.situational.enabled:
         return await _run_situational_arm(arm, provider, out_dir)
@@ -154,7 +170,78 @@ async def _run_surfacing_arm(
     metrics = compute_surfacing_metrics(report)
     write_surfacing_summary(metrics, out_dir)
     _print_surfacing_summary(arm, report, metrics)
+
+    # Story-3 spike: floor matches the production recall floor so the below-floor
+    # band is exactly the set the live gate drops.
+    floor = float(arm.to_memory_config().get("persona.recall_relevance_floor", 0.65))
+    lift = compute_situational_lift(report, floor=floor)
+    write_situational_lift(lift, out_dir)
+    _print_situational_lift(lift)
     return 0
+
+
+async def _run_situational_surfacing_arm(
+    arm: Arm, provider: PydanticAIProvider, out_dir: Path
+) -> int:
+    runner = SituationalSurfacingArmRunner.from_arm(arm, provider)
+    report = await runner.run_measurement()
+    write_situational_surfacing_report(report, out_dir)
+    _print_situational_surfacing_substrate(arm, report)
+
+    # Bridge measurement: floor matches the production recall floor so the
+    # below-floor band is exactly what the live gate drops. compute_situational_lift
+    # reads a SurfacingRunReport-shaped object -- adapt the queries across.
+    if report.queries:
+        floor = float(
+            arm.to_memory_config().get("persona.recall_relevance_floor", 0.65)
+        )
+        lift = compute_situational_lift(
+            SurfacingRunReport(
+                arm_name=report.arm_name,
+                model=report.model,
+                seeded_traces=report.seeded_traces,
+                promoted_facts=report.promoted_facts,
+                queries=report.queries,
+            ),
+            floor=floor,
+        )
+        write_situational_lift(lift, out_dir)
+        _print_situational_lift(lift)
+
+    # Slice-1c: ground-truth-aware per-case breakdown over the associative corpus.
+    if arm.surfacing.ground_truth_path and report.queries:
+        breakdown = _classify_arm_cases(arm, report)
+        write_case_breakdown(breakdown, out_dir)
+        _print_case_breakdown(breakdown)
+    return 0
+
+
+def _classify_arm_cases(
+    arm: Arm, report: SituationalSurfacingReport
+) -> CaseBreakdown:
+    queries = load_query_corpus(arm.surfacing.query_corpus_path).entries
+    gt = load_ground_truth(arm.surfacing.ground_truth_path)
+    groups = load_seed_groups(arm.surfacing.seed_groups_path)
+    surface = {q.id: set(q.relevant_trace_ids) for q in queries}
+    forbid = {g.query_id: set(g.forbid) for g in gt}
+    grouped = {m for grp in groups for m in grp.member_trace_ids}
+    cfg = arm.to_memory_config()
+    floor = float(cfg.get("persona.recall_relevance_floor", 0.65))
+    # Refined slice-2 simulation: gate the bridge on propagated_sim so only
+    # strong situational activation recovers a below-floor fact.
+    activation_floor = float(cfg.get("persona.bridge_activation_floor", 0.0))
+    # Production-faithful cut: persona.max_facts_per_query packaged default is 5,
+    # even though the arm raises it to expose the full statistical cohort. The
+    # case breakdown is what slice-2 would actually do; the lift is the wide view.
+    return classify_cases(
+        report.queries,
+        surface_by_query=surface,
+        forbid_by_query=forbid,
+        grouped=grouped,
+        floor=floor,
+        top_k=5,
+        activation_floor=activation_floor,
+    )
 
 
 async def _run_retrieval_arm(
@@ -368,6 +455,86 @@ def _print_surfacing_summary(
             f"  (rel={p.kept_relevant} dis={p.kept_distractor})",
             file=sys.stderr,
         )
+
+
+def _print_situational_lift(lift: SituationalLift) -> None:
+    print(
+        f"\n  situational grounding spike (floor={lift.floor:.2f}):",
+        file=sys.stderr,
+    )
+    print(
+        f"    below-floor band: n={lift.below_floor_total}"
+        f"  relevant={lift.below_floor_relevant}"
+        f"  baseline_prec={lift.baseline_precision:.3f}",
+        file=sys.stderr,
+    )
+    print(
+        f"    activated:     n={lift.activated.n}"
+        f"  rel={lift.activated.relevant}  prec={lift.activated.precision:.3f}",
+        file=sys.stderr,
+    )
+    print(
+        f"    not-activated: n={lift.not_activated.n}"
+        f"  rel={lift.not_activated.relevant}"
+        f"  prec={lift.not_activated.precision:.3f}",
+        file=sys.stderr,
+    )
+    print(
+        f"    lift={lift.lift:+.3f}  recovered_relevant={lift.recovered_relevant}"
+        f"  readmitted_distractor={lift.readmitted_distractor}",
+        file=sys.stderr,
+    )
+    print(
+        f"    substrate: queries_with_activation={lift.queries_with_activation}"
+        f"  distinct_activated_traces={lift.distinct_activated_traces}",
+        file=sys.stderr,
+    )
+
+
+def _print_situational_surfacing_substrate(
+    arm: Arm, report: SituationalSurfacingReport
+) -> None:
+    cov = report.coverage
+    print(
+        f"\nArm: {arm.name} (situational-surfacing substrate check)",
+        file=sys.stderr,
+    )
+    print(
+        f"  model={report.model}  seeded={report.seeded_traces}"
+        f"  promoted={report.promoted_facts}",
+        file=sys.stderr,
+    )
+    print(
+        f"  facts: total={cov.total_facts}"
+        f"  on_grouped_traces={cov.facts_on_grouped_traces}"
+        f"  distinct_grouped_source_traces={cov.distinct_grouped_source_traces}",
+        file=sys.stderr,
+    )
+    print("  per-group fact counts:", file=sys.stderr)
+    for gid, n in sorted(cov.per_group.items()):
+        print(f"    {gid}: {n}", file=sys.stderr)
+
+
+def _print_case_breakdown(b: CaseBreakdown) -> None:
+    print(
+        "\n  per-case breakdown (Axis 1, persona-fact channel, production top-5):",
+        file=sys.stderr,
+    )
+    print(
+        f"    A vector={b.a_vector}  C bridge={b.c_bridge}"
+        f"  E bypass={b.e_bypass}  anomaly={b.anomaly}",
+        file=sys.stderr,
+    )
+    print(
+        f"    C miss(grouped)={b.c_miss}  B dropped(ungrouped)={b.b_dropped}",
+        file=sys.stderr,
+    )
+    print(
+        f"    F readmit={b.f_readmit}  G violation={b.g_violation}"
+        f" (bridge={b.g_bridge})  H noise={b.h_noise}"
+        f"  E offtarget={b.e_offtarget}  -> bridge-clean={b.clean}",
+        file=sys.stderr,
+    )
 
 
 def _print_failure_samples(reports: list[RunReport], limit: int = 3) -> None:

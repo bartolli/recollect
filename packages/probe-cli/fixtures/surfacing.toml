@@ -2,8 +2,9 @@
 #   make probe-surfacing   (resets probe_eval, then runs this)
 # Seeds eval_traces, force-promotes candidate facts, probes
 # _find_relevant_persona_facts per query; user_id is time-suffixed so re-runs
-# wall off without a reset. Default config (no overrides) -- persona extraction
-# on, matching the validated spike (relevant mean ~0.73, distractor ~0.55).
+# wall off without a reset. Default config except reinforce_boost=0 (spike
+# hygiene, below) -- persona extraction on, surfacing distribution unchanged
+# from the validated baseline (relevant mean ~0.73, distractor ~0.55).
 # Requires: live Postgres at [surfacing].db_url + provider keys in .env.
 
 [arm]
@@ -23,6 +24,12 @@ enabled = true
 db_url = "${RECOLLECT_PROBE_DB_URL}"
 traces_corpus_path = "packages/probe-cli/fixtures/eval_traces.jsonl"
 query_corpus_path = "packages/probe-cli/fixtures/eval_queries.jsonl"
+
+[recollect_overrides]
+# Story-3 spike hygiene: the arm calls _activate_recall_tokens per query, which
+# Hebbian-reinforces contributing tokens. Zeroing the boost holds token strength
+# fixed across the query loop so each query's activation is a clean read.
+"recall_tokens.reinforce_boost" = 0.0
 
 [output]
 dir = "out"

@@ -13,8 +13,11 @@ from probe_cli.metrics import (
 )
 from probe_cli.situational_metrics import SituationalAggregate
 from probe_cli.situational_runner import SituationalRunReport
+from probe_cli.surfacing_cases import CaseBreakdown
 from probe_cli.surfacing_metrics import SurfacingMetrics
 from probe_cli.surfacing_runner import SurfacingRunReport
+from probe_cli.surfacing_situational import SituationalLift
+from probe_cli.surfacing_situational_runner import SituationalSurfacingReport
 
 logger = logging.getLogger(__name__)
 
@@ -99,5 +102,38 @@ def write_surfacing_summary(
     out.mkdir(parents=True, exist_ok=True)
     path = out / "surfacing_summary.json"
     path.write_text(metrics.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_situational_lift(
+    lift: SituationalLift, output_dir: Path | str
+) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "surfacing_situational_lift.json"
+    path.write_text(lift.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_situational_surfacing_report(
+    report: SituationalSurfacingReport, output_dir: Path | str
+) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "situational_surfacing_substrate.json"
+    path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_case_breakdown(
+    breakdown: CaseBreakdown, output_dir: Path | str
+) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "associative_case_breakdown.json"
+    path.write_text(breakdown.model_dump_json(indent=2), encoding="utf-8")
     logger.info("wrote %s", path)
     return path

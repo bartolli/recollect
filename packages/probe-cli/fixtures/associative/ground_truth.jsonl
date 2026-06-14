@@ -1,0 +1,14 @@
+# Associative-recall validation corpus -- ground truth (forbid sets). See DESIGN.md.
+# surface set = queries.jsonl relevant_trace_ids. forbid = facts that MUST NOT
+# surface (wrong-referent / disambiguation [G]); empty for queries with no
+# explicit suppression assertion (F/H are derived from relevance + props).
+
+{"query_id": "q.dine", "forbid": []}
+{"query_id": "q.venue", "forbid": []}
+{"query_id": "q.asia", "forbid": []}
+{"query_id": "q.marathon", "forbid": ["sarah_m.1", "sarah_m.2", "sarah_c.1", "sarah_c.2"]}
+{"query_id": "q.hobby", "forbid": []}
+{"query_id": "q.holiday", "forbid": ["dine.sarah", "venue.sarah", "sarah_w.marathon", "sarah_c.1", "sarah_c.2"]}
+{"query_id": "q.pickup", "forbid": ["sarah_m.1", "sarah_m.2", "dine.sarah", "venue.sarah", "sarah_w.marathon"]}
+{"query_id": "q.coral", "forbid": []}
+{"query_id": "q.shoes", "forbid": []}

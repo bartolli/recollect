@@ -1,0 +1,22 @@
+# Slice-1b.2 bridge-query instrument. Integration + re-admission probe, NOT a
+# powered measurement (N=3 valid targets, hand-constructed both ways).
+# Each bridge query vector-anchors on one group member and labels a CO-GROUPED
+# fact-bearing trace as relevant -- one the anchor's phrasing leaves below the
+# 0.65 floor, so only the token hop (search_limit=3 keeps the target out of the
+# vector seed) can surface it. Fact-bearing traces: c1.2 (G1 constraint),
+# c2a.1 (G2 identity). G4 (health) is recall-bypass-disqualified, omitted.
+# Distractors are off-topic (ungrouped traces): the bridge must not spuriously
+# activate a group and re-admit its fact (readmitted_distractor == 0 is the pass).
+
+# G1 -- anchor c1.3 (guest list 110), target c1.2 (80-guest fire-code cap): the
+# overflow constraint is the situational value of a guest-count query.
+{"id": "bq-g1-guests", "text": "How many people are on our wedding guest list right now?", "relevant_trace_ids": ["c1.2"], "phrasing_style": "natural", "notes": "anchor c1.3 -> hop c1.2"}
+# G1 -- anchor c1.1 (booking + deposit), target c1.2 (capacity constraint).
+{"id": "bq-g1-deposit", "text": "What deposit did we put down to reserve the wedding venue?", "relevant_trace_ids": ["c1.2"], "phrasing_style": "natural", "notes": "anchor c1.1 -> hop c1.2"}
+# G2 -- anchor c2a.3 (Vector Labs VP Eng talks), target c2a.1 (CTO/co-founder
+# identity). Tight cluster; may not clear below-floor -- the data decides.
+{"id": "bq-g2-role", "text": "What new engineering leadership role is Alex pursuing?", "relevant_trace_ids": ["c2a.1"], "phrasing_style": "natural", "notes": "anchor c2a.3 -> hop c2a.1"}
+
+# Distractors: off-topic, ungrouped -- no token group should activate.
+{"id": "dq-coral", "text": "Summarize what I read about coral reef bleaching.", "relevant_trace_ids": [], "phrasing_style": "natural", "notes": "matches c5.u3 (ungrouped)"}
+{"id": "dq-shoes", "text": "Which running shoes did I buy for fall mornings?", "relevant_trace_ids": [], "phrasing_style": "natural", "notes": "matches c4.d1 (ungrouped distractor)"}

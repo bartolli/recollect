@@ -1,0 +1,10 @@
+# Associative-recall validation corpus -- token groups. See DESIGN.md.
+# Restored directly into the probe DB (restore_seed_groups) before the query
+# passes; seeding runs with recall_tokens.enabled=false so only these groups
+# define token structure. Label = "person_ref | situation | impl1, impl2, ...".
+
+{"group_id": "G_dine", "person_ref": "team", "situation": "dining out downtown", "implications": ["dinner planning", "dietary constraints", "venue preferences"], "significance": 0.6, "strength": 1.0, "status": "active", "member_trace_ids": ["dine.anchor", "dine.sarah", "dine.alex", "dine.maya"]}
+{"group_id": "G_venue", "person_ref": "team", "situation": "launch party venue selection", "implications": ["venue selection", "height accessibility"], "significance": 0.5, "strength": 1.0, "status": "active", "member_trace_ids": ["venue.anchor", "venue.sarah"]}
+{"group_id": "G_asia", "person_ref": "Alex", "situation": "Tokyo office assignment", "implications": ["relocation", "language readiness"], "significance": 0.6, "strength": 1.0, "status": "active", "member_trace_ids": ["asia.anchor", "asia.alex"]}
+{"group_id": "G_sarah_m", "person_ref": "Sarah (Alex's mother)", "situation": "mother's Portland life and visits", "implications": ["routine contact", "holiday visit"], "significance": 0.5, "strength": 1.0, "status": "active", "member_trace_ids": ["sarah_m.1", "sarah_m.2"]}
+{"group_id": "G_sarah_c", "person_ref": "Sarah (Sofi's classmate)", "situation": "Sofi's school friend", "implications": ["classmate", "school logistics"], "significance": 0.5, "strength": 1.0, "status": "active", "member_trace_ids": ["sarah_c.1", "sarah_c.2"]}

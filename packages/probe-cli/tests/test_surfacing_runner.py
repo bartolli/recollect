@@ -72,13 +72,31 @@ class TestBuildQuerySurfacing:
         )
         assert qs.surfaced[0].score == pytest.approx(0.0)
 
+    def test_labels_source_trace_activation(self) -> None:
+        # A fact whose source_trace is token-activated carries the flag and its
+        # propagated_sim; an unactivated trace stays False/0.0 (story-3 spike).
+        live = _fact("db-1")
+        dead = _fact("db-2")
+        q = QueryEntry(id="q1", text="x", relevant_trace_ids=["eval-1"])
+        qs = _build_query_surfacing(
+            q, [live, dead], {}, {"db-1": "eval-1"}, {"db-1": 0.37}
+        )
+        by_trace = {f.source_trace_id: f for f in qs.surfaced}
+        assert by_trace["db-1"].source_trace_activated is True
+        assert by_trace["db-1"].source_trace_propagated_sim == pytest.approx(0.37)
+        assert by_trace["db-2"].source_trace_activated is False
+        assert by_trace["db-2"].source_trace_propagated_sim == pytest.approx(0.0)
+
 
 @pytest.mark.asyncio
 class TestScoreQuery:
     async def test_uses_engine_and_labels(self) -> None:
         f = _fact("db-1")
         mem = MagicMock()
+        mem._config.get.return_value = 10
         mem._embeddings.generate_embedding = AsyncMock(return_value=[0.1, 0.2])
+        mem.storage.vectors.search_semantic = AsyncMock(return_value=[])
+        mem._activate_recall_tokens = AsyncMock(return_value={})
         mem._find_relevant_persona_facts = AsyncMock(return_value=([f], {f.id: 0.72}))
         q = QueryEntry(id="q1", text="hi", relevant_trace_ids=["eval-1"])
         qs = await _runner()._score_query(mem, q, {"db-1": "eval-1"}, user_id="u")
@@ -86,6 +104,23 @@ class TestScoreQuery:
         assert qs.surfaced[0].relevant is True
         mem._find_relevant_persona_facts.assert_awaited_once()
         mem._embeddings.generate_embedding.assert_awaited_once()
+
+    async def test_threads_token_activation(self) -> None:
+        # _score_query seeds token activation from the trace vector search and
+        # labels each fact's source_trace by the production _activate_recall_tokens
+        # set (story-3 spike instrumentation).
+        f = _fact("db-1")
+        mem = MagicMock()
+        mem._config.get.return_value = 10
+        mem._embeddings.generate_embedding = AsyncMock(return_value=[0.1, 0.2])
+        mem.storage.vectors.search_semantic = AsyncMock(return_value=[])
+        mem._activate_recall_tokens = AsyncMock(return_value={"db-1": 0.42})
+        mem._find_relevant_persona_facts = AsyncMock(return_value=([f], {f.id: 0.40}))
+        q = QueryEntry(id="q1", text="hi", relevant_trace_ids=["eval-1"])
+        qs = await _runner()._score_query(mem, q, {"db-1": "eval-1"}, user_id="u")
+        assert qs.surfaced[0].source_trace_activated is True
+        assert qs.surfaced[0].source_trace_propagated_sim == pytest.approx(0.42)
+        mem._activate_recall_tokens.assert_awaited_once()
 
     async def test_returns_none_on_engine_error(self) -> None:
         # A mid-run embedding/engine failure must not abort the whole run

@@ -36,10 +36,22 @@ logger = logging.getLogger(__name__)
 class SurfacedFact(BaseModel):
     # score = blended S from _find_relevant_persona_facts (max(bi, 0.7*csim+0.3*bi)),
     # NOT _compute_fact_relevance -- the variable the recall floor gates on.
+    # source_trace_activated: the fact's source_trace is recall-token-activated
+    # for this query (situationally live); propagated_sim is its activation weight.
     fact_id: str
     source_trace_id: str | None = None
+    # source_eval_id: the source trace's corpus id (via db_to_eval), so a
+    # ground-truth-aware metric can match a surfaced fact to surface/forbid/
+    # grouped sets authored in corpus ids.
+    source_eval_id: str = ""
     score: float = 0.0
     relevant: bool = False
+    source_trace_activated: bool = False
+    source_trace_propagated_sim: float = 0.0
+    # Recall safety-bypass categories surface below the floor regardless of
+    # activation, so the situational-lift metric excludes them from the
+    # bridge-recoverable cohort.
+    category: str = ""
 
 
 class QuerySurfacing(BaseModel):
@@ -74,16 +86,22 @@ def _build_query_surfacing(
     facts: list[PersonaFact],
     scores: dict[str, float],
     db_to_eval: dict[str, str],
+    token_activated: dict[str, float] | None = None,
 ) -> QuerySurfacing:
     relevant_eval_ids = set(query.relevant_trace_ids)
+    activated = token_activated or {}
     surfaced = [
         SurfacedFact(
             fact_id=f.id,
             source_trace_id=f.source_trace_id,
+            source_eval_id=db_to_eval.get(f.source_trace_id or "", ""),
             score=scores.get(f.id, 0.0),
             relevant=_label_relevant(
                 f.source_trace_id, db_to_eval, relevant_eval_ids
             ),
+            source_trace_activated=f.source_trace_id in activated,
+            source_trace_propagated_sim=activated.get(f.source_trace_id or "", 0.0),
+            category=f.category,
         )
         for f in facts
     ]
@@ -215,10 +233,34 @@ class SurfacingArmRunner:
             embedding = await memory._embeddings.generate_embedding(
                 query.text, task="search_query"
             )
+            token_activated = await self._token_activated_traces(
+                memory, embedding, user_id=user_id
+            )
             facts, scores = await memory._find_relevant_persona_facts(
                 query.text, embedding, user_id=user_id
             )
         except MemorySDKError:
             logger.exception("score failed for query %s", query.id)
             return None
-        return _build_query_surfacing(query, facts, scores, db_to_eval)
+        return _build_query_surfacing(
+            query, facts, scores, db_to_eval, token_activated
+        )
+
+    @staticmethod
+    async def _token_activated_traces(
+        memory: CognitiveMemory,
+        embedding: list[float],
+        *,
+        user_id: str,
+    ) -> dict[str, float]:
+        # Seed token activation from the trace vector search exactly as
+        # think_about does, then run the production _activate_recall_tokens.
+        # Approximation: omits think_about's entity-matched seed supplement, so
+        # the spike undercounts activation -- a positive signal is conservative.
+        search_limit = int(memory._config.get("retrieval.search_limit", 10))
+        storage_scored = await memory.storage.vectors.search_semantic(
+            embedding, limit=search_limit, user_id=user_id
+        )
+        return await memory._activate_recall_tokens(
+            embedding, storage_scored, user_id=user_id
+        )

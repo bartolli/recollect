@@ -1,0 +1,52 @@
+# Associative-recall validation corpus -- seed traces. See DESIGN.md.
+# Loaded as CorpusEntry (id, text, expected_category); seed_group_id documents
+# the token-group membership authoritatively listed in seed_groups.jsonl.
+# Trace phrasing is fact-bearing so persona facts extract reliably.
+
+# G_dine -- "team dining out" (anchor + 1 non-bypass needle [C] + 2 bypass [E])
+{"id": "dine.anchor", "text": "The team is planning a dinner out downtown next week.", "expected_category": "general", "seed_group_id": "G_dine"}
+{"id": "dine.sarah", "text": "Sarah, Brian's wife, can't stand loud restaurants; she much prefers small, quiet places.", "expected_category": "preference", "seed_group_id": "G_dine"}
+{"id": "dine.alex", "text": "Alex has a severe peanut allergy and carries an EpiPen at all times.", "expected_category": "health", "seed_group_id": "G_dine"}
+{"id": "dine.maya", "text": "Maya has been a strict ethical vegetarian for twelve years.", "expected_category": "dietary", "seed_group_id": "G_dine"}
+
+# G_venue -- "launch party venue" (anchor + 1 non-bypass needle [C])
+{"id": "venue.anchor", "text": "We still need to pick a venue for the product launch party.", "expected_category": "general", "seed_group_id": "G_venue"}
+{"id": "venue.sarah", "text": "Sarah, Brian's wife, has a serious fear of heights and gets panicky in tall buildings.", "expected_category": "preference", "seed_group_id": "G_venue"}
+
+# G_asia -- "Tokyo assignment" (anchor + needle that shares query vocab [A])
+{"id": "asia.anchor", "text": "Alex is being assigned to the Tokyo office next quarter.", "expected_category": "identity", "seed_group_id": "G_asia"}
+{"id": "asia.alex", "text": "Alex has studied Japanese every morning for two years and hopes to live in Japan.", "expected_category": "preference", "seed_group_id": "G_asia"}
+
+# G_sarah_m -- mother Sarah (disambiguation referent + group)
+{"id": "sarah_m.1", "text": "Alex's mother Sarah lives in Portland and calls every Sunday evening.", "expected_category": "identity", "seed_group_id": "G_sarah_m"}
+{"id": "sarah_m.2", "text": "Mother Sarah is visiting for Thanksgiving and plans to bake her pumpkin pie.", "expected_category": "schedule", "seed_group_id": "G_sarah_m"}
+
+# G_sarah_c -- Sofi's classmate Sarah (disambiguation referent + group)
+{"id": "sarah_c.1", "text": "Sofi's friend Sarah, age 9, is in her class at Westbrook Elementary.", "expected_category": "identity", "seed_group_id": "G_sarah_c"}
+{"id": "sarah_c.2", "text": "Sarah, Sofi's classmate, gets picked up from school at 3pm on Fridays.", "expected_category": "schedule", "seed_group_id": "G_sarah_c"}
+
+# Ungrouped needles -- no token group
+{"id": "jordan.photo", "text": "Jordan is devoted to analog film photography and spends weekends developing prints in a darkroom.", "expected_category": "preference"}
+{"id": "sarah_w.marathon", "text": "Sarah, Brian's wife, is training for the Portland marathon in April.", "expected_category": "general"}
+{"id": "jordan.bday", "text": "Jordan's birthday is December 12 and he prefers experiences over gifts.", "expected_category": "general"}
+
+# Haystack -- mundane, must never surface [H]
+{"id": "h.1", "text": "Alex asked about the conference room booking for Thursday.", "expected_category": "general"}
+{"id": "h.2", "text": "Sarah mentioned the floor-3 coffee machine is broken again.", "expected_category": "general"}
+{"id": "h.3", "text": "Jordan said the new standing desks arrived for the team.", "expected_category": "general"}
+{"id": "h.4", "text": "Maya said traffic on the 405 was terrible this morning.", "expected_category": "general"}
+{"id": "h.5", "text": "Alex needs the Q3 report reviewed by Friday.", "expected_category": "general"}
+{"id": "h.6", "text": "Sarah finished the code review for the auth module.", "expected_category": "general"}
+{"id": "h.7", "text": "Jordan asked if anyone wants to split a lunch order.", "expected_category": "general"}
+{"id": "h.8", "text": "Maya forwarded the updated project timeline to stakeholders.", "expected_category": "general"}
+{"id": "h.9", "text": "Alex asked about the VPN setup for remote work.", "expected_category": "general"}
+{"id": "h.10", "text": "Sarah said she will be five minutes late to standup.", "expected_category": "general"}
+{"id": "h.11", "text": "Jordan mentioned the floor-2 printer is out of toner.", "expected_category": "general"}
+{"id": "h.12", "text": "Maya asked where the supply closet key is kept.", "expected_category": "general"}
+{"id": "h.13", "text": "The parking garage elevator has been slow all week.", "expected_category": "general"}
+{"id": "h.14", "text": "Someone left leftovers in the office fridge again.", "expected_category": "general"}
+{"id": "h.15", "text": "The all-hands meeting moved to 2pm on Wednesday.", "expected_category": "general"}
+
+# Off-topic traces the distractor queries match (re-admission probe [F/I])
+{"id": "h.coral", "text": "I read a long article about coral-reef bleaching in the South Pacific.", "expected_category": "general"}
+{"id": "h.shoes", "text": "I bought new low-light running shoes for fall mornings.", "expected_category": "general"}

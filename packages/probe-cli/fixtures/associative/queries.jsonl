@@ -1,0 +1,15 @@
+# Associative-recall validation corpus -- queries. See DESIGN.md.
+# relevant_trace_ids = the surface set (facts that SHOULD appear); empty = a
+# distractor query. forbid sets (wrong-referent / must-not-surface) live in
+# ground_truth.jsonl. Queries are SITUATIONS with near-zero lexical overlap with
+# their needle facts (associative, not keyword).
+
+{"id": "q.dine", "text": "Where should we book the team dinner this week?", "relevant_trace_ids": ["dine.sarah", "dine.alex", "dine.maya"], "phrasing_style": "natural", "notes": "C (dine.sarah, bridge) + E (allergy, vegetarian, bypass)"}
+{"id": "q.venue", "text": "Is the sky lounge on the 20th floor a good launch venue?", "relevant_trace_ids": ["venue.sarah"], "phrasing_style": "natural", "notes": "C -- tall building -> fear of heights, associative"}
+{"id": "q.asia", "text": "What should Alex prepare for the Tokyo assignment?", "relevant_trace_ids": ["asia.alex"], "phrasing_style": "natural", "notes": "A -- shared Tokyo/Japan vocab -> above floor"}
+{"id": "q.marathon", "text": "How is Sarah's marathon training going?", "relevant_trace_ids": ["sarah_w.marathon"], "phrasing_style": "natural", "notes": "A -- direct vector match"}
+{"id": "q.hobby", "text": "Any ideas for a relaxing weekend activity?", "relevant_trace_ids": ["jordan.photo"], "phrasing_style": "natural", "notes": "B -- ungrouped needle, expected dropped"}
+{"id": "q.holiday", "text": "What is Sarah planning for the holidays?", "relevant_trace_ids": ["sarah_m.2"], "phrasing_style": "natural", "notes": "G -- mother Sarah; suppress wife + classmate"}
+{"id": "q.pickup", "text": "What is the school pickup schedule this week?", "relevant_trace_ids": ["sarah_c.2"], "phrasing_style": "natural", "notes": "G -- classmate Sarah; suppress mother + wife"}
+{"id": "q.coral", "text": "Summarize the coral-bleaching article I read.", "relevant_trace_ids": [], "phrasing_style": "natural", "notes": "I/F -- distractor, expect empty block, no spurious activation"}
+{"id": "q.shoes", "text": "Which running shoes did I buy for fall?", "relevant_trace_ids": [], "phrasing_style": "natural", "notes": "I/F -- distractor"}
