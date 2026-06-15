@@ -42,12 +42,17 @@ class TestShouldFastTrack:
 
 class TestFindContradictingFact:
     def test_finds_contradiction(self) -> None:
-        result = _find_contradicting_fact([_fact(obj="Acme")], _fact(obj="Google"))
+        # works_at is SET (additive); contradiction-finding runs for CURRENT.
+        existing = [_fact(pred="lives_in", obj="Lisbon")]
+        new = _fact(pred="lives_in", obj="Berlin")
+        result = _find_contradicting_fact(existing, new)
         assert result is not None
-        assert result.object == "Acme"
+        assert result.object == "Lisbon"
 
     def test_no_contradiction_same_object(self) -> None:
-        assert _find_contradicting_fact([_fact()], _fact()) is None
+        same = _fact(pred="lives_in", obj="Berlin")
+        new = _fact(pred="lives_in", obj="Berlin")
+        assert _find_contradicting_fact([same], new) is None
 
     def test_no_contradiction_different_predicate(self) -> None:
         assert (

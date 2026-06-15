@@ -47,6 +47,39 @@ Predicate = Literal[
     "is_associated_with",
 ]
 
+PredicateCardinality = Literal["set", "current", "functional"]
+
+# Cardinality governs persona-fact supersession (adr-persona-fact-cardinality):
+# SET holds many simultaneous values (a different object is an addition, never a
+# contradiction); CURRENT keeps one current value; FUNCTIONAL one immutable value.
+# Every Predicate member must be classified; the missing-key default is SET, so
+# the asymmetry rule keeps an unclassified predicate additive (no data loss).
+PREDICATE_CARDINALITY: dict[str, PredicateCardinality] = {
+    "is_allergic_to": "set",
+    "is_phobic_of": "set",
+    "has_condition": "set",
+    "takes_medication": "set",
+    "avoids": "set",
+    "requires": "set",
+    "tolerates": "set",
+    "works_at": "set",
+    "studies": "set",
+    "practices": "set",
+    "holds_role": "set",
+    "lives_in": "current",
+    "originates_from": "functional",
+    "is_related_to": "set",
+    "is_friend_of": "set",
+    "is_colleague_of": "set",
+    "is_partner_of": "current",
+    "prefers": "set",
+    "dislikes": "set",
+    "is_interested_in": "set",
+    "scheduled_for": "set",
+    "recurs_on": "set",
+    "is_associated_with": "set",
+}
+
 Domain = Literal[
     "food",
     "travel",

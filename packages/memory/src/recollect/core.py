@@ -29,6 +29,7 @@ from recollect.exceptions import (
 )
 from recollect.extraction import PatternExtractor
 from recollect.llm.types import (
+    PREDICATE_CARDINALITY,
     ExtractionResult,
     Message,
     Relation,
@@ -189,7 +190,15 @@ def _should_fast_track(category: str, confidence: float) -> bool:
 def _find_contradicting_fact(
     existing: list[PersonaFact], new_fact: PersonaFact
 ) -> PersonaFact | None:
-    """Find existing fact with same subject+predicate but different object."""
+    """Find a same-predicate, different-object fact to supersede.
+
+    SET-cardinality predicates return None: they hold many simultaneous values,
+    so a different object is an addition, not a contradiction
+    (adr-persona-fact-cardinality). Missing-key default is SET -- the asymmetry
+    rule keeps an unclassified predicate additive (no data loss).
+    """
+    if PREDICATE_CARDINALITY.get(new_fact.predicate, "set") == "set":
+        return None
     for fact in existing:
         if fact.predicate == new_fact.predicate and fact.object != new_fact.object:
             return fact

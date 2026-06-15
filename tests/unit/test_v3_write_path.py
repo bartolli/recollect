@@ -172,19 +172,39 @@ class TestFactTagEmbeddingGate:
         mock_embeddings: AsyncMock,
         mock_fact_store: AsyncMock,
     ) -> None:
+        # lives_in is CURRENT (a new value supersedes); is_allergic_to is SET
+        # (additive) -- adr-persona-fact-cardinality.
         contradicting = PersonaFact(
             subject="user",
-            predicate="is_allergic_to",
-            object="peanuts",
-            content="user is_allergic_to peanuts",
+            predicate="lives_in",
+            object="Lisbon",
+            content="user lives_in Lisbon",
         )
         mock_fact_store.get_persona_facts.return_value = [contradicting]
+        extractor = AsyncMock()
+        extractor.extract = AsyncMock(
+            return_value=ExtractionResult(
+                fact_type="semantic",
+                concepts=[],
+                relations=[
+                    Relation(
+                        source="user",
+                        relation="lives_in",
+                        target="Berlin",
+                        confidence=0.9,
+                        category="identity",
+                        context_tags=["relocation", "berlin"],
+                    )
+                ],
+                significance=0.9,
+            )
+        )
         mem = CognitiveMemory(
             storage=mock_storage,
             embeddings=mock_embeddings,
-            extractor=_semantic_extractor(),
+            extractor=extractor,
         )
-        await mem.experience("Correction: the allergy is shellfish", user_id="u1")
+        await mem.experience("Correction: now lives in Berlin", user_id="u1")
         mock_fact_store.supersede_persona_fact.assert_awaited_once()
         superseding = mock_fact_store.supersede_persona_fact.await_args.args[1]
         ce_store = mock_storage.concept_embeddings.store_concept_embeddings

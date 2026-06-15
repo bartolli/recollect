@@ -178,6 +178,43 @@ _CYCLING = Relation(
 )
 
 
+_ALLERGY_PENICILLIN = Relation(
+    source="user",
+    relation="is_allergic_to",
+    target="penicillin",
+    confidence=0.9,
+    category="health",
+    context="user is allergic to penicillin",
+)
+
+_ALLERGY_SHELLFISH = Relation(
+    source="user",
+    relation="is_allergic_to",
+    target="shellfish",
+    confidence=0.9,
+    category="health",
+    context="user is allergic to shellfish",
+)
+
+_REL_MOTHER = Relation(
+    source="user",
+    relation="is_related_to",
+    target="Tania",
+    confidence=0.9,
+    category="relationship",
+    context="user's mother is Tania",
+)
+
+_REL_BROTHER = Relation(
+    source="user",
+    relation="is_related_to",
+    target="Dimitar",
+    confidence=0.9,
+    category="relationship",
+    context="user's brother is Dimitar",
+)
+
+
 class TestPinPromotesRelations:
     async def test_pin_promotes_extracted_relations(
         self, mem: tuple[CognitiveMemory, AsyncMock],
@@ -265,3 +302,31 @@ class TestPinPromotesRelations:
         assert (fact.subject, fact.predicate) == ("user", "noted")
         assert fact.object == "An unstructured remark"
         assert fact.status == "pinned"
+
+
+class TestCardinalityCoexistence:
+    async def test_set_safety_facts_coexist(
+        self, mem: tuple[CognitiveMemory, AsyncMock],
+    ) -> None:
+        # adr-persona-fact-cardinality: a second allergy must not supersede the
+        # first -- is_allergic_to is SET. The safety regression.
+        m, extractor = mem
+        _wire_extraction(extractor, _ALLERGY_PENICILLIN)
+        await m.experience("I'm allergic to penicillin", user_id="u1")
+        _wire_extraction(extractor, _ALLERGY_SHELLFISH)
+        await m.experience("I'm allergic to shellfish", user_id="u1")
+
+        objects = {f.object for f in await m.facts(user_id="u1")}
+        assert objects == {"penicillin", "shellfish"}
+
+    async def test_set_relationship_facts_coexist(
+        self, mem: tuple[CognitiveMemory, AsyncMock],
+    ) -> None:
+        m, extractor = mem
+        _wire_extraction(extractor, _REL_MOTHER)
+        await m.experience("my mother is Tania", user_id="u1")
+        _wire_extraction(extractor, _REL_BROTHER)
+        await m.experience("my brother is Dimitar", user_id="u1")
+
+        objects = {f.object for f in await m.facts(user_id="u1")}
+        assert objects == {"Tania", "Dimitar"}
