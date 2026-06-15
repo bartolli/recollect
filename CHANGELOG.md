@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.14.0] - 2026-06-14
+
+### Added
+- `PREDICATE_CARDINALITY` table in `llm/types.py`: `set | current | functional` per predicate; missing-key default `set` (additive -- unclassified predicates accumulate, no data loss)
+- `_find_contradicting_fact` returns `None` for `set`-cardinality predicates: a different object on a `set` predicate is an addition, not a contradiction
+
 ## [v0.13.0] - 2026-06-14
 
 ### Changed
