@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.14.1] - 2026-06-19
+
+### Added
+- `packages/memory/prompts/extraction.md`: built-in extraction system prompt exported as customization reference; copy and pass via `--extraction-prompt`
+- `packages/memory/prompts/token-assessment.md`: built-in token-assessment prompts (two-section: system `---` user template) exported as customization reference; override via `--token-prompt`
+
 ## [v0.14.0] - 2026-06-14
 
 ### Added
