@@ -11,6 +11,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from recollect.exceptions import StorageError
 from recollect.models import MemoryTrace, PersonaFact, Thought
 from recollect_mcp.server import AppContext, recall
 
@@ -103,3 +104,46 @@ async def test_safety_net_dedups_gate_surfaced_fact(memory: AsyncMock) -> None:
     ]
     result = await recall("any drug allergies?", _ctx(memory))
     assert result.count("Angel is_allergic_to penicillin") == 1
+
+
+async def test_failed_first_recall_rearms_safety_net(memory: AsyncMock) -> None:
+    """StorageError on the first recall re-arms the one-shot net."""
+    memory.facts.return_value = [
+        PersonaFact(
+            subject="Angel",
+            predicate="prefers",
+            object="window seat",
+            content="Angel prefers a window seat",
+            status="pinned",
+            category="preference",
+        )
+    ]
+    ctx = _ctx(memory)
+    memory.think_about.side_effect = StorageError("db down")
+    result = await recall("first attempt", ctx)
+    assert "Recall failed" in result
+    assert ctx.request_context.lifespan_context.primed is False
+
+    memory.think_about.side_effect = None
+    result = await recall("second attempt", ctx)
+    assert "IMPORTANT CONTEXT:" in result
+    assert "window seat" in result  # net re-armed, delivered on retry
+
+
+async def test_successful_first_recall_stays_one_shot(memory: AsyncMock) -> None:
+    """The net fires on the first delivered recall only."""
+    memory.facts.return_value = [
+        PersonaFact(
+            subject="Angel",
+            predicate="prefers",
+            object="window seat",
+            content="Angel prefers a window seat",
+            status="pinned",
+            category="preference",
+        )
+    ]
+    ctx = _ctx(memory)
+    first = await recall("one", ctx)
+    second = await recall("two", ctx)
+    assert "window seat" in first
+    assert "window seat" not in second

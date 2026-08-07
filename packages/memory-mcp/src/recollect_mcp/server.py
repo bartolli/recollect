@@ -1,4 +1,4 @@
-"""MCP server for Memory SDK.
+"""MCP server for Recollect.
 
 Exposes CognitiveMemory as MCP tools and resources.
 Supports stdio and streamable-http transports.
@@ -37,6 +37,8 @@ from recollect.models import (
     Thought,
 )
 from recollect.worker import ConsolidationWorker
+
+from recollect_mcp import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +106,7 @@ async def app_lifespan(
             "MEMORY_USER_ID is required. "
             "Set it via environment variable or server.user_id in config."
         )
-    logger.info("Memory SDK server started, user_id=%s", user_id)
+    logger.info("recollect-mcp server started, user_id=%s", user_id)
     app = AppContext(memory=memory, worker=worker, user_id=user_id)
 
     async def _primer() -> str:
@@ -148,7 +150,7 @@ async def app_lifespan(
     finally:
         worker.stop()
         await memory.close()
-        logger.info("Memory SDK server stopped")
+        logger.info("recollect-mcp server stopped")
 
 
 def _get_ctx(ctx: Ctx) -> AppContext:
@@ -228,12 +230,15 @@ RESOURCES:
 """
 
 mcp = FastMCP(
-    name="memory-sdk",
+    name="recollect-mcp",
     instructions=_INSTRUCTIONS,
     host=str(config.get("server.host", "127.0.0.1")),
     port=int(config.get("server.port", 8000)),
     lifespan=app_lifespan,
 )
+# FastMCP exposes no version parameter; the lowlevel server's attribute feeds
+# serverInfo, which otherwise falls back to the mcp library version.
+mcp._mcp_server.version = __version__
 
 
 # -- Tools --
@@ -299,15 +304,17 @@ async def recall(
         token_budget: Maximum tokens in the response (default 2000).
     """
     app = _get_ctx(ctx)
+    # Persona facts surface through the recall-floored think_about output;
+    # the full promoted+pinned graph is reflect's job. On the first
+    # (unreflected) recall, prepend a narrow safety net -- pinned + recall
+    # safety-bypass facts -- so safety-critical context is never dropped
+    # when an agent skips reflect.
+    surface_safety = not app.primed
+    if surface_safety:
+        # Claimed before the await so concurrent first calls fire the net once;
+        # restored on failure below so a failed delivery re-arms the one-shot.
+        app.primed = True
     try:
-        # Persona facts surface through the recall-floored think_about output;
-        # the full promoted+pinned graph is reflect's job. On the first
-        # (unreflected) recall, prepend a narrow safety net -- pinned + recall
-        # safety-bypass facts -- so safety-critical context is never dropped
-        # when an agent skips reflect.
-        surface_safety = not app.primed
-        if surface_safety:
-            app.primed = True
         thoughts = await app.memory.think_about(
             query,
             token_budget=token_budget,
@@ -316,9 +323,13 @@ async def recall(
         safety_facts = await _safety_net_facts(app) if surface_safety else ()
         return _format_thoughts(thoughts, safety_facts=safety_facts)
     except StorageError as exc:
+        if surface_safety:
+            app.primed = False
         logger.exception("Storage error in recall")
         return f"Recall failed: {exc}"
     except MemorySDKError as exc:
+        if surface_safety:
+            app.primed = False
         logger.exception("Unexpected SDK error in recall")
         return f"Recall failed: {exc}"
 
@@ -668,7 +679,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(
         prog="recollect-mcp",
-        description="Memory SDK MCP server",
+        description="MCP server for Recollect",
     )
     parser.add_argument(
         "--transport",

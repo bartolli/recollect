@@ -1,4 +1,4 @@
-"""Memory MCP -- MCP server for Memory SDK."""
+"""recollect-mcp -- MCP server for Recollect."""
 
 from importlib.metadata import PackageNotFoundError, version
 
