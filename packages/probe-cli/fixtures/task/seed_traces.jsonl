@@ -1,0 +1,202 @@
+# Task-eval seed corpus, batch 1: benchmark association chains (iterative_spread_poc).
+# Three 7-node chains, head query-visible -> bridge -> semantically opaque endpoints;
+# T3-only questions target the endpoints through the chain, never by direct similarity.
+# density_tier: 0=core (all sweeps), 1=mid, 2=full. origin tracks provenance per plan axis 3.
+{"id": "chain-a-0", "text": "Alex suggested trying the new Thai restaurant on Main Street for dinner with the group next Friday", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-a-1", "text": "The Thai place on Main Street uses peanut oil in most of their dishes according to online reviews", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-a-2", "text": "Pat has been joining every group dinner outing since she moved to the neighborhood last month", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-a-3", "text": "Pat was hospitalized last year after accidentally ingesting peanut oil at a restaurant", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-a-4", "text": "After the hospital stay Pat's doctor prescribed an epinephrine auto-injector for emergencies", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-a-5", "text": "The auto-injector refill is due next month and the current one expires on March 30th", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-a-6", "text": "CityMed urgent care on 5th Avenue is the closest emergency facility to Main Street and is open until 10pm", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-b-0", "text": "Mom's 70th birthday is coming up in June and the whole family wants to do something special", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-b-1", "text": "Mom has been talking nonstop about wanting to spend more time in the garden this summer", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-b-2", "text": "Mom's physical therapist said her knee pain means she should avoid kneeling and heavy lifting", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-b-3", "text": "The therapist specifically recommended raised garden beds as an ideal low-impact activity for bad knees", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-b-4", "text": "Cedar raised garden beds with built-in seating ledges are rated best for people with limited mobility", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-b-5", "text": "The garden center on Elm Street has cedar raised beds on clearance for forty percent off this month", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-b-6", "text": "Elm Street store offers free delivery and assembly for orders over seventy-five dollars within ten miles", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-c-0", "text": "Sofi has to pick a topic for her school science fair project by this Friday", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-c-1", "text": "Sofi decided to build a baking soda volcano with realistic eruption effects for the science fair", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-c-2", "text": "The volcano model needs two pounds of baking soda, a gallon of white vinegar, and red food coloring", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-c-3", "text": "The hardware store on Oak Street is the only place nearby that sells baking soda in bulk bags", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-c-4", "text": "Alex has forty dollars in store credit at the Oak Street hardware store from a return last month", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-c-5", "text": "Oak Street hardware closes at noon on Saturdays and is shut all day Sunday", "density_tier": 0, "origin": "benchmark-chain"}
+{"id": "chain-c-6", "text": "Weekday parking on Oak Street is metered until 6pm but free after that with no time limit", "density_tier": 0, "origin": "benchmark-chain"}
+# Batch 2: reused retrieval-eval corpus (29) + new episodic traces (2). All tier 0 --
+# every question-required trace exists at every density; tiers 1-2 add distractor mass only.
+{"id": "h1", "text": "Mei has a severe peanut allergy and carries an EpiPen at all times.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "h2", "text": "Owen takes daily medication for hypertension.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "h3", "text": "Lila has chronic asthma triggered by cold air and dust.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "h4", "text": "Karim was diagnosed with type 2 diabetes last winter.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "d1", "text": "Sasha has been vegan since 2019 for ethical reasons.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "d2", "text": "Taro avoids gluten because of celiac disease.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "d3", "text": "Beatriz keeps a strict halal household.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "d4", "text": "Niko refuses dairy after a severe lactose-intolerance flare-up.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "i1", "text": "Pham works at Stripe as a staff engineer on the payments platform.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "i2", "text": "Aoife studies medieval Irish poetry at Trinity College.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "i3", "text": "Ravi practices Vipassana meditation every morning before work.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "i4", "text": "Eleni holds the position of mayor of her hometown.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "r1", "text": "Hugo is married to Camille and they have two young children.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "r2", "text": "Yusra is Tomas's older sister and they live in the same neighborhood.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "r3", "text": "Devansh's college friend Priya now lives across the street from him.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "p1", "text": "Margot strongly prefers tea over coffee in any setting.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "p2", "text": "Quincy is obsessed with restoring vintage synthesizers from the 1970s.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "p3", "text": "Iris dislikes loud restaurants and prefers quiet cafes.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "p4", "text": "Bram is deeply interested in competitive chess and plays in weekly tournaments.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "s1", "text": "The engineering team holds standup every Monday at 9am.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "s2", "text": "Aria has a flight booked to Reykjavik on June third.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "s3", "text": "The community garden meets every Saturday morning during summer.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "c1", "text": "Lior requires wheelchair-accessible venues for any in-person meeting.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "c2", "text": "Soraya cannot attend events past 8pm because of childcare obligations.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "c3", "text": "The downtown conference room has a strict 12-person maximum capacity.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "g1", "text": "A documentary about deep-sea exploration aired last Thursday on PBS.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "g2", "text": "The new bookstore opened on Pine Street last month.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "g3", "text": "It rained heavily across the region all weekend.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "g4", "text": "A regional art festival starts next weekend at Brookhaven Park.", "density_tier": 0, "origin": "reused-eval"}
+{"id": "n1", "text": "The farmers market moved to the old rail depot on Cedar Avenue starting this spring.", "density_tier": 0, "origin": "new"}
+{"id": "n2", "text": "Street sweeping on Maple Avenue happens the first Tuesday of every month.", "density_tier": 0, "origin": "new"}
+# Batch 3: POC haystack distractor mass (iterative_spread_poc, group=hay; 4 prompt-exemplar
+# near-twins excluded at export). Cumulative densities: tier0=52, tier1=123, tier2=194.
+{"id": "hay-001", "text": "Dave sent the revised project timeline to the whole team", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-002", "text": "The quarterly review meeting got pushed to next Wednesday", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-003", "text": "Rachel needs the expense reports submitted by end of day Friday", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-004", "text": "Tom asked if the new hire orientation is still on Monday", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-005", "text": "Karen scheduled a one-on-one to discuss the Q3 roadmap", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-006", "text": "The office printer on the third floor is jammed again", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-007", "text": "Mark confirmed he will present the sales numbers at the all-hands", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-008", "text": "Lisa volunteered to take notes at the product strategy meeting", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-009", "text": "Need to update the shared drive with the latest client deck", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-010", "text": "Janet emailed about reserving the large conference room for Tuesday", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-011", "text": "Chris finished the code review for the authentication module", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-012", "text": "Sam flagged a bug in the reporting dashboard that needs attention", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-013", "text": "The IT department is migrating everyone to the new email system", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-014", "text": "Dave wants feedback on the draft proposal before sending it out", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-015", "text": "The electric bill came in higher than usual this month", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-016", "text": "Need to review the auto insurance renewal before it lapses", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-017", "text": "Rachel mentioned a good cashback credit card with no annual fee", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-018", "text": "Tom set up automatic payments for the mortgage starting next month", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-019", "text": "The property tax assessment arrived and looks about the same", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-020", "text": "Karen recommended switching to a high-yield savings account", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-021", "text": "Mark said the quarterly estimated taxes are due on the 15th", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-022", "text": "Need to cancel the unused streaming subscription before renewal", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-023", "text": "Lisa forwarded a coupon code for twenty percent off home goods", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-024", "text": "The water bill seemed off so I called the utility company about it", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-025", "text": "Janet asked her accountant about deducting home office expenses", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-026", "text": "Time to start organizing receipts for tax prep", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-027", "text": "Sam found a better rate on car insurance through a different provider", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-028", "text": "The kitchen faucet has been dripping all week and needs a new washer", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-029", "text": "Dave recommended a good electrician for the basement wiring project", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-030", "text": "Need to replace the furnace filter before the heating season", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-031", "text": "The gutter on the south side of the house is sagging", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-032", "text": "Tom picked up caulk and weatherstripping from the hardware store", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-033", "text": "Rachel found mold under the bathroom sink that needs remediation", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-034", "text": "Mark is going to pressure wash the driveway this weekend", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-035", "text": "The dishwasher is not draining properly after the last cycle", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-036", "text": "Need to schedule the annual HVAC inspection before summer", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-037", "text": "Lisa got a quote for refinishing the hardwood floors upstairs", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-038", "text": "The smoke detector batteries need replacing in the hallway", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-039", "text": "Chris offered to help patch the drywall in the spare bedroom", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-040", "text": "Called a plumber about the slow drain in the downstairs shower", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-041", "text": "The laptop has been running slow since the last operating system update", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-042", "text": "Dave set up the new mesh wifi router and coverage is much better now", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-043", "text": "Need to update the password for the home security system", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-044", "text": "Tom recommended a password manager to keep everything organized", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-045", "text": "The smart thermostat lost its wifi connection again overnight", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-046", "text": "Karen asked which external hard drive is best for photo backups", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-047", "text": "The phone screen protector cracked and needs replacing", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-048", "text": "Sam mentioned a free VPN that works well for streaming abroad", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-049", "text": "The tablet battery barely lasts two hours now and might need replacing", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-050", "text": "Lisa found a good deal on a refurbished monitor for the home office", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-051", "text": "Need to renew the antivirus subscription before it expires next week", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-052", "text": "Chris set up automatic cloud backups for all the family photos", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-053", "text": "Booked the hotel near the convention center for the October trip", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-054", "text": "Dave suggested taking the scenic route through the mountains instead", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-055", "text": "Need to check if the passport needs renewing before the summer trip", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-056", "text": "Tom found cheap flights to Denver for the long weekend in November", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-057", "text": "The rental car reservation confirmation came through this morning", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-058", "text": "Karen recommended packing cubes for keeping the suitcase organized", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-059", "text": "Mark said the airport parking lot fills up fast on holiday weekends", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-060", "text": "Lisa booked a cabin in the mountains for the family reunion in August", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-061", "text": "Need to print the boarding passes since the airline app keeps crashing", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-062", "text": "Janet mapped out the rest stops for the twelve-hour drive to the coast", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-063", "text": "The forecast says rain all next week so outdoor plans are off", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-064", "text": "Need to winterize the outdoor faucets before the first freeze", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-065", "text": "Tom brought in the patio furniture before the storm last night", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-066", "text": "The spring pollen count is already high and allergies are acting up", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-067", "text": "Dave mentioned the ski resort closes at the end of March", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-068", "text": "Should get the snow tires swapped out for all-seasons this week", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-069", "text": "Need to pick up olive oil, garlic, and pasta for dinner tonight", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-070", "text": "The farmers market on Elm Street has fresh strawberries right now", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-071", "text": "Dave is experimenting with smoking brisket on his new pellet grill", "density_tier": 1, "origin": "haystack"}
+{"id": "hay-072", "text": "Meal prepped five lunches for the week including chicken stir fry", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-073", "text": "The grocery delivery got the wrong brand of yogurt again", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-074", "text": "Finished reading the third book in the mystery series last night", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-075", "text": "Dave invited me to his woodworking shop to see the table he built", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-076", "text": "The photography club is meeting at the botanical gardens this Sunday", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-077", "text": "Karen started a jigsaw puzzle with a thousand pieces over the weekend", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-078", "text": "Alex emailed the team about the Q2 milestone deadline", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-079", "text": "Brian dropped off a casserole dish he borrowed last month", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-080", "text": "Lilly shared a recipe for gluten-free brownies she found online", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-081", "text": "Sofi drew a picture of a rainbow for her art class project", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-082", "text": "Alex and Brian watched the playoff game together on Sunday", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-083", "text": "Lilly said the school parking lot construction finishes next week", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-084", "text": "Brian signed up for a woodworking class at the community center", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-085", "text": "Alex grabbed coffee with Brian after dropping off the kids", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-086", "text": "Sofi finished her chapter book and wants to start the next one", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-087", "text": "Lilly asked if we have jumper cables she could borrow", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-088", "text": "Brian texted that he found Alex's sunglasses in his truck", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-089", "text": "Sofi told Lilly she wants to learn how to bake cookies", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-090", "text": "Lilly is volunteering at the school library on Wednesday afternoons", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-091", "text": "Brian mentioned his commute takes over an hour now with construction", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-092", "text": "Sofi asked Alex to help her practice spelling words after dinner", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-093", "text": "Lilly ordered matching rain boots for the kids from an online sale", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-094", "text": "Alex ran into Brian at the hardware store on Saturday morning", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-095", "text": "Sofi wants to bring cupcakes to school for the class celebration", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-096", "text": "Brian and Lilly hosted a game night and invited the whole street", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-097", "text": "Alex asked Lilly for the name of the piano teacher she recommended", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-098", "text": "Sofi has been collecting rocks from the playground to paint at home", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-099", "text": "Brian lent Alex his power drill for the weekend", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-100", "text": "Lilly texted a reminder about the school picture day on Wednesday", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-101", "text": "Alex noticed Sofi has been reading more since they started the reward chart", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-102", "text": "Brian said he saw a coyote near the bike path behind the school", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-103", "text": "Sofi left her backpack at Brian and Lilly's house after the playdate", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-104", "text": "Lilly suggested carpooling to the school field trip next Tuesday", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-105", "text": "Alex picked up extra lawn bags for Brian from the hardware store", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-106", "text": "Brian asked Alex for a recommendation for a good barber nearby", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-107", "text": "Sofi and Lilly made friendship bracelets at the craft fair", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-108", "text": "Alex sent Brian the link to the neighborhood watch signup page", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-109", "text": "Lilly mentioned her car is making a strange noise when turning left", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-110", "text": "Brian grilled burgers for the families after the kids finished homework", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-111", "text": "Sofi asked if she can walk to school with the other kids in the morning", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-112", "text": "Alex forwarded the school district calendar to Brian and Lilly", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-113", "text": "Lilly dropped off a bag of hand-me-down clothes for Sofi", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-114", "text": "Brian asked about the trash pickup schedule change starting in April", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-115", "text": "Sofi made a card for Lilly thanking her for the ride home yesterday", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-116", "text": "Alex offered to water Brian's plants while they are out of town", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-117", "text": "Lilly wants to organize a neighborhood potluck for the long weekend", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-118", "text": "Brian installed a basketball hoop in the driveway for the kids", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-119", "text": "Sofi practiced her jump rope skills at recess and learned double dutch", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-120", "text": "Alex and Lilly compared notes on which summer camp has the best hours", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-121", "text": "Brian offered to drive Sofi's group to the field trip since his car fits more", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-122", "text": "Sofi earned a star sticker for helping clean up the classroom", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-123", "text": "Lilly signed Brian up for the dads-only volunteer day at school", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-124", "text": "Alex is thinking about coaching Sofi's soccer team next season", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-125", "text": "Brian and Alex are splitting the cost of renting a bounce house for the block party", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-126", "text": "Sofi told Alex she wants a pet hamster for her next birthday", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-127", "text": "Brian's doctor recommended he cut back on caffeine and drink more water", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-128", "text": "Lilly mentioned her mother's cholesterol numbers improved after the new medication", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-129", "text": "Alex scheduled his annual physical for the second week of April", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-130", "text": "Picked up multivitamins and fish oil capsules from the pharmacy", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-131", "text": "Brian tweaked his knee during the half marathon and is icing it nightly", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-132", "text": "The urgent care clinic on Oak Street now accepts walk-ins on weekends", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-133", "text": "Sofi's classmate Emma invited her to a pool party next Friday afternoon", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-134", "text": "Sofi practiced her piano recital piece for thirty minutes this morning", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-135", "text": "Sofi asked if she can join the after-school art club with her friend Maya", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-136", "text": "The school nurse sent home a note about a flu outbreak in the third grade", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-137", "text": "Lilly enrolled her kids in the weekend coding workshop at the library", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-138", "text": "Sofi's teacher said the class is putting on a short play before winter break", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-139", "text": "Lisa reserved a table at the new Italian place for Saturday evening", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-140", "text": "Tried a new slow cooker chili recipe and it turned out great", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-141", "text": "Rachel found a bakery downtown that does custom layer cakes", "density_tier": 2, "origin": "haystack"}
+{"id": "hay-142", "text": "Sam built a raised garden bed out of cedar planks last Saturday", "density_tier": 2, "origin": "haystack"}

@@ -1,0 +1,51 @@
+# Task-eval questions, batch 1: T3-only (chain-end answers, token-propagation reach).
+# Question anchors at the chain head (query-visible vocabulary); the answer trace shares
+# no content vocabulary with the question -- the chain, not similarity, carries the reach.
+# tier_label is INTENDED until slice-2 --verify-reachability confirms it empirically.
+# answers[0] is canonical; scoring normalizes case/punctuation and accepts any listed alias.
+# answer_type: name | item | date | time | quantity | abstain.
+{"id": "t3q01", "question": "What date should we double-check before the Friday group dinner at the Thai place on Main Street?", "answers": ["March 30", "March 30th", "the 30th of March", "3/30"], "answer_type": "date", "requires_trace_ids": ["chain-a-5"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
+{"id": "t3q02", "question": "If someone needs medical help during the Friday dinner on Main Street, where is the closest place to go?", "answers": ["CityMed", "CityMed urgent care", "CityMed on 5th Avenue"], "answer_type": "name", "requires_trace_ids": ["chain-a-6"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
+{"id": "t3q03", "question": "Which store has the best deal right now on Mom's birthday gift?", "answers": ["the garden center on Elm Street", "Elm Street garden center", "Elm Street"], "answer_type": "name", "requires_trace_ids": ["chain-b-5"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
+{"id": "t3q04", "question": "Mom's gift is bulky -- what does the order need to come to so we don't pay extra to get it home and put together?", "answers": ["seventy-five dollars", "$75", "75 dollars", "over 75 dollars"], "answer_type": "quantity", "requires_trace_ids": ["chain-b-6"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
+{"id": "t3q05", "question": "How late can we arrive on Saturday to buy Sofi's project supplies?", "answers": ["noon", "12pm", "12 pm", "midday", "by noon"], "answer_type": "time", "requires_trace_ids": ["chain-c-5"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
+{"id": "t3q06", "question": "After what time can we park without paying near the store that has Sofi's supplies?", "answers": ["6pm", "6 pm", "after 6pm", "18:00"], "answer_type": "time", "requires_trace_ids": ["chain-c-6"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
+# Batch 2a: T1-only -- answer lives in a fast-track (promoted) fact; question phrased across
+# an embedding gap so trace retrieval misses and only context priming carries it.
+{"id": "t1q01", "question": "We're ordering shared snacks for the movie night -- anything to steer clear of?", "answers": ["peanuts", "peanut", "anything with peanuts", "peanut products"], "answer_type": "item", "requires_trace_ids": ["h1"], "tier_label": "t1", "density_tiers": [0, 1, 2]}
+{"id": "t1q02", "question": "Planning the winter hiking trip -- who might struggle if we go when it's freezing out?", "answers": ["Lila"], "answer_type": "name", "requires_trace_ids": ["h3"], "tier_label": "t1", "density_tiers": [0, 1, 2]}
+{"id": "t1q03", "question": "The team wants to cater lunch from a bakery -- which coworker's restriction rules out regular bread?", "answers": ["Taro"], "answer_type": "name", "requires_trace_ids": ["d2"], "tier_label": "t1", "density_tiers": [0, 1, 2]}
+{"id": "t1q04", "question": "Booking the offsite location -- whose needs decide which buildings we can use?", "answers": ["Lior", "wheelchair accessibility", "wheelchair access"], "answer_type": "name", "requires_trace_ids": ["c1"], "tier_label": "t1", "density_tiers": [0, 1, 2]}
+{"id": "t1q05", "question": "How late can the team dinner run so everyone can stay to the end?", "answers": ["8pm", "8 pm", "20:00", "until 8pm", "before 8pm"], "answer_type": "time", "requires_trace_ids": ["c2"], "tier_label": "t1", "density_tiers": [0, 1, 2]}
+{"id": "t1q06", "question": "What kind of kitchen certification should the catering have so Beatriz can eat?", "answers": ["halal", "halal certification", "halal-certified"], "answer_type": "item", "requires_trace_ids": ["d3"], "tier_label": "t1", "density_tiers": [0, 1, 2]}
+# Batch 2b: T2-only -- episodic content generating no promoted fact and joining no token
+# group; episodic retrieval is the only carrier. Semantic overlap with the trace is intended.
+{"id": "t2q01", "question": "Which channel aired the deep-sea documentary?", "answers": ["PBS"], "answer_type": "name", "requires_trace_ids": ["g1"], "tier_label": "t2", "density_tiers": [0, 1, 2]}
+{"id": "t2q02", "question": "What street is the new bookstore on?", "answers": ["Pine Street", "Pine"], "answer_type": "name", "requires_trace_ids": ["g2"], "tier_label": "t2", "density_tiers": [0, 1, 2]}
+{"id": "t2q03", "question": "Where does the regional art festival take place?", "answers": ["Brookhaven Park", "Brookhaven"], "answer_type": "name", "requires_trace_ids": ["g4"], "tier_label": "t2", "density_tiers": [0, 1, 2]}
+{"id": "t2q04", "question": "On which mornings does the community garden group meet in summer?", "answers": ["Saturday", "Saturdays", "Saturday mornings"], "answer_type": "date", "requires_trace_ids": ["s3"], "tier_label": "t2", "density_tiers": [0, 1, 2]}
+{"id": "t2q05", "question": "Where is the farmers market held now?", "answers": ["the old rail depot on Cedar Avenue", "the old rail depot", "Cedar Avenue"], "answer_type": "name", "requires_trace_ids": ["n1"], "tier_label": "t2", "density_tiers": [0, 1, 2]}
+{"id": "t2q06", "question": "When is street sweeping on Maple Avenue?", "answers": ["the first Tuesday of every month", "first Tuesday of the month", "first Tuesday"], "answer_type": "date", "requires_trace_ids": ["n2"], "tier_label": "t2", "density_tiers": [0, 1, 2]}
+# Batch 2c: any-tier -- single-trace answers, direct reach; the scenario-1 with/without delta.
+{"id": "aq01", "question": "What is Mei allergic to?", "answers": ["peanuts", "peanut"], "answer_type": "item", "requires_trace_ids": ["h1"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+{"id": "aq02", "question": "What condition does Owen take daily medication for?", "answers": ["hypertension", "high blood pressure"], "answer_type": "item", "requires_trace_ids": ["h2"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+{"id": "aq03", "question": "What was Karim diagnosed with last winter?", "answers": ["type 2 diabetes", "diabetes"], "answer_type": "item", "requires_trace_ids": ["h4"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+{"id": "aq04", "question": "Since what year has Sasha been vegan?", "answers": ["2019"], "answer_type": "date", "requires_trace_ids": ["d1"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+{"id": "aq05", "question": "Why does Taro avoid gluten?", "answers": ["celiac disease", "celiac", "coeliac disease"], "answer_type": "item", "requires_trace_ids": ["d2"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+{"id": "aq06", "question": "Where does Pham work?", "answers": ["Stripe"], "answer_type": "name", "requires_trace_ids": ["i1"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+{"id": "aq07", "question": "What does Aoife study?", "answers": ["medieval Irish poetry", "Irish poetry"], "answer_type": "item", "requires_trace_ids": ["i2"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+{"id": "aq08", "question": "Who is Hugo married to?", "answers": ["Camille"], "answer_type": "name", "requires_trace_ids": ["r1"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+{"id": "aq09", "question": "What does Margot prefer over coffee?", "answers": ["tea"], "answer_type": "item", "requires_trace_ids": ["p1"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+{"id": "aq10", "question": "When does the engineering team hold standup?", "answers": ["Monday at 9am", "Mondays at 9am", "Monday 9am", "every Monday at 9am"], "answer_type": "time", "requires_trace_ids": ["s1"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+{"id": "aq11", "question": "Where is Aria flying on June third?", "answers": ["Reykjavik"], "answer_type": "name", "requires_trace_ids": ["s2"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+{"id": "aq12", "question": "What is the maximum capacity of the downtown conference room?", "answers": ["12", "twelve", "12 people", "12-person"], "answer_type": "quantity", "requires_trace_ids": ["c3"], "tier_label": "any", "density_tiers": [0, 1, 2]}
+# Batch 3: abstain -- entity present, attribute absent from the entire corpus; explicit
+# abstention scores correct, any fabricated value scores wrong (the hallucination pin).
+# abq02 gains a hard negative at densities 1-2: hay-053 books an unnamed hotel for a
+# DIFFERENT trip -- surfacing it must not produce an answer.
+{"id": "abq01", "question": "What time does Mei's yoga class start?", "answers": ["unknown"], "answer_type": "abstain", "requires_trace_ids": [], "tier_label": "none", "density_tiers": [0, 1, 2]}
+{"id": "abq02", "question": "Which hotel did Aria book for the Reykjavik trip?", "answers": ["unknown"], "answer_type": "abstain", "requires_trace_ids": [], "tier_label": "none", "density_tiers": [0, 1, 2]}
+{"id": "abq03", "question": "What breed is Hugo and Camille's dog?", "answers": ["unknown"], "answer_type": "abstain", "requires_trace_ids": [], "tier_label": "none", "density_tiers": [0, 1, 2]}
+{"id": "abq04", "question": "How much did Sofi's volcano supplies cost in total?", "answers": ["unknown"], "answer_type": "abstain", "requires_trace_ids": [], "tier_label": "none", "density_tiers": [0, 1, 2]}
+{"id": "abq05", "question": "What is the name of the doctor who prescribed Pat's auto-injector?", "answers": ["unknown"], "answer_type": "abstain", "requires_trace_ids": [], "tier_label": "none", "density_tiers": [0, 1, 2]}
+{"id": "abq06", "question": "Who won the weekly chess tournament Bram played in last week?", "answers": ["unknown"], "answer_type": "abstain", "requires_trace_ids": [], "tier_label": "none", "density_tiers": [0, 1, 2]}

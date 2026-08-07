@@ -1,0 +1,37 @@
+# Task-eval baseline arm. Answer-quality delta attributable to memory (story-5).
+# answer_model is the comparison axis: any pydantic-ai provider:model string --
+# swap it per run to compare answering models against the same fixture and seeds.
+# extraction.pydantic_ai_model stays pinned; write-side extraction is not under test.
+# DB: probe_task, separate from probe_eval and probe_situational.
+
+[arm]
+name = "task-baseline"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+
+# Required by Arm schema; unused for task arms.
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[task]
+enabled = true
+db_url = "${RECOLLECT_PROBE_TASK_DB_URL}"
+seed_traces_path = "packages/probe-cli/fixtures/task/seed_traces.jsonl"
+questions_path = "packages/probe-cli/fixtures/task/questions.jsonl"
+answer_model = "anthropic:claude-haiku-4-5-20251001"
+# Comparison candidates:
+#   openrouter:nvidia/nemotron-3-nano-30b-a3b
+#   openrouter:google/gemini-3-flash-preview
+#   ollama:ministral-3
+# Cumulative corpus subset: 0=core, 1=mid, 2=full.
+density_tier = 0
+# Ablation toggles; slice-2 harness maps them to config/harness behavior.
+# t2 core path is not cleanly ablatable (reported limitation).
+with_recall = true
+with_priming = true
+with_tokens = true
