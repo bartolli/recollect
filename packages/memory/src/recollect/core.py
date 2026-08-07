@@ -1625,17 +1625,7 @@ class CognitiveMemory:
             old_label = str(group["label"])
             new_label = self._append_implication(old_label, assessment.implication)
             await self._storage.recall_tokens.update_token_label(token_id, new_label)
-        # Reactivate archived tokens -- reinforce_tokens handles the
-        # strength=significance reset and status='active' transition
-        if str(group.get("status", "active")) == "archived":
-            boost = float(self._config.get("recall_tokens.reinforce_boost", 0.1))
-            await self._storage.recall_tokens.reinforce_tokens(
-                [token_id], boost
-            )
-            logger.debug(
-                "Reactivated archived token %s with strength=significance",
-                token_id[:8],
-            )
+        await self._reactivate_if_archived(group, token_id)
         logger.debug(
             "Extended token %s with trace %s (implication: %s)",
             token_id[:8],
@@ -1664,12 +1654,31 @@ class CognitiveMemory:
             token_id, new_label, assessment.significance
         )
         await self._storage.recall_tokens.stamp_traces(token_id, [trace.id])
+        await self._reactivate_if_archived(group, token_id)
         logger.debug(
             "Revised token %s: %s -> %s (significance=%.2f)",
             token_id[:8],
             old_label[:40],
             new_label[:40],
             assessment.significance,
+        )
+
+    async def _reactivate_if_archived(
+        self, group: dict[str, object], token_id: str
+    ) -> None:
+        """Reactivate an archived token targeted by a stamping write path.
+
+        reinforce_tokens handles the strength=significance reset and the
+        status='active' transition. Callers writing a new significance
+        (revise) must do so before this call -- the reset reads the row.
+        """
+        if str(group.get("status", "active")) != "archived":
+            return
+        boost = float(self._config.get("recall_tokens.reinforce_boost", 0.1))
+        await self._storage.recall_tokens.reinforce_tokens([token_id], boost)
+        logger.debug(
+            "Reactivated archived token %s with strength=significance",
+            token_id[:8],
         )
 
     @staticmethod
