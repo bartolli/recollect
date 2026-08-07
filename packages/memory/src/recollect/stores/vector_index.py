@@ -38,6 +38,11 @@ class PgVectorIndex:
             pool = await self._pool_mgr.get_pool()
             embedding_str = embedding_to_pgvector(query_embedding)
             threshold = float(config.get("retrieval.selection_threshold", 0.1))
+            # Conditional floor: <=0 disables entirely so the packaged default
+            # keeps sub-zero-similarity candidates (adr-retrieval-similarity-floor).
+            sim_floor = float(
+                config.get("retrieval.trace_similarity_threshold", 0.0)
+            )
             async with pool.acquire() as conn:
                 rows = await conn.fetch(
                     """
@@ -47,6 +52,8 @@ class PgVectorIndex:
                       AND embedding IS NOT NULL
                       AND ($4::text IS NULL OR session_id = $4)
                       AND ($5::text IS NULL OR user_id = $5)
+                      AND ($6::float8 <= 0
+                           OR embedding <=> $1::vector <= 1.0 - $6::float8)
                     ORDER BY distance ASC
                     LIMIT $3
                     """,
@@ -55,6 +62,7 @@ class PgVectorIndex:
                     limit,
                     session_id,
                     user_id,
+                    sim_floor,
                 )
             return [(row_to_trace(dict(r)), 1.0 - float(r["distance"])) for r in rows]
         except StorageError:

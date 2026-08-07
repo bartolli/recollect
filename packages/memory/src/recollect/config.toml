@@ -30,6 +30,7 @@ reactivation_floor = 0.3        # Min blended score to revive an archived candid
 search_limit = 10              # Max candidates from storage search
 spread_seed_count = 3          # Top candidates used as spread activation seeds
 wm_similarity_threshold = 0.3  # Min cosine similarity for working memory matches
+trace_similarity_threshold = 0.0  # Absolute cosine-similarity floor on storage trace search (SIMILARITY gate; <=0 disables)
 entity_similarity_threshold = 0.3  # pg_trgm threshold for entity matching
 entity_match_bonus = 0.1       # Additive bonus for entity-matched traces
 significance_weight = 0.15     # Boost weight for trace significance (0.95 allergy -> +0.14)
