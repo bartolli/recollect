@@ -62,6 +62,20 @@ class SurfacingConfig(BaseModel):
     ground_truth_path: str = ""
 
 
+class TaskConfig(BaseModel):
+    enabled: bool = False
+    db_url: str = ""
+    seed_traces_path: str = ""
+    questions_path: str = ""
+    # answer_model is the comparison axis: any pydantic-ai provider:model
+    # string. Write-side extraction stays on arm.extraction.pydantic_ai_model.
+    answer_model: str = ""
+    density_tier: int = Field(default=0, ge=0, le=2)
+    with_recall: bool = True
+    with_priming: bool = True
+    with_tokens: bool = True
+
+
 class Arm(BaseModel):
     name: str
     runs: int = Field(default=3, ge=1)
@@ -71,6 +85,7 @@ class Arm(BaseModel):
     retrieval: RetrievalConfig = Field(default_factory=RetrievalConfig)
     situational: SituationalConfig = Field(default_factory=SituationalConfig)
     surfacing: SurfacingConfig = Field(default_factory=SurfacingConfig)
+    task: TaskConfig = Field(default_factory=TaskConfig)
     recollect_overrides: dict[str, Any] = Field(default_factory=dict)
 
     def to_memory_config(self) -> MemoryConfig:
@@ -109,6 +124,7 @@ def load_arm(path: Path | str) -> Arm:
         retrieval=RetrievalConfig(**data.get("retrieval", {})),
         situational=SituationalConfig(**data.get("situational", {})),
         surfacing=SurfacingConfig(**data.get("surfacing", {})),
+        task=TaskConfig(**data.get("task", {})),
         recollect_overrides=data.get("recollect_overrides", {}),
     )
     # Probe DB URLs reference env (.env) by name, never inlined in a committed
@@ -116,10 +132,12 @@ def load_arm(path: Path | str) -> Arm:
     arm.retrieval.db_url = os.path.expandvars(arm.retrieval.db_url)
     arm.situational.db_url = os.path.expandvars(arm.situational.db_url)
     arm.surfacing.db_url = os.path.expandvars(arm.surfacing.db_url)
+    arm.task.db_url = os.path.expandvars(arm.task.db_url)
     for db_url in (
         arm.retrieval.db_url,
         arm.situational.db_url,
         arm.surfacing.db_url,
+        arm.task.db_url,
     ):
         if "${" in db_url:
             raise ValueError(

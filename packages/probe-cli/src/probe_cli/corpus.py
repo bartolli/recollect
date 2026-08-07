@@ -141,3 +141,39 @@ class GroundTruthEntry(BaseModel):
 def load_ground_truth(path: Path | str) -> list[GroundTruthEntry]:
     entries, _ = _load_jsonl(path, GroundTruthEntry, "ground truth")
     return entries
+
+
+AnswerType = Literal["name", "item", "date", "time", "quantity", "abstain"]
+# tier_label is intended-until-verified: the harness reachability check
+# confirms it and demotes drift to "any", never silently rescoring.
+TierLabel = Literal["t1", "t2", "t3", "any", "none"]
+
+
+class TaskSeedTrace(BaseModel):
+    # density_tier: cumulative ingest subsets -- a tier-N run seeds tiers <= N.
+    id: str
+    text: str
+    density_tier: int = Field(ge=0, le=2)
+    origin: str = ""
+
+
+class TaskQuestion(BaseModel):
+    # answers[0] is canonical; scoring accepts any alias after normalization.
+    # abstain entries: explicit abstention correct, any fabricated value wrong.
+    id: str
+    question: str
+    answers: list[str] = Field(min_length=1)
+    answer_type: AnswerType
+    requires_trace_ids: list[str] = Field(default_factory=list)
+    tier_label: TierLabel
+    density_tiers: list[int] = Field(default_factory=lambda: [0, 1, 2])
+
+
+def load_task_seed_traces(path: Path | str) -> list[TaskSeedTrace]:
+    entries, _ = _load_jsonl(path, TaskSeedTrace, "task seed trace")
+    return entries
+
+
+def load_task_questions(path: Path | str) -> list[TaskQuestion]:
+    entries, _ = _load_jsonl(path, TaskQuestion, "task question")
+    return entries

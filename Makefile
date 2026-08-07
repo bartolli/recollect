@@ -7,6 +7,7 @@
        probe-surfacing-situational probe-surfacing-associative \
        probe-situational-db-setup probe-situational-db-reset probe-situational \
        probe-situational-sonnet probe-situational-gemma probe-situational-openrouter \
+       probe-task-db-setup probe-task-db-reset probe-task probe-task-verify \
        serve-stdio serve-http \
        poc-hebbian poc-spread poc-token-reseed help
 
@@ -162,6 +163,27 @@ probe-situational-lmstudio: probe-situational-db-reset
 
 probe-situational-openrouter: probe-situational-db-reset
 	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/situational/openrouter.toml
+
+# -- Task-eval arm (separate DB; every invocation seeds fresh, so reset first) --
+
+PROBE_TASK_DB := probe_task
+
+probe-task-db-setup:
+	$(PG_BIN)/createdb $(PROBE_TASK_DB) 2>/dev/null || true
+	$(PG_BIN)/psql -d $(PROBE_TASK_DB) -c "CREATE EXTENSION IF NOT EXISTS vector;" 2>/dev/null
+	@echo "Probe DB $(PROBE_TASK_DB) ready with pgvector."
+
+probe-task-db-reset:
+	$(PG_BIN)/dropdb $(PROBE_TASK_DB) 2>/dev/null || true
+	$(PG_BIN)/createdb $(PROBE_TASK_DB)
+	$(PG_BIN)/psql -d $(PROBE_TASK_DB) -c "CREATE EXTENSION IF NOT EXISTS vector;" 2>/dev/null
+	@echo "Probe DB $(PROBE_TASK_DB) recreated fresh with pgvector."
+
+probe-task: probe-task-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/task/baseline.toml
+
+probe-task-verify: probe-task-db-reset
+	$(UV_RUN) probe run --arm packages/probe-cli/fixtures/task/baseline.toml --verify-reachability
 
 # -- POC Experiments --
 # Usage: make poc-spread ARGS="--spread-decay 0.8 --iter-max-rounds 5"

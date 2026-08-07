@@ -54,6 +54,8 @@ from probe_cli.surfacing_situational_runner import (
     SituationalSurfacingArmRunner,
     SituationalSurfacingReport,
 )
+from probe_cli.task_metrics import TaskAggregate, aggregate_task_runs
+from probe_cli.task_runner import TaskArmRunner, TaskVerifyReport
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +81,14 @@ def main() -> int:
     run.add_argument(
         "-v", "--verbose", action="store_true", help="Debug logging to stderr."
     )
+    run.add_argument(
+        "--verify-reachability",
+        action="store_true",
+        help=(
+            "Task arms only: verify each question's intended tier_label "
+            "empirically and report drift; no answering runs."
+        ),
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -91,11 +101,22 @@ def main() -> int:
         _load_dotenv(args.env_file)
 
     if args.cmd == "run":
-        return asyncio.run(_run_arm(args.arm, model_override=args.model))
+        return asyncio.run(
+            _run_arm(
+                args.arm,
+                model_override=args.model,
+                verify_reachability=args.verify_reachability,
+            )
+        )
     return 1
 
 
-async def _run_arm(arm_path: Path, *, model_override: str | None) -> int:
+async def _run_arm(
+    arm_path: Path,
+    *,
+    model_override: str | None,
+    verify_reachability: bool = False,
+) -> int:
     arm = load_arm(arm_path)
     if model_override:
         arm.extraction.pydantic_ai_model = model_override
@@ -113,6 +134,13 @@ async def _run_arm(arm_path: Path, *, model_override: str | None) -> int:
     )
     out_dir = Path(arm.output.dir) / arm.name
 
+    if arm.task.enabled:
+        return await _run_task_arm(
+            arm, provider, out_dir, verify_reachability=verify_reachability
+        )
+    if verify_reachability:
+        logger.error("--verify-reachability requires a task arm")
+        return 2
     if arm.surfacing.enabled:
         if arm.surfacing.seed_groups_path:
             return await _run_situational_surfacing_arm(arm, provider, out_dir)
@@ -142,6 +170,35 @@ async def _run_extraction_arm(
     )
     write_summary(summary, out_dir)
     _print_summary(arm, summary, reports)
+    return 0
+
+
+async def _run_task_arm(
+    arm: Arm,
+    provider: PydanticAIProvider,
+    out_dir: Path,
+    *,
+    verify_reachability: bool,
+) -> int:
+    from probe_cli.report import (
+        write_task_run_report,
+        write_task_summary,
+        write_task_verify_report,
+    )
+
+    runner = TaskArmRunner.from_arm(arm, provider)
+    if verify_reachability:
+        verify = await runner.verify_reachability()
+        write_task_verify_report(verify, out_dir)
+        _print_task_verify(arm, verify)
+        return 0 if not verify.drifted else 1
+
+    reports = await runner.run_all()
+    for report in reports:
+        write_task_run_report(report, out_dir)
+    summary = aggregate_task_runs(arm.name, reports)
+    write_task_summary(summary, out_dir)
+    _print_task_summary(arm, runner.answer_model, summary)
     return 0
 
 
@@ -375,6 +432,52 @@ def _print_retrieval_summary(
                 f"  mrr={vals['mrr_mean']:.3f}",
                 file=sys.stderr,
             )
+
+
+def _print_task_summary(
+    arm: Arm, answer_model: str, summary: TaskAggregate
+) -> None:
+    print(f"\nArm: {arm.name} (task)", file=sys.stderr)
+    print(
+        f"  answer_model={answer_model}  runs={summary.runs}"
+        f"  density_tier={arm.task.density_tier}",
+        file=sys.stderr,
+    )
+    print(
+        f"  overall: with={summary.overall.with_memory_mean:.3f}"
+        f"  without={summary.overall.without_memory_mean:.3f}"
+        f"  delta={summary.overall.delta_mean:+.3f}",
+        file=sys.stderr,
+    )
+    print("  per tier label (with / without / delta):", file=sys.stderr)
+    for label, acc in sorted(summary.per_label.items()):
+        print(
+            f"    {label:5s} {acc.with_memory_mean:.3f}"
+            f" / {acc.without_memory_mean:.3f}"
+            f" / {acc.delta_mean:+.3f}"
+            f"  (n={acc.questions_per_run})",
+            file=sys.stderr,
+        )
+    print(
+        f"  fabrication: with={summary.fabrication_rate_with:.3f}"
+        f"  without={summary.fabrication_rate_without:.3f}",
+        file=sys.stderr,
+    )
+
+
+def _print_task_verify(arm: Arm, verify: TaskVerifyReport) -> None:
+    print(f"\nArm: {arm.name} (task reachability)", file=sys.stderr)
+    held = len(verify.checks) - len(verify.drifted)
+    print(
+        f"  checks={len(verify.checks)}  held={held}"
+        f"  drifted={len(verify.drifted)}",
+        file=sys.stderr,
+    )
+    for c in verify.drifted:
+        print(
+            f"    DRIFT [{c.question_id}] {c.tier_label}: {c.detail}",
+            file=sys.stderr,
+        )
 
 
 def _print_situational_summary(
