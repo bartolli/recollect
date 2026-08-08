@@ -49,3 +49,9 @@
 {"id": "abq04", "question": "How much did Sofi's volcano supplies cost in total?", "answers": ["unknown"], "answer_type": "abstain", "requires_trace_ids": [], "tier_label": "none", "density_tiers": [0, 1, 2]}
 {"id": "abq05", "question": "What is the name of the doctor who prescribed Pat's auto-injector?", "answers": ["unknown"], "answer_type": "abstain", "requires_trace_ids": [], "tier_label": "none", "density_tiers": [0, 1, 2]}
 {"id": "abq06", "question": "Who won the weekly chess tournament Bram played in last week?", "answers": ["unknown"], "answer_type": "abstain", "requires_trace_ids": [], "tier_label": "none", "density_tiers": [0, 1, 2]}
+# Batch 2: verification questions over chains d/e; head-frame phrasing, connective
+# entity absent from the question, closed-form answer in the opaque tail.
+{"id": "t3q07", "question": "By when must Nadia drop off her bowls so they are fired in time for the showcase?", "answers": ["Wednesday at 5pm", "Wednesday 5pm", "5pm on Wednesday", "by Wednesday at 5pm"], "answer_type": "time", "requires_trace_ids": ["chain-d-4"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
+{"id": "t3q08", "question": "How much should Nadia budget for getting her pieces ready for the showcase?", "answers": ["eighteen dollars", "$18", "18 dollars"], "answer_type": "quantity", "requires_trace_ids": ["chain-d-5"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
+{"id": "t3q09", "question": "By what date must Dario collect his instrument to have it for the winter concert?", "answers": ["November 30", "Nov 30", "the 30th of November", "11/30"], "answer_type": "date", "requires_trace_ids": ["chain-e-4"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
+{"id": "t3q10", "question": "How much money does Dario need up front for the cello work?", "answers": ["twenty-five dollars", "$25", "25 dollars"], "answer_type": "quantity", "requires_trace_ids": ["chain-e-5"], "tier_label": "t3", "density_tiers": [0, 1, 2]}

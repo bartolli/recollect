@@ -200,3 +200,21 @@
 {"id": "hay-140", "text": "Tried a new slow cooker chili recipe and it turned out great", "density_tier": 2, "origin": "haystack"}
 {"id": "hay-141", "text": "Rachel found a bakery downtown that does custom layer cakes", "density_tier": 2, "origin": "haystack"}
 {"id": "hay-142", "text": "Sam built a raised garden bed out of cedar planks last Saturday", "density_tier": 2, "origin": "haystack"}
+# Batch 2: verification chains d/e (story-7 after-sweep Goodhart guard).
+# Authored post-fix, never used during anchor development; same structure as
+# batch-1 chains (head query-visible -> entity bridge -> opaque tails), fresh
+# surface domains (ceramics, orchestra), no entity shared with batch 1.
+{"id": "chain-d-0", "text": "Nadia's ceramics class ends with a student showcase on the last Saturday of September.", "density_tier": 0}
+{"id": "chain-d-1", "text": "Nadia finished glazing her three bowls and they still need a final firing before the showcase.", "density_tier": 0}
+{"id": "chain-d-2", "text": "Final firings for the ceramics class all go through the Clayworks studio on Birch Road.", "density_tier": 0}
+{"id": "chain-d-3", "text": "Clayworks runs glaze firings in a single batch once each week.", "density_tier": 0}
+{"id": "chain-d-4", "text": "Clayworks loads its weekly glaze batch on Wednesdays at 5pm; pieces arriving later wait a full week.", "density_tier": 0}
+{"id": "chain-d-5", "text": "Clayworks charges an eighteen-dollar fee for a glaze firing.", "density_tier": 0}
+{"id": "chain-d-6", "text": "The showcase setup starts Friday evening at the community arts hall.", "density_tier": 0}
+{"id": "chain-e-0", "text": "Dario joined the community orchestra and the winter concert is set for December 14.", "density_tier": 0}
+{"id": "chain-e-1", "text": "Dario's cello has a cracked bridge that must be repaired before the winter concert.", "density_tier": 0}
+{"id": "chain-e-2", "text": "Cello repairs in town go to Marchetti and Sons, the luthier shop on Harbor Lane.", "density_tier": 0}
+{"id": "chain-e-3", "text": "Marchetti and Sons quoted the crack repair at about two weeks of workshop time.", "density_tier": 0}
+{"id": "chain-e-4", "text": "Marchetti and Sons closes for their annual retreat on November 30 and reopens after New Year.", "density_tier": 0}
+{"id": "chain-e-5", "text": "Marchetti and Sons asks for a twenty-five-dollar deposit before starting any repair.", "density_tier": 0}
+{"id": "chain-e-6", "text": "The orchestra rehearses Thursday evenings at the riverside pavilion.", "density_tier": 0}
