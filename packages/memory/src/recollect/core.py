@@ -2093,7 +2093,10 @@ class CognitiveMemory:
         Blend is monotonic in tag presence: effective = max(base,
         weight*concept + (1-weight)*base) -- blend wins iff concept > base,
         so weak concepts (extraction noise) never score below the untagged
-        twin. Entity bonus remains gated by concept similarity.
+        twin. Every auxiliary signal is relevance-gated: entity bonus by
+        concept similarity, salience boosts by effective similarity. Token
+        propagation stays ungated -- it is the rescue tier for
+        near-zero-base tails.
         """
         if concept_sims is None:
             concept_sims = {}
@@ -2110,8 +2113,16 @@ class CognitiveMemory:
                 effective_sim = max(base, blended)
             else:
                 effective_sim = base
-            significance_boost = trace.significance * significance_weight
-            valence_boost = abs(trace.emotional_valence) * valence_weight
+            # Salience gated by earned relevance (entity-bonus precedent):
+            # amplifies relevant candidates, never fabricates rank for
+            # irrelevant ones. max(.., 0) guards raw-cosine negatives.
+            relevance_gate = max(effective_sim, 0.0)
+            significance_boost = (
+                trace.significance * significance_weight * relevance_gate
+            )
+            valence_boost = (
+                abs(trace.emotional_valence) * valence_weight * relevance_gate
+            )
             score = effective_sim + significance_boost + valence_boost
             if trace_id in activation_levels:
                 score += activation_levels[trace_id] * spread_bonus
@@ -2524,13 +2535,15 @@ class CognitiveMemory:
         fact: PersonaFact,
         semantic_similarity: float = 0.0,
     ) -> float:
-        """Single fact-ordering predicate: 0.3*confidence + 0.7*similarity.
+        """Single fact-ordering predicate: similarity * (0.7 + 0.3*confidence).
 
-        Unconditional -- an embedding-less fact (similarity 0) scores
-        0.3*confidence and cannot inflate past semantically-matched facts
-        via raw confidence.
+        Confidence gated by similarity -- it amplifies a semantic match,
+        never fabricates rank for an off-topic fact. An embedding-less or
+        zero-similarity fact scores 0 and ranks last; a flat confidence
+        fallback would leapfrog low-similarity matched facts (the
+        non-monotonic seam the gate exists to close).
         """
-        return 0.3 * fact.confidence + 0.7 * semantic_similarity
+        return max(semantic_similarity, 0.0) * (0.7 + 0.3 * fact.confidence)
 
     # -- Private: consolidation helpers --
 

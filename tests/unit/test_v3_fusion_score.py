@@ -41,7 +41,7 @@ class TestSignificanceBoost:
         assert result_map[high.id] > result_map[low.id]
 
     def test_significance_boost_magnitude(self) -> None:
-        """significance=0.95 at weight=0.15 adds ~0.14."""
+        """significance=0.95 at weight=0.15, gated by relevance 0.5."""
         t = _trace("allergy", significance=0.95)
         traces = {t.id: t}
         scores = {t.id: 0.5}
@@ -57,7 +57,7 @@ class TestSignificanceBoost:
             valence_weight=0.0,
         )
         fused = result[0][1]
-        expected = 0.5 + 0.95 * 0.15  # 0.6425
+        expected = 0.5 * (1.0 + 0.95 * 0.15)  # 0.571
         assert abs(fused - expected) < 1e-9
 
     def test_zero_significance_no_boost(self) -> None:
@@ -143,9 +143,8 @@ class TestCombinedBoosts:
         )
         result_map = {t.id: s for t, s in result}
         diff = result_map[allergy.id] - result_map[lunch.id]
-        # Significance diff: (0.95-0.15)*0.15 = 0.12
-        # Valence diff: (0.3-0.1)*0.05 = 0.01
-        assert diff > 0.1  # Meaningful separation
+        # Gated at relevance 0.5: 0.5*((0.95-0.15)*0.15 + (0.3-0.1)*0.05) = 0.065
+        assert diff > 0.06  # Meaningful separation
 
     def test_fused_score_clamped_to_one(self) -> None:
         """Even with all boosts, score never exceeds 1.0."""
@@ -181,7 +180,7 @@ class TestCombinedBoosts:
             0.0,
             0.0,
         )
-        expected = 0.5 + 1.0 * 0.15 + 1.0 * 0.05  # 0.70
+        expected = 0.5 * (1.0 + 1.0 * 0.15 + 1.0 * 0.05)  # 0.60
         assert abs(result[0][1] - expected) < 1e-9
 
 

@@ -117,21 +117,22 @@ class TestHybridStrategy:
     ) -> None:
         mem = _make_mem(mock_storage, mock_embeddings, "hybrid")
         thoughts = mem._persona_facts_to_thoughts(_make_facts())
-        assert abs(thoughts[0].relevance - 0.27) < 1e-9
-        assert abs(thoughts[1].relevance - 0.12) < 1e-9
+        # No similarity measure -> confidence gated to zero rank.
+        assert thoughts[0].relevance == 0.0
+        assert thoughts[1].relevance == 0.0
 
     async def test_at_threshold_is_pinned(
         self,
         mock_storage: MagicMock,
         mock_embeddings: AsyncMock,
     ) -> None:
-        mem = _make_mem(mock_storage, mock_embeddings, "hybrid", 0.75)
+        mem = _make_mem(mock_storage, mock_embeddings, "hybrid", 0.738)
         facts = _make_facts()
         scores = {facts[1].id: 0.9}
         thoughts = mem._persona_facts_to_thoughts(facts, semantic_scores=scores)
-        # facts[1]: 0.3 * 0.4 + 0.7 * 0.9 = 0.75 == threshold
+        # facts[1]: 0.9 * (0.7 + 0.3*0.4) = 0.738 == threshold
         assert thoughts[1].pinned is True
-        assert thoughts[0].pinned is False  # 0.27 < 0.75
+        assert thoughts[0].pinned is False  # no score -> relevance 0
 
 
 class TestAssembleWithTraceGuarantee:
@@ -242,21 +243,22 @@ class TestRankAndLimitFacts:
 
 
 class TestComputeFactRelevance:
-    def test_no_similarity_dampens_confidence(self) -> None:
-        """sim=0 yields 0.3*confidence -- raw confidence never inflates."""
+    def test_no_similarity_yields_zero(self) -> None:
+        """sim=0 yields 0 -- confidence never fabricates rank, and an
+        unmatched fact cannot leapfrog a barely-matched one."""
         fact = _fact("x", confidence=0.8)
         result = CognitiveMemory._compute_fact_relevance(fact, 0.0)
-        assert abs(result - 0.24) < 1e-9
+        assert result == 0.0
 
     def test_with_similarity_blends_weighted(self) -> None:
         fact = _fact("x", confidence=0.8)
         result = CognitiveMemory._compute_fact_relevance(fact, 0.6)
-        assert abs(result - 0.66) < 1e-9
+        assert abs(result - 0.6 * (0.7 + 0.3 * 0.8)) < 1e-9  # 0.564
 
     def test_high_similarity_boosts_low_confidence(self) -> None:
         fact = _fact("x", confidence=0.3)
         result = CognitiveMemory._compute_fact_relevance(fact, 0.9)
-        assert abs(result - 0.72) < 1e-9
+        assert abs(result - 0.9 * (0.7 + 0.3 * 0.3)) < 1e-9  # 0.711
 
 
 class TestSemanticScoresInThoughts:

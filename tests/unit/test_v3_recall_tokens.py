@@ -184,7 +184,8 @@ class TestScoringBlend:
             token_bonuses={"t1": 0.08},
         )
         _trace, score = result[0]
-        expected = 0.7 + 0.015 + 0.0 + 0.04  # base + sig + val + token
+        # base + gated sig (0.7*0.015) + token; token blend stays ungated.
+        expected = 0.7 + 0.0105 + 0.04
         assert score == pytest.approx(expected, abs=0.001)
 
     def test_additive_blend_with_zero_base(self):
@@ -199,7 +200,9 @@ class TestScoringBlend:
             token_bonuses={"t1": 0.08},
         )
         _trace, score = result[0]
-        assert score == pytest.approx(0.015 + 0.04, abs=0.001)  # sig + token
+        # Salience gates to zero at zero base; token propagation is the
+        # rescue tier for near-zero-base tails and stays ungated.
+        assert score == pytest.approx(0.04, abs=0.001)
         assert score > 0.0
 
 
