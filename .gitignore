@@ -74,3 +74,4 @@ out/**
 !out/**/
 !out/**/task_summary.json
 !out/**/task_reachability.json
+!out/**/situational_summary.json

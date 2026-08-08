@@ -1,13 +1,13 @@
 {
-  "arm_name": "situational-baseline",
+  "arm_name": "situational-guard6",
   "model": "anthropic:claude-haiku-4-5-20251001",
-  "runs": 3,
+  "runs": 6,
   "eval_count": 15,
-  "action_accuracy_mean": 0.9777777777777779,
-  "action_accuracy_std": 0.03849001794597504,
+  "action_accuracy_mean": 1.0,
+  "action_accuracy_std": 0.0,
   "extension_target_accuracy_mean": 1.0,
   "extension_target_accuracy_std": 0.0,
-  "none_rate_actual_mean": 0.37777777777777777,
+  "none_rate_actual_mean": 0.4000000000000001,
   "none_rate_expected": 0.4,
   "expected_distribution": {
     "create": 1,
