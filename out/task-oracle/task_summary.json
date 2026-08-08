@@ -1,0 +1,44 @@
+{
+  "arm_name": "task-oracle",
+  "runs": 1,
+  "per_label": {
+    "any": {
+      "with_memory_mean": 0.9285714285714286,
+      "without_memory_mean": 0.0,
+      "delta_mean": 0.9285714285714286,
+      "questions_per_run": 14
+    },
+    "none": {
+      "with_memory_mean": 1.0,
+      "without_memory_mean": 1.0,
+      "delta_mean": 0.0,
+      "questions_per_run": 6
+    },
+    "t1": {
+      "with_memory_mean": 0.2,
+      "without_memory_mean": 0.0,
+      "delta_mean": 0.2,
+      "questions_per_run": 5
+    },
+    "t2": {
+      "with_memory_mean": 1.0,
+      "without_memory_mean": 0.0,
+      "delta_mean": 1.0,
+      "questions_per_run": 6
+    },
+    "t3": {
+      "with_memory_mean": 0.1111111111111111,
+      "without_memory_mean": 0.0,
+      "delta_mean": 0.1111111111111111,
+      "questions_per_run": 9
+    }
+  },
+  "overall": {
+    "with_memory_mean": 0.675,
+    "without_memory_mean": 0.15,
+    "delta_mean": 0.525,
+    "questions_per_run": 40
+  },
+  "fabrication_rate_with": 0.0,
+  "fabrication_rate_without": 0.0
+}

@@ -1,0 +1,78 @@
+{
+  "arm_name": "task-oracle",
+  "runs": 1,
+  "facts_surfaced": 0,
+  "facts_used": 0,
+  "thoughts_surfaced": 280,
+  "thoughts_used": 22,
+  "correct_with_total": 21,
+  "unattributed_correct": 1,
+  "would_promote": [
+    "chain-a-6: CityMed urgent care is_associated_with Main Street",
+    "chain-a-6: CityMed urgent care scheduled_for 10pm closing"
+  ],
+  "used_by_question": {
+    "t3q02": [
+      "trace:2"
+    ],
+    "t1q01": [
+      "trace:2",
+      "trace:6"
+    ],
+    "t2q01": [
+      "trace:1"
+    ],
+    "t2q02": [
+      "trace:1"
+    ],
+    "t2q03": [
+      "trace:1"
+    ],
+    "t2q04": [
+      "trace:1",
+      "trace:7"
+    ],
+    "t2q05": [
+      "trace:1"
+    ],
+    "t2q06": [
+      "trace:1"
+    ],
+    "aq01": [
+      "trace:1"
+    ],
+    "aq02": [
+      "trace:1"
+    ],
+    "aq03": [
+      "trace:1"
+    ],
+    "aq04": [
+      "trace:1"
+    ],
+    "aq05": [
+      "trace:1"
+    ],
+    "aq06": [
+      "trace:1"
+    ],
+    "aq07": [
+      "trace:1"
+    ],
+    "aq08": [
+      "trace:1"
+    ],
+    "aq09": [
+      "trace:1"
+    ],
+    "aq10": [
+      "trace:1"
+    ],
+    "aq11": [
+      "trace:1"
+    ],
+    "aq12": [
+      "trace:1"
+    ]
+  }
+}

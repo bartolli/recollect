@@ -1337,7 +1337,13 @@ class CognitiveMemory:
         embedding tags for a never-stored fact id orphans them.
         """
         try:
-            existing = await self._storage.facts.get_persona_facts(subject=fact.subject)
+            # User-scoped like _pin_relation_fact: the dedup read must not
+            # cross users (adr-retrieval-user-isolation) -- an unscoped
+            # match credits another user's row with this user's mention and
+            # swallows this user's write, starving their fact channel.
+            existing = await self._storage.facts.get_persona_facts(
+                subject=fact.subject, user_id=fact.user_id
+            )
             # Archived facts are retractions: matching them swallows the
             # re-stated mention (increment-on-archived returns None) and
             # supersede would chain onto a retracted row. Excluded, so new
