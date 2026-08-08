@@ -1,0 +1,244 @@
+{
+  "arm_name": "task-gated-r2",
+  "density_tier": 0,
+  "checks": [
+    {
+      "question_id": "t3q01",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "not retrieved at all",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t3q02",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t3q03",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "not retrieved at all",
+      "raw_rank": 5
+    },
+    {
+      "question_id": "t3q04",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "not retrieved at all",
+      "raw_rank": 2
+    },
+    {
+      "question_id": "t3q05",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "not retrieved at all",
+      "raw_rank": 6
+    },
+    {
+      "question_id": "t3q06",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "not retrieved at all",
+      "raw_rank": 1
+    },
+    {
+      "question_id": "t1q01",
+      "tier_label": "t1",
+      "holds": false,
+      "detail": "no promoted/pinned fact from required trace",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t1q02",
+      "tier_label": "t1",
+      "holds": false,
+      "detail": "no promoted/pinned fact from required trace",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t1q03",
+      "tier_label": "t1",
+      "holds": false,
+      "detail": "no promoted/pinned fact from required trace",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t1q04",
+      "tier_label": "t1",
+      "holds": false,
+      "detail": "trace retrievable -- gap does not hold",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t1q05",
+      "tier_label": "t1",
+      "holds": false,
+      "detail": "no promoted/pinned fact from required trace",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t1q06",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t2q01",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t2q02",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t2q03",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t2q04",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t2q05",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t2q06",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq01",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq02",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq03",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq04",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq05",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq06",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq07",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq08",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq09",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq10",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq11",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "aq12",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null
+    },
+    {
+      "question_id": "t3q07",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "not retrieved at all",
+      "raw_rank": 4
+    },
+    {
+      "question_id": "t3q08",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "not retrieved at all",
+      "raw_rank": 4
+    },
+    {
+      "question_id": "t3q09",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "also reachable without tokens",
+      "raw_rank": 4
+    },
+    {
+      "question_id": "t3q10",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "also reachable without tokens",
+      "raw_rank": 3
+    }
+  ]
+}

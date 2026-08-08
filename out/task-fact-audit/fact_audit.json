@@ -1,0 +1,598 @@
+{
+  "arm_name": "task-fact-audit",
+  "model": "anthropic:claude-haiku-4-5-20251001",
+  "rounds": 5,
+  "confidence_threshold": 0.6,
+  "per_tail": {
+    "chain-a-5": {
+      "gated": 5
+    },
+    "chain-b-5": {
+      "gated": 5
+    },
+    "chain-b-6": {
+      "gated": 5
+    },
+    "chain-c-5": {
+      "gated": 3,
+      "never_extracted": 2
+    },
+    "chain-c-6": {
+      "promoted": 5
+    },
+    "chain-d-4": {
+      "never_extracted": 5
+    },
+    "chain-d-5": {
+      "gated": 5
+    },
+    "chain-e-4": {
+      "gated": 5
+    },
+    "chain-e-5": {
+      "gated": 5
+    }
+  },
+  "round_records": [
+    {
+      "round_index": 0,
+      "seeded": 9,
+      "ingest_failures": 0,
+      "relations_total": 10,
+      "facts_total": 8,
+      "facts_by_status": {
+        "promoted": 2,
+        "candidate": 6
+      },
+      "outcomes": [
+        {
+          "tail_id": "chain-a-5",
+          "question_id": "t3q01",
+          "classification": "gated",
+          "gate_stage": "fact_type",
+          "fact_type": "episodic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 0,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-b-5",
+          "question_id": "t3q03",
+          "classification": "gated",
+          "gate_stage": "fact_type",
+          "fact_type": "episodic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 0,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-b-6",
+          "question_id": "t3q04",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Elm Street store is_associated_with free delivery and assembly"
+        },
+        {
+          "tail_id": "chain-c-5",
+          "question_id": "t3q05",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 2,
+          "answer_relations": 1,
+          "facts_written": 2,
+          "detail": "Oak Street Hardware scheduled_for noon closure Saturday"
+        },
+        {
+          "tail_id": "chain-c-6",
+          "question_id": "t3q06",
+          "classification": "promoted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Oak Street is_associated_with metered parking until 6pm on weekdays, free after 6pm"
+        },
+        {
+          "tail_id": "chain-d-4",
+          "question_id": "t3q07",
+          "classification": "never_extracted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 0,
+          "facts_written": 1,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-d-5",
+          "question_id": "t3q08",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Clayworks is_associated_with glaze firing fee: $18"
+        },
+        {
+          "tail_id": "chain-e-4",
+          "question_id": "t3q09",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Marchetti and Sons scheduled_for annual retreat closure"
+        },
+        {
+          "tail_id": "chain-e-5",
+          "question_id": "t3q10",
+          "classification": "gated",
+          "gate_stage": "spo_lossy",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "answer outside SPO: Marchetti and Sons requires twenty-five-dollar deposit"
+        }
+      ]
+    },
+    {
+      "round_index": 1,
+      "seeded": 9,
+      "ingest_failures": 0,
+      "relations_total": 9,
+      "facts_total": 7,
+      "facts_by_status": {
+        "promoted": 2,
+        "candidate": 5
+      },
+      "outcomes": [
+        {
+          "tail_id": "chain-a-5",
+          "question_id": "t3q01",
+          "classification": "gated",
+          "gate_stage": "fact_type",
+          "fact_type": "episodic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 0,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-b-5",
+          "question_id": "t3q03",
+          "classification": "gated",
+          "gate_stage": "fact_type",
+          "fact_type": "episodic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 0,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-b-6",
+          "question_id": "t3q04",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Elm Street store is_associated_with free delivery and assembly"
+        },
+        {
+          "tail_id": "chain-c-5",
+          "question_id": "t3q05",
+          "classification": "never_extracted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 0,
+          "facts_written": 1,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-c-6",
+          "question_id": "t3q06",
+          "classification": "promoted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Oak Street is_associated_with metered parking until 6pm on weekdays, free after 6pm"
+        },
+        {
+          "tail_id": "chain-d-4",
+          "question_id": "t3q07",
+          "classification": "never_extracted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 0,
+          "facts_written": 1,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-d-5",
+          "question_id": "t3q08",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Clayworks is_associated_with glaze firing fee: $18"
+        },
+        {
+          "tail_id": "chain-e-4",
+          "question_id": "t3q09",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Marchetti and Sons scheduled_for annual retreat closure"
+        },
+        {
+          "tail_id": "chain-e-5",
+          "question_id": "t3q10",
+          "classification": "gated",
+          "gate_stage": "spo_lossy",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "answer outside SPO: Marchetti and Sons requires twenty-five-dollar deposit"
+        }
+      ]
+    },
+    {
+      "round_index": 2,
+      "seeded": 9,
+      "ingest_failures": 0,
+      "relations_total": 10,
+      "facts_total": 8,
+      "facts_by_status": {
+        "promoted": 2,
+        "candidate": 6
+      },
+      "outcomes": [
+        {
+          "tail_id": "chain-a-5",
+          "question_id": "t3q01",
+          "classification": "gated",
+          "gate_stage": "fact_type",
+          "fact_type": "episodic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 0,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-b-5",
+          "question_id": "t3q03",
+          "classification": "gated",
+          "gate_stage": "fact_type",
+          "fact_type": "episodic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 0,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-b-6",
+          "question_id": "t3q04",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Elm Street store is_associated_with free delivery and assembly"
+        },
+        {
+          "tail_id": "chain-c-5",
+          "question_id": "t3q05",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 2,
+          "answer_relations": 1,
+          "facts_written": 2,
+          "detail": "Oak Street Hardware scheduled_for noon closure Saturday"
+        },
+        {
+          "tail_id": "chain-c-6",
+          "question_id": "t3q06",
+          "classification": "promoted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Oak Street is_associated_with metered parking until 6pm on weekdays, free after 6pm"
+        },
+        {
+          "tail_id": "chain-d-4",
+          "question_id": "t3q07",
+          "classification": "never_extracted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 0,
+          "facts_written": 1,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-d-5",
+          "question_id": "t3q08",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Clayworks is_associated_with glaze firing fee: $18"
+        },
+        {
+          "tail_id": "chain-e-4",
+          "question_id": "t3q09",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Marchetti and Sons scheduled_for annual retreat closure"
+        },
+        {
+          "tail_id": "chain-e-5",
+          "question_id": "t3q10",
+          "classification": "gated",
+          "gate_stage": "spo_lossy",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "answer outside SPO: Marchetti and Sons requires twenty-five-dollar deposit"
+        }
+      ]
+    },
+    {
+      "round_index": 3,
+      "seeded": 9,
+      "ingest_failures": 0,
+      "relations_total": 9,
+      "facts_total": 7,
+      "facts_by_status": {
+        "promoted": 2,
+        "candidate": 5
+      },
+      "outcomes": [
+        {
+          "tail_id": "chain-a-5",
+          "question_id": "t3q01",
+          "classification": "gated",
+          "gate_stage": "fact_type",
+          "fact_type": "episodic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 0,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-b-5",
+          "question_id": "t3q03",
+          "classification": "gated",
+          "gate_stage": "fact_type",
+          "fact_type": "episodic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 0,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-b-6",
+          "question_id": "t3q04",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Elm Street store is_associated_with free delivery and assembly"
+        },
+        {
+          "tail_id": "chain-c-5",
+          "question_id": "t3q05",
+          "classification": "never_extracted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 0,
+          "facts_written": 1,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-c-6",
+          "question_id": "t3q06",
+          "classification": "promoted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Oak Street is_associated_with metered parking until 6pm on weekdays, free after 6pm"
+        },
+        {
+          "tail_id": "chain-d-4",
+          "question_id": "t3q07",
+          "classification": "never_extracted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 0,
+          "facts_written": 1,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-d-5",
+          "question_id": "t3q08",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Clayworks is_associated_with glaze firing fee: $18"
+        },
+        {
+          "tail_id": "chain-e-4",
+          "question_id": "t3q09",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Marchetti and Sons scheduled_for annual retreat closure"
+        },
+        {
+          "tail_id": "chain-e-5",
+          "question_id": "t3q10",
+          "classification": "gated",
+          "gate_stage": "spo_lossy",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "answer outside SPO: Marchetti and Sons requires twenty-five-dollar deposit"
+        }
+      ]
+    },
+    {
+      "round_index": 4,
+      "seeded": 9,
+      "ingest_failures": 0,
+      "relations_total": 10,
+      "facts_total": 8,
+      "facts_by_status": {
+        "promoted": 2,
+        "candidate": 6
+      },
+      "outcomes": [
+        {
+          "tail_id": "chain-a-5",
+          "question_id": "t3q01",
+          "classification": "gated",
+          "gate_stage": "fact_type",
+          "fact_type": "episodic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 0,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-b-5",
+          "question_id": "t3q03",
+          "classification": "gated",
+          "gate_stage": "fact_type",
+          "fact_type": "episodic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 0,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-b-6",
+          "question_id": "t3q04",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Elm Street store is_associated_with free delivery and assembly"
+        },
+        {
+          "tail_id": "chain-c-5",
+          "question_id": "t3q05",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 2,
+          "answer_relations": 1,
+          "facts_written": 2,
+          "detail": "Oak Street Hardware scheduled_for noon closure Saturday"
+        },
+        {
+          "tail_id": "chain-c-6",
+          "question_id": "t3q06",
+          "classification": "promoted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Oak Street is_associated_with metered parking until 6pm on weekdays, free after 6pm"
+        },
+        {
+          "tail_id": "chain-d-4",
+          "question_id": "t3q07",
+          "classification": "never_extracted",
+          "gate_stage": "",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 0,
+          "facts_written": 1,
+          "detail": ""
+        },
+        {
+          "tail_id": "chain-d-5",
+          "question_id": "t3q08",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Clayworks is_associated_with glaze firing fee: $18"
+        },
+        {
+          "tail_id": "chain-e-4",
+          "question_id": "t3q09",
+          "classification": "gated",
+          "gate_stage": "candidate",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "Marchetti and Sons scheduled_for annual retreat closure"
+        },
+        {
+          "tail_id": "chain-e-5",
+          "question_id": "t3q10",
+          "classification": "gated",
+          "gate_stage": "spo_lossy",
+          "fact_type": "semantic",
+          "relations_total": 1,
+          "answer_relations": 1,
+          "facts_written": 1,
+          "detail": "answer outside SPO: Marchetti and Sons requires twenty-five-dollar deposit"
+        }
+      ]
+    }
+  ]
+}

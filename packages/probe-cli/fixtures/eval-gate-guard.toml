@@ -1,0 +1,34 @@
+# Retrieval-eval baseline: ingest + query via full CognitiveMemory pipeline.
+#   uv run probe run --arm packages/probe-cli/fixtures/eval.toml
+# Requires: live Postgres at [retrieval].db_url + provider keys in .env.
+# session_id is time-suffixed ⇒ re-runs append rows; reset probe DB between measurements.
+# persona + recall_tokens disabled — keep retrieval signal pure.
+
+[arm]
+name = "eval-gate-guard"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+max_concepts = 5
+max_relations = 3
+
+[corpus]
+# Schema-required; retrieval path uses [retrieval].traces_corpus_path instead.
+path = "packages/probe-cli/fixtures/eval_traces.jsonl"
+
+[retrieval]
+enabled = true
+db_url = "${RECOLLECT_PROBE_DB_URL}"
+traces_corpus_path = "packages/probe-cli/fixtures/eval_traces.jsonl"
+query_corpus_path = "packages/probe-cli/fixtures/eval_queries.jsonl"
+token_budget = 100000
+top_k = 5
+max_retrievals_buffer = 50
+
+[recollect_overrides]
+"persona.auto_extract" = false
+"recall_tokens.enabled" = false
+
+[output]
+dir = "out"
