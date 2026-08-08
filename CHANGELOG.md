@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.16.1] - 2026-08-08
+
+### Changed
+- `recollect` requires `pydantic-ai>=2.27` -- the floor is the release-verified resolved closure; `recollect-mcp` carries no pydantic-ai pin of its own and inherits it via `recollect>=0.16.1`
+
+### Fixed
+- MCP fact surfaces (reflect, `memory://facts`, pin result, remember context block) emit full fact ids; `unpin` matches ids exactly, so pin -> unpin round-trips on tool output alone
+
 ## [v0.16.0] - 2026-08-08
 
 ### Added

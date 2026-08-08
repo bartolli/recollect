@@ -1,12 +1,12 @@
 [project]
 name = "recollect-mcp"
-version = "0.16.0"
+version = "0.16.1"
 description = "MCP server for Recollect"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12.4"
 dependencies = [
-    "recollect>=0.14.0",
+    "recollect>=0.16.1",
     "mcp>=1.26.0,<2",
     "humanize>=4.15.0",
 ]
