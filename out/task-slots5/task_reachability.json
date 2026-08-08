@@ -1,5 +1,5 @@
 {
-  "arm_name": "task-baseline",
+  "arm_name": "task-slots5",
   "density_tier": 0,
   "checks": [
     {
@@ -53,8 +53,8 @@
     {
       "question_id": "t1q03",
       "tier_label": "t1",
-      "holds": true,
-      "detail": ""
+      "holds": false,
+      "detail": "trace retrievable -- gap does not hold"
     },
     {
       "question_id": "t1q04",
@@ -198,7 +198,7 @@
       "question_id": "t3q09",
       "tier_label": "t3",
       "holds": false,
-      "detail": "not retrieved at all"
+      "detail": "also reachable without tokens"
     },
     {
       "question_id": "t3q10",

@@ -1,5 +1,5 @@
 {
-  "arm_name": "task-baseline",
+  "arm_name": "task-nosal",
   "density_tier": 0,
   "checks": [
     {
@@ -198,7 +198,7 @@
       "question_id": "t3q09",
       "tier_label": "t3",
       "holds": false,
-      "detail": "not retrieved at all"
+      "detail": "also reachable without tokens"
     },
     {
       "question_id": "t3q10",
