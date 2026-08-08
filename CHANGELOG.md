@@ -22,7 +22,7 @@
 - `recollect-mcp` pins `mcp>=1.26.0,<2` (mcp 2.0.0 removed `mcp.server.fastmcp`); `serverInfo` advertises package name and version
 
 ### Fixed
-- recall safety net re-arms per server session; a skip-reflect session's first recall surfaces pinned + health/dietary facts
+- recall safety net re-arms when delivery fails: a recall that errors before delivery leaves the one-shot net armed; it fires once per delivered first recall (pinned + health/dietary facts on a skip-reflect session)
 
 ## [v0.14.1] - 2026-06-19
 
