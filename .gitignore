@@ -70,4 +70,7 @@ uv.lock
 .fastembed_cache/*
 .fastembed_cache
 
-out/
+out/**
+!out/**/
+!out/**/task_summary.json
+!out/**/task_reachability.json

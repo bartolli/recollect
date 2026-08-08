@@ -1,0 +1,44 @@
+{
+  "arm_name": "task-baseline",
+  "runs": 3,
+  "per_label": {
+    "any": {
+      "with_memory_mean": 0.9285714285714286,
+      "without_memory_mean": 0.0,
+      "delta_mean": 0.9285714285714286,
+      "questions_per_run": 14
+    },
+    "none": {
+      "with_memory_mean": 1.0,
+      "without_memory_mean": 1.0,
+      "delta_mean": 0.0,
+      "questions_per_run": 6
+    },
+    "t1": {
+      "with_memory_mean": 0.8,
+      "without_memory_mean": 0.0,
+      "delta_mean": 0.8,
+      "questions_per_run": 5
+    },
+    "t2": {
+      "with_memory_mean": 1.0,
+      "without_memory_mean": 0.0,
+      "delta_mean": 1.0,
+      "questions_per_run": 6
+    },
+    "t3": {
+      "with_memory_mean": 0.0,
+      "without_memory_mean": 0.0,
+      "delta_mean": 0.0,
+      "questions_per_run": 5
+    }
+  },
+  "overall": {
+    "with_memory_mean": 0.8055555555555556,
+    "without_memory_mean": 0.16666666666666666,
+    "delta_mean": 0.638888888888889,
+    "questions_per_run": 36
+  },
+  "fabrication_rate_with": 0.0,
+  "fabrication_rate_without": 0.0
+}
