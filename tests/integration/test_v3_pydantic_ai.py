@@ -150,6 +150,12 @@ def _print_agent_config(
     console.print(Panel("\n".join(info_lines), title="Agent Constructor Args"))
 
 
+def _run_usage(result: Any) -> Any:
+    # pydantic-ai v1 exposes AgentRunResult.usage as a method; v2 as a property.
+    usage = result.usage
+    return usage() if callable(usage) else usage
+
+
 def _print_result(
     duration: float,
     usage: Any,
@@ -263,7 +269,7 @@ async def _run_lifecycle(
     basic_result = await basic_agent.run(
         user_part, model_settings=cast(ModelSettings, basic_settings)
     )
-    _print_result(basic_duration, basic_result.usage(), "str", output=basic_output)
+    _print_result(basic_duration, _run_usage(basic_result), "str", output=basic_output)
 
     # -- Step 5: Structured extraction --
     console.print()
@@ -301,7 +307,7 @@ async def _run_lifecycle(
     result = await agent.run(ext_user, model_settings=settings)
     duration = time.perf_counter() - start
 
-    _print_result(duration, result.usage(), "ExtractionResult")
+    _print_result(duration, _run_usage(result), "ExtractionResult")
     _print_extraction_result(result.output)
 
     console.print()

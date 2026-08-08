@@ -4,8 +4,14 @@ version = "0.0.0"
 description = "Memory SDK workspace"
 requires-python = ">=3.12.4"
 dependencies = [
-    "pydantic-ai>=1.93",
+    "pydantic-ai>=2.27",
 ]
+
+[tool.uv]
+# Admits the verified pydantic-ai release (a same-day lockstep family of ==
+# pins) through the global 7d quarantine; bump the dates only together with
+# a re-verified resolved closure.
+exclude-newer-package = { pydantic-ai = "2026-08-09T00:00:00Z", pydantic-ai-slim = "2026-08-09T00:00:00Z", pydantic-graph = "2026-08-09T00:00:00Z", pydantic-evals = "2026-08-09T00:00:00Z" }
 
 [tool.uv.workspace]
 members = ["packages/*"]
