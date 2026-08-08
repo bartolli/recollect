@@ -1470,12 +1470,16 @@ class CognitiveMemory:
     async def _find_anchored_for_tokens(
         self, trace: MemoryTrace, exclude: set[str]
     ) -> list[tuple[MemoryTrace, float]]:
-        """Below-threshold rescue: association neighbors bypass the semantic gate.
+        """Below-threshold rescue: entity-edge neighbors bypass the semantic gate.
 
         Group-formation inputs are otherwise embedding-selected, so a
         semantically opaque chain tail never reaches the assessor -- the
-        write-time twin of the read-path embedding gap. Entity and temporal
-        edges written earlier in experience() carry the local anchor.
+        write-time twin of the read-path embedding gap. Entity edges written
+        earlier in experience() carry the local anchor. Entity ONLY:
+        arrival-adjacency channels (temporal edges, session-recent) admit
+        the previous unrelated arrival into every assessment and measurably
+        destabilize the none-boundary; anchors require shared-entity
+        evidence.
         """
         anchor_k = int(self._config.get("recall_tokens.write_time_anchor_k", 5))
         if anchor_k <= 0:
@@ -1483,7 +1487,7 @@ class CognitiveMemory:
         edges = await self._storage.associations.get_associations(trace.id)
         weight_by_id: dict[str, float] = {}
         for edge in edges:
-            if edge.association_type not in ("entity", "temporal"):
+            if edge.association_type != "entity":
                 continue
             other = (
                 edge.target_trace_id
@@ -1491,33 +1495,17 @@ class CognitiveMemory:
                 else edge.source_trace_id
             )
             weight_by_id.setdefault(other, edge.weight)
+        candidate_ids = set(weight_by_id) - exclude - {trace.id}
+        if not candidate_ids:
+            return []
+        candidates = await self._storage.traces.get_traces_bulk(list(candidate_ids))
         # Entity edges are written without user scoping, so the isolation
         # predicate ($N IS NULL OR user_id = $N) lands here on the read-back.
-        def owned(t: MemoryTrace) -> bool:
-            return trace.user_id is None or t.user_id == trace.user_id
-
-        candidate_ids = set(weight_by_id) - exclude - {trace.id}
-        anchored: list[tuple[MemoryTrace, float]] = []
-        if candidate_ids:
-            candidates = await self._storage.traces.get_traces_bulk(
-                list(candidate_ids)
-            )
-            anchored = [
-                (t, weight_by_id.get(t.id, 0.0)) for t in candidates if owned(t)
-            ]
-        if trace.session_id is not None and len(anchored) < anchor_k:
-            temporal_weight = float(
-                self._config.get("associations.temporal_weight", 0.5)
-            )
-            session_traces = await self._storage.traces.get_traces_by_session(
-                trace.session_id
-            )
-            seen = exclude | {trace.id} | {t.id for t, _ in anchored}
-            for t in reversed(session_traces):
-                if t.id in seen or not owned(t):
-                    continue
-                anchored.append((t, temporal_weight))
-                seen.add(t.id)
+        anchored = [
+            (t, weight_by_id.get(t.id, 0.0))
+            for t in candidates
+            if trace.user_id is None or t.user_id == trace.user_id
+        ]
         return anchored[:anchor_k]
 
     async def _assess_recall_tokens(self, trace: MemoryTrace) -> None:

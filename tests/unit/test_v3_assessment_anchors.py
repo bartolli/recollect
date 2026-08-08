@@ -77,19 +77,34 @@ class TestEntityAnchoredCandidates:
         assert result.related_trace_ids == ["bridge-1"]
 
 
-class TestSessionRecentCandidates:
-    async def test_session_neighbor_enters_without_edges(self, mem, mock_storage):
+class TestAdjacencyExcluded:
+    async def test_session_recent_never_enters(self, mem, mock_storage):
         new = _trace("tail-1", session_id="s1")
         neighbor = _trace("earlier-1", session_id="s1")
         mock_storage.vectors.search_semantic.return_value = []
         mock_storage.associations.get_associations.return_value = []
         mock_storage.traces.get_traces_by_session.return_value = [neighbor, new]
 
-        result = await mem.assess_situational(new)
+        assert await mem.assess_situational(new) is None
+        mock_storage.traces.get_traces_by_session.assert_not_awaited()
 
-        assert result is not None
-        assert result.related_trace_ids == ["earlier-1"]
-        mock_storage.traces.get_traces_by_session.assert_awaited_once()
+    async def test_temporal_edge_neighbor_never_enters(self, mem, mock_storage):
+        new = _trace("tail-1")
+        previous = _trace("previous-arrival")
+        mock_storage.vectors.search_semantic.return_value = []
+        mock_storage.associations.get_associations.return_value = [
+            Association(
+                source_trace_id="previous-arrival",
+                target_trace_id="tail-1",
+                association_type="temporal",
+                weight=0.5,
+                forward_strength=0.5,
+                backward_strength=0.5,
+            )
+        ]
+        mock_storage.traces.get_traces_bulk.return_value = [previous]
+
+        assert await mem.assess_situational(new) is None
 
 
 class TestUserIsolation:
