@@ -131,16 +131,20 @@ class PostgresStorage:
         await self._ctx.entities.store_trace_concepts(trace_id, concepts)
 
     async def get_traces_by_entity(
-        self, entity_name: str, *, limit: int = 20
+        self, entity_name: str, *, limit: int = 20, user_id: str | None = None
     ) -> list[str]:
         """Return trace IDs linked to an entity name."""
-        return await self._ctx.entities.get_traces_by_entity(entity_name, limit=limit)
+        return await self._ctx.entities.get_traces_by_entity(
+            entity_name, limit=limit, user_id=user_id
+        )
 
     async def get_traces_by_concept(
-        self, concept: str, *, limit: int = 20
+        self, concept: str, *, limit: int = 20, user_id: str | None = None
     ) -> list[str]:
         """Return trace IDs linked to a concept."""
-        return await self._ctx.entities.get_traces_by_concept(concept, limit=limit)
+        return await self._ctx.entities.get_traces_by_concept(
+            concept, limit=limit, user_id=user_id
+        )
 
     async def match_entities(
         self, names: list[str], *, limit: int = 20

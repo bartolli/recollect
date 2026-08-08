@@ -67,20 +67,29 @@ class PgEntityIndex:
             raise StorageError(f"Failed to store trace concepts: {exc}") from exc
 
     async def get_traces_by_entity(
-        self, entity_name: str, *, limit: int = 20
+        self, entity_name: str, *, limit: int = 20, user_id: str | None = None
     ) -> list[str]:
-        """Return trace IDs linked to an entity name."""
+        """Return trace IDs linked to an entity name.
+
+        user_id scopes through memory_traces (the single ownership source;
+        trace_entities has no user column). The LIMIT window is a shared cap:
+        unscoped, earlier users' rows absorb it and late writers link
+        cross-user instead of to their own siblings (adr-retrieval-user-isolation).
+        """
         try:
             pool = await self._pool_mgr.get_pool()
             async with pool.acquire() as conn:
                 rows = await conn.fetch(
                     """
-                    SELECT trace_id FROM trace_entities
-                    WHERE entity_name = $1
+                    SELECT te.trace_id FROM trace_entities te
+                    JOIN memory_traces mt ON mt.id = te.trace_id
+                    WHERE te.entity_name = $1
+                      AND ($3::text IS NULL OR mt.user_id = $3)
                     LIMIT $2
                     """,
                     entity_name,
                     limit,
+                    user_id,
                 )
             return [row["trace_id"] for row in rows]
         except StorageError:
@@ -90,20 +99,26 @@ class PgEntityIndex:
             raise StorageError(f"Failed to get traces by entity: {exc}") from exc
 
     async def get_traces_by_concept(
-        self, concept: str, *, limit: int = 20
+        self, concept: str, *, limit: int = 20, user_id: str | None = None
     ) -> list[str]:
-        """Return trace IDs linked to a concept."""
+        """Return trace IDs linked to a concept.
+
+        Same shared-cap scoping as get_traces_by_entity.
+        """
         try:
             pool = await self._pool_mgr.get_pool()
             async with pool.acquire() as conn:
                 rows = await conn.fetch(
                     """
-                    SELECT trace_id FROM trace_concepts
-                    WHERE concept = $1
+                    SELECT tc.trace_id FROM trace_concepts tc
+                    JOIN memory_traces mt ON mt.id = tc.trace_id
+                    WHERE tc.concept = $1
+                      AND ($3::text IS NULL OR mt.user_id = $3)
                     LIMIT $2
                     """,
                     concept,
                     limit,
+                    user_id,
                 )
             return [row["trace_id"] for row in rows]
         except StorageError:

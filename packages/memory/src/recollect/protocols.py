@@ -89,11 +89,11 @@ class EntityIndex(Protocol):
     ) -> None: ...
 
     async def get_traces_by_entity(
-        self, entity_name: str, *, limit: int = 20
+        self, entity_name: str, *, limit: int = 20, user_id: str | None = None
     ) -> list[str]: ...
 
     async def get_traces_by_concept(
-        self, concept: str, *, limit: int = 20
+        self, concept: str, *, limit: int = 20, user_id: str | None = None
     ) -> list[str]: ...
 
     async def match_entities(

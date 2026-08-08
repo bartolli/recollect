@@ -1,6 +1,12 @@
 # Task-eval questions, batch 1: T3-only (chain-end answers, token-propagation reach).
 # Question anchors at the chain head (query-visible vocabulary); the answer trace shares
 # no content vocabulary with the question -- the chain, not similarity, carries the reach.
+# Label demotions (stable drift, five seedings): t3q09/t3q10 tier_label=t2 -- delivered by
+# plain retrieval on every recorded seeding; ids keep the t3q prefix for artifact-join
+# continuity. t3 tier accounting: n=7 (six composition-cut + one true hop case, t3q01).
+# Hygiene: fact-channel and association/activation measurements are valid only on a fresh
+# probe_task per arm (make probe-task-db-reset); accumulated-DB fact numbers pre-fix are
+# invalid -- unscoped write-path reads made late seedings starve by DB position.
 # tier_label is INTENDED until slice-2 --verify-reachability confirms it empirically.
 # answers[0] is canonical; scoring normalizes case/punctuation and accepts any listed alias.
 # answer_type: name | item | date | time | quantity | abstain.
@@ -53,5 +59,5 @@
 # entity absent from the question, closed-form answer in the opaque tail.
 {"id": "t3q07", "question": "By when must Nadia drop off her bowls so they are fired in time for the showcase?", "answers": ["Wednesday at 5pm", "Wednesday 5pm", "5pm on Wednesday", "by Wednesday at 5pm"], "answer_type": "time", "requires_trace_ids": ["chain-d-4"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
 {"id": "t3q08", "question": "How much should Nadia budget for getting her pieces ready for the showcase?", "answers": ["eighteen dollars", "$18", "18 dollars"], "answer_type": "quantity", "requires_trace_ids": ["chain-d-5"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
-{"id": "t3q09", "question": "By what date must Dario collect his instrument to have it for the winter concert?", "answers": ["November 30", "Nov 30", "the 30th of November", "11/30"], "answer_type": "date", "requires_trace_ids": ["chain-e-4"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
-{"id": "t3q10", "question": "How much money does Dario need up front for the cello work?", "answers": ["twenty-five dollars", "$25", "25 dollars"], "answer_type": "quantity", "requires_trace_ids": ["chain-e-5"], "tier_label": "t3", "density_tiers": [0, 1, 2]}
+{"id": "t3q09", "question": "By what date must Dario collect his instrument to have it for the winter concert?", "answers": ["November 30", "Nov 30", "the 30th of November", "11/30"], "answer_type": "date", "requires_trace_ids": ["chain-e-4"], "tier_label": "t2", "density_tiers": [0, 1, 2]}
+{"id": "t3q10", "question": "How much money does Dario need up front for the cello work?", "answers": ["twenty-five dollars", "$25", "25 dollars"], "answer_type": "quantity", "requires_trace_ids": ["chain-e-5"], "tier_label": "t2", "density_tiers": [0, 1, 2]}

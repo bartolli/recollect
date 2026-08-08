@@ -23,9 +23,11 @@ def test_questions_load() -> None:
     assert len(questions) == 40
     # Post-verification distribution: t3q02 and t1q06 demoted to any by the
     # 2026-08-07 reachability run (multi-path reach; see story-5 record).
-    # Batch-2 verification chains add t3q07-t3q10.
+    # Batch-2 verification chains add t3q07-t3q10. Stable-drift demotion
+    # (five seedings): t3q09/t3q10 to t2 -- t3 is n=7, six composition-cut
+    # plus the one true hop case (t3q01).
     labels = Counter(q.tier_label for q in questions)
-    assert labels == {"t3": 9, "t1": 5, "t2": 6, "any": 14, "none": 6}
+    assert labels == {"t3": 7, "t1": 5, "t2": 8, "any": 14, "none": 6}
 
 
 def test_required_traces_resolve_and_are_core_tier() -> None:

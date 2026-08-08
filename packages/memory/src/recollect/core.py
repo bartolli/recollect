@@ -1251,11 +1251,11 @@ class CognitiveMemory:
         try:
             if assoc_type == "entity":
                 existing_ids = await self._storage.entities.get_traces_by_entity(
-                    key, limit=max_links
+                    key, limit=max_links, user_id=trace.user_id
                 )
             else:
                 existing_ids = await self._storage.entities.get_traces_by_concept(
-                    key, limit=max_links
+                    key, limit=max_links, user_id=trace.user_id
                 )
         except (StorageError, OSError):
             logger.exception("Failed to find traces for %s=%s", assoc_type, key)
