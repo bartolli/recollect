@@ -164,6 +164,11 @@ class ReachabilityCheck(BaseModel):
     # on THIS seeding; None = absent (or non-t3). Presence and raw rank from
     # one seeding is what makes a knob/gate null verdict valid.
     raw_rank: int | None = None
+    # think_about window on THIS seeding, shown order: "rank. seed_key relevance".
+    # Unmapped occupants (persona-fact-sourced or foreign) carry "~{id[:8]}".
+    # Captured from the check's own retrieval call -- zero extra exposures,
+    # so cut-tail decomposition needs no post-artifact diagnostic think_about.
+    window: list[str] = Field(default_factory=list)
 
 
 class TaskVerifyReport(BaseModel):
@@ -487,7 +492,9 @@ class TaskArmRunner:
                 holds=False,
                 detail="required traces failed to seed",
             )
-        retrieved = await self._retrieved_ids(memory, question, user_id=user_id)
+        thoughts = await self._retrieve(memory, question, user_id=user_id)
+        retrieved = {t.trace.id for t in thoughts}
+        window = self._format_window(thoughts, id_map)
         present = bool(required & retrieved)
         if question.tier_label in ("t2", "any"):
             return ReachabilityCheck(
@@ -495,6 +502,7 @@ class TaskArmRunner:
                 tier_label=question.tier_label,
                 holds=present,
                 detail="" if present else "required trace not retrieved",
+                window=window,
             )
         if question.tier_label == "t3":
             self._config._set("recall_tokens.enabled", False)
@@ -520,6 +528,7 @@ class TaskArmRunner:
                 raw_rank=await self._raw_rank(
                     memory, question, required, user_id=user_id
                 ),
+                window=window,
             )
         # t1: the embedding gap holds AND a promoted/pinned fact carries it.
         fact_backed = bool(required & fact_sources)
@@ -538,13 +547,29 @@ class TaskArmRunner:
             tier_label="t1",
             holds=gap_holds and fact_backed,
             detail=detail,
+            window=window,
         )
+
+    async def _retrieve(
+        self, memory: CognitiveMemory, question: TaskQuestion, *, user_id: str
+    ) -> list[Thought]:
+        return await memory.think_about(question.question, user_id=user_id)
 
     async def _retrieved_ids(
         self, memory: CognitiveMemory, question: TaskQuestion, *, user_id: str
     ) -> set[str]:
-        thoughts = await memory.think_about(question.question, user_id=user_id)
+        thoughts = await self._retrieve(memory, question, user_id=user_id)
         return {t.trace.id for t in thoughts}
+
+    @staticmethod
+    def _format_window(
+        thoughts: list[Thought], id_map: dict[str, str]
+    ) -> list[str]:
+        rev = {v: k for k, v in id_map.items()}
+        return [
+            f"{i}. {rev.get(t.trace.id, '~' + t.trace.id[:8])} {t.relevance:.3f}"
+            for i, t in enumerate(thoughts, start=1)
+        ]
 
     async def _raw_rank(
         self,
