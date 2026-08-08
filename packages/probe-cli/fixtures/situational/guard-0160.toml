@@ -1,0 +1,27 @@
+# P6 baseline situational arm. Default packaged situational prompt; recall_tokens disabled
+# during ingest (suppresses experience() side-effects), assess_situational bypasses the gate.
+# DB: probe_situational, separate from probe_eval (islands corpus) and dev/prod DBs.
+# Live arm gate (deferred):
+#   createdb probe_situational && psql probe_situational -c 'CREATE EXTENSION IF NOT EXISTS vector'
+#   uv run probe run --arm packages/probe-cli/fixtures/situational/baseline.toml
+
+[arm]
+name = "situational-guard-0160"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+
+# Required by Arm schema; unused for situational arms.
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[situational]
+enabled = true
+db_url = "${RECOLLECT_PROBE_SITUATIONAL_DB_URL}"
+seed_traces_path = "packages/probe-cli/fixtures/situational/seed_traces.jsonl"
+seed_groups_path = "packages/probe-cli/fixtures/situational/seed_groups.jsonl"
+eval_corpus_path = "packages/probe-cli/fixtures/situational/eval.jsonl"

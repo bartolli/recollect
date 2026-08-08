@@ -78,11 +78,11 @@ $$s_{\text{eff}} = \max\big(s_{\text{bienc}},\; 0.7 \cdot s_{\text{concept}} + 0
 
 The max keeps the blend monotonic: concept attention can only lift a trace above its bi-encoder score, never penalize it. A trace with no concept overlap falls back to plain similarity.
 
-The full ranking score adds significance, valence, spreading activation, entity matching, and token propagation:
+The full ranking score adds salience (significance and valence), spreading activation, entity matching, and token propagation. Every auxiliary signal is relevance-gated: it amplifies a candidate's earned similarity, never fabricates rank for an irrelevant one.
 
-$$\text{score} = s_{\text{eff}} \;+\; 0.15 \cdot \sigma \;+\; 0.05 \cdot |\nu| \;+\; 0.1 \cdot a \;+\; \underbrace{0.1 \cdot e \cdot \sigma \cdot s_{\text{concept}}}_{\text{gated entity bonus}} \;+\; \underbrace{0.5 \cdot s_{\text{prop}}}_{\text{token propagation}}$$
+$$\text{score} = s_{\text{eff}} \;+\; \underbrace{(0.15 \cdot \sigma + 0.05 \cdot |\nu|) \cdot \max(s_{\text{eff}}, 0)}_{\text{gated salience}} \;+\; 0.1 \cdot a \;+\; \underbrace{0.1 \cdot e \cdot \sigma \cdot s_{\text{concept}}}_{\text{gated entity bonus}} \;+\; \underbrace{0.5 \cdot s_{\text{prop}}}_{\text{token propagation}}$$
 
-The entity bonus is multiplicatively gated by both significance ($\sigma$) and concept similarity ($s_{\text{concept}}$). When a trace's concepts have zero overlap with the query, the entity bonus is zero regardless of name match. This prevents entity flooding: not every "Mom" trace surfaces just because the query mentions Mom.
+The entity bonus is multiplicatively gated by both significance ($\sigma$) and concept similarity ($s_{\text{concept}}$). When a trace's concepts have zero overlap with the query, the entity bonus is zero regardless of name match. This prevents entity flooding: not every "Mom" trace surfaces just because the query mentions Mom. Salience follows the same rule — an emotionally rich but off-topic memory gains nothing from its richness. Token propagation is the deliberate exception: it exists to rescue chain tails whose content shares no vocabulary with the query, so gating it on similarity would defeat its purpose.
 
 Token propagation signal decays per hop:
 

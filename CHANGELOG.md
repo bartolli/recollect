@@ -1,5 +1,29 @@
 # Changelog
 
+## [v0.16.0] - 2026-08-08
+
+### Added
+- `recall_tokens.write_time_anchor_k` (default 5; 0 disables): entity-edge neighbors join write-time token assessment below the similarity threshold -- semantically opaque chain tails reach the assessor via shared-entity evidence
+
+### Changed
+- every auxiliary ranking signal is relevance-gated: salience boosts (`significance`, `|valence|`) multiply by `max(effective_sim, 0)` in fused scoring; `_compute_fact_relevance` is `max(sim, 0) * (0.7 + 0.3*confidence)` -- embedding-less facts rank last; token propagation stays ungated (rescue tier)
+
+### Fixed
+- `revise` assessment on an archived recall token reactivates it; an archived token updated in place no longer stays dormant
+- extraction-path fact dedup user-scoped: a restated fact matches only the writer's own rows -- no cross-user mention crediting, promotion, or write swallowing; supersession inherits the scoped read
+- shared-key association reads user-scoped through `memory_traces`: the `max_links` window is per-user, so a trace links to its own entity/concept siblings instead of earlier users' rows absorbing the cap
+
+## [v0.15.0] - 2026-08-06
+
+### Added
+- `retrieval.trace_similarity_threshold` (default 0.0 = off): absolute similarity floor on storage-path trace search; `<= 0` preserves prior behavior exactly
+
+### Changed
+- `recollect-mcp` pins `mcp>=1.26.0,<2` (mcp 2.0.0 removed `mcp.server.fastmcp`); `serverInfo` advertises package name and version
+
+### Fixed
+- recall safety net re-arms per server session; a skip-reflect session's first recall surfaces pinned + health/dietary facts
+
 ## [v0.14.1] - 2026-06-19
 
 ### Added
