@@ -569,11 +569,14 @@ def _format_pin_result(facts: list[PersonaFact]) -> str:
 
 
 def _format_single_fact(fact: PersonaFact) -> str:
-    """Format one persona fact as a compact multi-line block."""
-    short_id = fact.id[:8]
+    """Format one persona fact as a compact multi-line block.
+
+    Emits the full fact ID: unpin matches ids exactly, so a truncated
+    id printed here can never round-trip back through the tool surface.
+    """
     age = humanize.naturaltime(now_utc() - fact.created_at)
     meta = f"{fact.category}, {fact.confidence:.2f}, {fact.status}, {age}"
-    header = f"[{short_id}] {fact.subject} {fact.predicate} {fact.object}  ({meta})"
+    header = f"[{fact.id}] {fact.subject} {fact.predicate} {fact.object}  ({meta})"
     if fact.content:
         return f"{header}\n  {fact.content}"
     return header
