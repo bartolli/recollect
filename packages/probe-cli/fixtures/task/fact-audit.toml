@@ -1,0 +1,27 @@
+# Story-9 slice-1 extraction audit: t3 tail texts only, arm.runs rounds, fresh
+# table state per round (harness TRUNCATEs data tables and refuses any database
+# not named probe_fact_audit). Run with --audit-fact-channel; answer_model is
+# deliberately unset so a plain answering run on this arm fails fast.
+# Extraction model matches the task arms -- the audit measures their write side.
+
+[arm]
+name = "task-fact-audit"
+runs = 5
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+
+# Required by Arm schema; unused for task arms.
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[task]
+enabled = true
+db_url = "${RECOLLECT_PROBE_FACT_AUDIT_DB_URL}"
+seed_traces_path = "packages/probe-cli/fixtures/task/seed_traces.jsonl"
+questions_path = "packages/probe-cli/fixtures/task/questions.jsonl"
+density_tier = 0
+with_tokens = false

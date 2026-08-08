@@ -7,6 +7,7 @@ import asyncio
 import logging
 import os
 import sys
+from collections import Counter
 from pathlib import Path
 
 from recollect.llm.pydantic_ai import PydanticAIProvider
@@ -19,6 +20,7 @@ from probe_cli.corpus import (
     load_query_corpus,
     load_seed_groups,
 )
+from probe_cli.fact_audit import FactAuditReport
 from probe_cli.metrics import (
     AggregateMetrics,
     RetrievalAggregate,
@@ -55,7 +57,11 @@ from probe_cli.surfacing_situational_runner import (
     SituationalSurfacingReport,
 )
 from probe_cli.task_metrics import TaskAggregate, aggregate_task_runs
-from probe_cli.task_runner import TaskArmRunner, TaskVerifyReport
+from probe_cli.task_runner import (
+    TaskArmRunner,
+    TaskVerifyReport,
+    VerdictOracleReport,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +95,15 @@ def main() -> int:
             "empirically and report drift; no answering runs."
         ),
     )
+    run.add_argument(
+        "--audit-fact-channel",
+        action="store_true",
+        help=(
+            "Task arms only: seed each t3 tail text per round against the "
+            "scratch audit DB and classify extraction-to-promotion outcomes "
+            "(story-9 slice 1); no answering runs."
+        ),
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -101,11 +116,15 @@ def main() -> int:
         _load_dotenv(args.env_file)
 
     if args.cmd == "run":
+        if args.verify_reachability and args.audit_fact_channel:
+            logger.error("--verify-reachability and --audit-fact-channel are exclusive")
+            return 2
         return asyncio.run(
             _run_arm(
                 args.arm,
                 model_override=args.model,
                 verify_reachability=args.verify_reachability,
+                audit_fact_channel=args.audit_fact_channel,
             )
         )
     return 1
@@ -116,6 +135,7 @@ async def _run_arm(
     *,
     model_override: str | None,
     verify_reachability: bool = False,
+    audit_fact_channel: bool = False,
 ) -> int:
     arm = load_arm(arm_path)
     if model_override:
@@ -135,11 +155,15 @@ async def _run_arm(
     out_dir = Path(arm.output.dir) / arm.name
 
     if arm.task.enabled:
+        if audit_fact_channel:
+            return await _run_fact_audit(arm, provider, out_dir)
         return await _run_task_arm(
             arm, provider, out_dir, verify_reachability=verify_reachability
         )
-    if verify_reachability:
-        logger.error("--verify-reachability requires a task arm")
+    if verify_reachability or audit_fact_channel:
+        logger.error(
+            "--verify-reachability and --audit-fact-channel require a task arm"
+        )
         return 2
     if arm.surfacing.enabled:
         if arm.surfacing.seed_groups_path:
@@ -184,6 +208,7 @@ async def _run_task_arm(
         write_task_run_report,
         write_task_summary,
         write_task_verify_report,
+        write_verdict_oracle,
     )
 
     runner = TaskArmRunner.from_arm(arm, provider)
@@ -193,12 +218,25 @@ async def _run_task_arm(
         _print_task_verify(arm, verify)
         return 0 if not verify.drifted else 1
 
-    reports = await runner.run_all()
+    reports, oracle = await runner.run_all()
     for report in reports:
         write_task_run_report(report, out_dir)
     summary = aggregate_task_runs(arm.name, reports)
     write_task_summary(summary, out_dir)
+    write_verdict_oracle(oracle, out_dir)
     _print_task_summary(arm, runner.answer_model, summary)
+    _print_verdict_oracle(oracle)
+    return 0
+
+
+async def _run_fact_audit(arm: Arm, provider: PydanticAIProvider, out_dir: Path) -> int:
+    from probe_cli.fact_audit import FactAuditRunner
+    from probe_cli.report import write_fact_audit_report
+
+    runner = FactAuditRunner.from_arm(arm, provider)
+    report = await runner.run()
+    write_fact_audit_report(report, out_dir)
+    _print_fact_audit(arm, report)
     return 0
 
 
@@ -273,9 +311,7 @@ async def _run_situational_surfacing_arm(
     return 0
 
 
-def _classify_arm_cases(
-    arm: Arm, report: SituationalSurfacingReport
-) -> CaseBreakdown:
+def _classify_arm_cases(arm: Arm, report: SituationalSurfacingReport) -> CaseBreakdown:
     queries = load_query_corpus(arm.surfacing.query_corpus_path).entries
     gt = load_ground_truth(arm.surfacing.ground_truth_path)
     groups = load_seed_groups(arm.surfacing.seed_groups_path)
@@ -434,9 +470,7 @@ def _print_retrieval_summary(
             )
 
 
-def _print_task_summary(
-    arm: Arm, answer_model: str, summary: TaskAggregate
-) -> None:
+def _print_task_summary(arm: Arm, answer_model: str, summary: TaskAggregate) -> None:
     print(f"\nArm: {arm.name} (task)", file=sys.stderr)
     print(
         f"  answer_model={answer_model}  runs={summary.runs}"
@@ -465,17 +499,95 @@ def _print_task_summary(
     )
 
 
+def _print_verdict_oracle(oracle: VerdictOracleReport) -> None:
+    print(
+        "  verdict oracle (used = alias-bearing shown line + correct answer):",
+        file=sys.stderr,
+    )
+    print(
+        f"    facts surfaced/used    = {oracle.facts_surfaced}/{oracle.facts_used}",
+        file=sys.stderr,
+    )
+    print(
+        f"    thoughts surfaced/used = {oracle.thoughts_surfaced}"
+        f"/{oracle.thoughts_used}",
+        file=sys.stderr,
+    )
+    print(
+        f"    correct-with={oracle.correct_with_total}"
+        f"  unattributed={oracle.unattributed_correct}",
+        file=sys.stderr,
+    )
+    print(
+        f"    would-promote (usage-as-mention): {len(oracle.would_promote)}",
+        file=sys.stderr,
+    )
+    for entry in oracle.would_promote:
+        print(f"      {entry}", file=sys.stderr)
+
+
 def _print_task_verify(arm: Arm, verify: TaskVerifyReport) -> None:
     print(f"\nArm: {arm.name} (task reachability)", file=sys.stderr)
     held = len(verify.checks) - len(verify.drifted)
     print(
-        f"  checks={len(verify.checks)}  held={held}"
-        f"  drifted={len(verify.drifted)}",
+        f"  checks={len(verify.checks)}  held={held}  drifted={len(verify.drifted)}",
         file=sys.stderr,
     )
     for c in verify.drifted:
         print(
             f"    DRIFT [{c.question_id}] {c.tier_label}: {c.detail}",
+            file=sys.stderr,
+        )
+
+
+def _print_fact_audit(arm: Arm, report: FactAuditReport) -> None:
+    print(f"\nArm: {arm.name} (fact-channel audit)", file=sys.stderr)
+    print(
+        f"  model={report.model}  rounds={report.rounds}"
+        f"  confidence_threshold={report.confidence_threshold:.2f}",
+        file=sys.stderr,
+    )
+    stages: dict[str, Counter[str]] = {}
+    for rnd in report.round_records:
+        for o in rnd.outcomes:
+            if o.gate_stage:
+                stages.setdefault(o.tail_id, Counter())[o.gate_stage] += 1
+    print("  per tail (promoted / gated / never):", file=sys.stderr)
+    for tail, counts in report.per_tail.items():
+        qid = next(
+            (
+                o.question_id
+                for rnd in report.round_records
+                for o in rnd.outcomes
+                if o.tail_id == tail
+            ),
+            "?",
+        )
+        stage = (
+            ", ".join(f"{s}={n}" for s, n in stages[tail].most_common())
+            if tail in stages
+            else ""
+        )
+        print(
+            f"    {tail:10s} [{qid}]  {counts.get('promoted', 0)}"
+            f" / {counts.get('gated', 0)}"
+            f" / {counts.get('never_extracted', 0)}"
+            f"{'  gates: ' + stage if stage else ''}",
+            file=sys.stderr,
+        )
+    for rnd in report.round_records:
+        by_status = ", ".join(
+            f"{s}={n}" for s, n in sorted(rnd.facts_by_status.items())
+        )
+        print(
+            f"  flood r{rnd.round_index}: seeded={rnd.seeded}"
+            f"  relations={rnd.relations_total}  facts={rnd.facts_total}"
+            f"  ({by_status})"
+            + (
+                f"  ingest_failures={rnd.ingest_failures}"
+                if rnd.ingest_failures
+                else ""
+            ),
             file=sys.stderr,
         )
 

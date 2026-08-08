@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 import random
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, Field
 from recollect.core import CognitiveMemory
@@ -29,7 +29,7 @@ from probe_cli.corpus import (
     load_task_questions,
     load_task_seed_traces,
 )
-from probe_cli.task_scoring import score_answer
+from probe_cli.task_scoring import contains_alias, score_answer
 
 if TYPE_CHECKING:
     from recollect.config import MemoryConfig
@@ -47,6 +47,43 @@ _ANSWER_SYSTEM = (
 )
 
 
+class UsedLineAttribution(BaseModel):
+    channel: Literal["fact", "trace"]
+    rank: int
+    line: str
+    trace_id: str = ""
+
+
+def compute_used_lines(
+    *,
+    fact_lines: list[str],
+    trace_lines: list[tuple[str, str]],
+    aliases: list[str],
+    answered_correctly: bool,
+) -> list[UsedLineAttribution]:
+    """Deterministic verdict oracle: alias-bearing shown lines on a correct
+    answer are attributed as used. Incorrect/abstained answers attribute
+    nothing -- absent evidence is an honest unknown, never an unused verdict.
+    Rank is 1-indexed per channel in shown order (exposure qualification).
+    """
+    if not answered_correctly:
+        return []
+    used: list[UsedLineAttribution] = []
+    for rank, line in enumerate(fact_lines, start=1):
+        if contains_alias(line, aliases):
+            used.append(
+                UsedLineAttribution(channel="fact", rank=rank, line=line)
+            )
+    for rank, (trace_id, line) in enumerate(trace_lines, start=1):
+        if contains_alias(line, aliases):
+            used.append(
+                UsedLineAttribution(
+                    channel="trace", rank=rank, line=line, trace_id=trace_id
+                )
+            )
+    return used
+
+
 class TaskQuestionResult(BaseModel):
     question_id: str
     tier_label: TierLabel
@@ -56,6 +93,8 @@ class TaskQuestionResult(BaseModel):
     response_with: str = ""
     response_without: str = ""
     context_thoughts: int = 0
+    context_facts: int = 0
+    used_lines: list[UsedLineAttribution] = Field(default_factory=list)
     success: bool = True
     error: str = ""
     latency_ms: float = 0.0
@@ -71,11 +110,60 @@ class TaskRunReport(BaseModel):
     results: list[TaskQuestionResult] = Field(default_factory=list)
 
 
+class VerdictOracleReport(BaseModel):
+    arm_name: str
+    runs: int
+    facts_surfaced: int = 0
+    facts_used: int = 0
+    thoughts_surfaced: int = 0
+    thoughts_used: int = 0
+    correct_with_total: int = 0
+    unattributed_correct: int = 0
+    # Candidate facts derived (source_trace_id) from used traces: what
+    # usage-as-mention promotion would flip. Entries are
+    # "{seed_id}: {subject} {predicate} {object}".
+    would_promote: list[str] = Field(default_factory=list)
+    used_by_question: dict[str, list[str]] = Field(default_factory=dict)
+
+
+def aggregate_verdict_oracle(
+    arm_name: str, reports: list[TaskRunReport]
+) -> VerdictOracleReport:
+    """Per-channel surfaced-vs-used totals -- the read-time precision twin
+    the MCP verdict tool will make continuous; here computed by oracle."""
+    oracle = VerdictOracleReport(arm_name=arm_name, runs=len(reports))
+    for rep in reports:
+        for q in rep.results:
+            if not q.success:
+                continue
+            oracle.facts_surfaced += q.context_facts
+            oracle.thoughts_surfaced += q.context_thoughts
+            if q.correct_with and q.answer_type != "abstain":
+                oracle.correct_with_total += 1
+                if not q.used_lines:
+                    oracle.unattributed_correct += 1
+            oracle.facts_used += sum(
+                1 for u in q.used_lines if u.channel == "fact"
+            )
+            oracle.thoughts_used += sum(
+                1 for u in q.used_lines if u.channel == "trace"
+            )
+            if q.used_lines:
+                oracle.used_by_question.setdefault(q.question_id, []).extend(
+                    f"{u.channel}:{u.rank}" for u in q.used_lines
+                )
+    return oracle
+
+
 class ReachabilityCheck(BaseModel):
     question_id: str
     tier_label: TierLabel
     holds: bool
     detail: str = ""
+    # t3 only: 1-indexed rank of the required trace in raw semantic top-20
+    # on THIS seeding; None = absent (or non-t3). Presence and raw rank from
+    # one seeding is what makes a knob/gate null verdict valid.
+    raw_rank: int | None = None
 
 
 class TaskVerifyReport(BaseModel):
@@ -231,12 +319,11 @@ class TaskArmRunner:
     ) -> TaskQuestionResult:
         start = time.perf_counter()
         thoughts: list[Thought] = []
+        shown_facts = persona_lines if self._with_priming else []
         try:
             if self._with_recall:
                 thoughts = await memory.think_about(question.question, user_id=user_id)
-            context = _format_context(
-                persona_lines if self._with_priming else [], thoughts
-            )
+            context = _format_context(shown_facts, thoughts)
             response_with = await self._ask(question.question, context)
             response_without = await self._ask(question.question, "")
         except MemorySDKError as exc:
@@ -248,19 +335,33 @@ class TaskArmRunner:
                 error=str(exc),
                 latency_ms=(time.perf_counter() - start) * 1000,
             )
+        correct_with = score_answer(response_with, question)
+        # Verdict oracle over exactly the shown lines; abstain questions
+        # carry no alias vocabulary, so a correct abstention attributes
+        # nothing by construction.
+        used = compute_used_lines(
+            fact_lines=shown_facts,
+            trace_lines=[
+                (t.trace.id, t.reconstruction) for t in thoughts if t.reconstruction
+            ],
+            aliases=question.answers,
+            answered_correctly=correct_with and question.answer_type != "abstain",
+        )
         return TaskQuestionResult(
             question_id=question.id,
             tier_label=question.tier_label,
             answer_type=question.answer_type,
-            correct_with=score_answer(response_with, question),
+            correct_with=correct_with,
             correct_without=score_answer(response_without, question),
             response_with=response_with,
             response_without=response_without,
             context_thoughts=len(thoughts),
+            context_facts=len(shown_facts),
+            used_lines=used,
             latency_ms=(time.perf_counter() - start) * 1000,
         )
 
-    async def run_all(self) -> list[TaskRunReport]:
+    async def run_all(self) -> tuple[list[TaskRunReport], VerdictOracleReport]:
         seeds, questions = self._load_fixture()
         user_id = f"probe-{self._arm_name}"
         memory = CognitiveMemory(extractor=self._extractor, config=self._config)
@@ -296,8 +397,37 @@ class TaskArmRunner:
                         results=results,
                     )
                 )
+            oracle = aggregate_verdict_oracle(self._arm_name, out)
+            used_ids = {
+                u.trace_id
+                for rep in out
+                for q in rep.results
+                for u in q.used_lines
+                if u.trace_id
+            }
+            oracle.would_promote = await self._would_promote(
+                memory, used_ids, id_map
+            )
         finally:
             await memory.close()
+        return out, oracle
+
+    async def _would_promote(
+        self,
+        memory: CognitiveMemory,
+        used_trace_ids: set[str],
+        id_map: dict[str, str],
+    ) -> list[str]:
+        """Candidate facts a usage-as-mention rule would flip to promoted."""
+        inverse = {v: k for k, v in id_map.items()}
+        out: list[str] = []
+        for tid in sorted(used_trace_ids, key=lambda t: inverse.get(t, t)):
+            facts = await memory.storage.facts.get_facts_by_source_trace_id(tid)
+            out.extend(
+                f"{inverse.get(tid, tid[:8])}: {f.subject} {f.predicate} {f.object}"
+                for f in facts
+                if f.status == "candidate"
+            )
         return out
 
     async def verify_reachability(self) -> TaskVerifyReport:
@@ -387,6 +517,9 @@ class TaskArmRunner:
                 tier_label="t3",
                 holds=token_only,
                 detail=detail,
+                raw_rank=await self._raw_rank(
+                    memory, question, required, user_id=user_id
+                ),
             )
         # t1: the embedding gap holds AND a promoted/pinned fact carries it.
         fact_backed = bool(required & fact_sources)
@@ -412,3 +545,24 @@ class TaskArmRunner:
     ) -> set[str]:
         thoughts = await memory.think_about(question.question, user_id=user_id)
         return {t.trace.id for t in thoughts}
+
+    async def _raw_rank(
+        self,
+        memory: CognitiveMemory,
+        question: TaskQuestion,
+        required: set[str],
+        *,
+        user_id: str,
+    ) -> int | None:
+        # search_query prefix per the embedding contract; the private reach
+        # mirrors the established config._set harness practice.
+        embedding = await memory._embeddings.generate_embedding(
+            question.question, task="search_query"
+        )
+        ranked = await memory.storage.vectors.search_semantic(
+            embedding, limit=20, user_id=user_id
+        )
+        for rank, (trace, _sim) in enumerate(ranked, start=1):
+            if trace.id in required:
+                return rank
+        return None

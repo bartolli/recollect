@@ -12,6 +12,8 @@ import re
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from probe_cli.corpus import TaskQuestion
 
 _ABSTAIN_MARKERS = (
@@ -39,14 +41,19 @@ def is_abstention(response: str) -> bool:
     return any(marker in norm for marker in _ABSTAIN_MARKERS)
 
 
-def score_answer(response: str, question: TaskQuestion) -> bool:
-    if question.answer_type == "abstain":
-        return is_abstention(response)
-    norm = normalize(response)
-    for alias in question.answers:
+def contains_alias(text: str, aliases: Iterable[str]) -> bool:
+    """Any alias present in the normalized text at word boundaries."""
+    norm = normalize(text)
+    for alias in aliases:
         alias_norm = normalize(alias)
         if not alias_norm:
             continue
         if re.search(rf"(?<![a-z0-9]){re.escape(alias_norm)}(?![a-z0-9])", norm):
             return True
     return False
+
+
+def score_answer(response: str, question: TaskQuestion) -> bool:
+    if question.answer_type == "abstain":
+        return is_abstention(response)
+    return contains_alias(response, question.answers)

@@ -74,4 +74,6 @@ out/**
 !out/**/
 !out/**/task_summary.json
 !out/**/task_reachability.json
+!out/**/fact_audit.json
+!out/**/verdict_oracle.json
 !out/**/situational_summary.json

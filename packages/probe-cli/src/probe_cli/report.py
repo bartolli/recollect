@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from probe_cli.fact_audit import FactAuditReport
 from probe_cli.metrics import (
     AggregateMetrics,
     RetrievalAggregate,
@@ -19,7 +20,11 @@ from probe_cli.surfacing_runner import SurfacingRunReport
 from probe_cli.surfacing_situational import SituationalLift
 from probe_cli.surfacing_situational_runner import SituationalSurfacingReport
 from probe_cli.task_metrics import TaskAggregate
-from probe_cli.task_runner import TaskRunReport, TaskVerifyReport
+from probe_cli.task_runner import (
+    TaskRunReport,
+    TaskVerifyReport,
+    VerdictOracleReport,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -97,9 +102,7 @@ def write_surfacing_run_report(
     return path
 
 
-def write_surfacing_summary(
-    metrics: SurfacingMetrics, output_dir: Path | str
-) -> Path:
+def write_surfacing_summary(metrics: SurfacingMetrics, output_dir: Path | str) -> Path:
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / "surfacing_summary.json"
@@ -108,9 +111,7 @@ def write_surfacing_summary(
     return path
 
 
-def write_situational_lift(
-    lift: SituationalLift, output_dir: Path | str
-) -> Path:
+def write_situational_lift(lift: SituationalLift, output_dir: Path | str) -> Path:
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / "surfacing_situational_lift.json"
@@ -130,9 +131,7 @@ def write_situational_surfacing_report(
     return path
 
 
-def write_case_breakdown(
-    breakdown: CaseBreakdown, output_dir: Path | str
-) -> Path:
+def write_case_breakdown(breakdown: CaseBreakdown, output_dir: Path | str) -> Path:
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / "associative_case_breakdown.json"
@@ -159,12 +158,28 @@ def write_task_summary(summary: TaskAggregate, output_dir: Path | str) -> Path:
     return path
 
 
-def write_task_verify_report(
-    report: TaskVerifyReport, output_dir: Path | str
-) -> Path:
+def write_task_verify_report(report: TaskVerifyReport, output_dir: Path | str) -> Path:
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / "task_reachability.json"
+    path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_verdict_oracle(report: VerdictOracleReport, output_dir: Path | str) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "verdict_oracle.json"
+    path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_fact_audit_report(report: FactAuditReport, output_dir: Path | str) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "fact_audit.json"
     path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
     logger.info("wrote %s", path)
     return path

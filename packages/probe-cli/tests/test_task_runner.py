@@ -58,3 +58,35 @@ async def test_seed_order_is_shuffled_and_deterministic(
     assert seen[0] != [f"trace {i}" for i in range(20)], (
         "seeding must not preserve fixture file order"
     )
+
+
+def _ranked_memory(order: list[str]) -> MagicMock:
+    memory = MagicMock()
+    memory._embeddings.generate_embedding = AsyncMock(return_value=[0.1] * 4)
+    ranked = []
+    for i, tid in enumerate(order):
+        trace = MagicMock()
+        trace.id = tid
+        ranked.append((trace, 1.0 - i * 0.1))
+    memory.storage.vectors.search_semantic = AsyncMock(return_value=ranked)
+    return memory
+
+
+async def test_raw_rank_is_position_of_required_trace(
+    runner: TaskArmRunner,
+) -> None:
+    memory = _ranked_memory(["a", "b", "c"])
+    question = MagicMock()
+    question.question = "q"
+    rank = await runner._raw_rank(memory, question, {"b"}, user_id="u")
+    assert rank == 2
+
+
+async def test_raw_rank_none_when_absent_from_top(
+    runner: TaskArmRunner,
+) -> None:
+    memory = _ranked_memory(["a", "b", "c"])
+    question = MagicMock()
+    question.question = "q"
+    rank = await runner._raw_rank(memory, question, {"zz"}, user_id="u")
+    assert rank is None
