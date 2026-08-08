@@ -152,10 +152,11 @@ class TestQueryTimeActivation:
         mock_storage.recall_tokens.get_activated_trace_ids.return_value = [
             ("activated-1", "tok-1", "mother-sarah", 0.8, 0.5, "seed-1"),
         ]
-        result = await mem._activate_recall_tokens(_emb(), [(t1, 0.6)])
-        assert "activated-1" in result
+        props, witness = await mem._activate_recall_tokens(_emb(), [(t1, 0.6)])
+        assert "activated-1" in props
         expected = 0.6 * 0.85 * 0.8 * 0.5  # anchor * hop_decay * strength * sig
-        assert result["activated-1"] == pytest.approx(expected, abs=0.001)
+        assert props["activated-1"] == pytest.approx(expected, abs=0.001)
+        assert witness["activated-1"] == pytest.approx(0.6, abs=1e-9)
 
     async def test_disabled(self, mock_storage, mock_embeddings, mock_extractor):
         cfg = MemoryConfig()
@@ -168,7 +169,7 @@ class TestQueryTimeActivation:
         )
         t1 = MemoryTrace(id="seed-1", content="test", embedding=_emb())
         result = await mem._activate_recall_tokens(_emb(), [(t1, 0.6)])
-        assert result == {}
+        assert result == ({}, {})
 
 
 class TestScoringBlend:

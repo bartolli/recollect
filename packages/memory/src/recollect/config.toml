@@ -128,6 +128,7 @@ decay_factor = 0.9              # Multiply inactive token strength by this durin
 decay_inactivity_seconds = 1800 # Tokens activated within this window skip decay (consolidation interval)
 hop_decay = 0.85                # Signal attenuation per token hop in propagation
 propagation_blend = 0.50        # Weight of propagated signal in additive blend
+witness_bound_margin = 0.0      # Headroom over the vouching seed's evidence for propagated scores; negative disables the bound
 iter_max_rounds = 3             # Max re-seeding iterations (3 default, configurable for tuning)
 iter_stability_threshold = 0.95 # Top-K overlap fraction to stop iterating early
 iter_top_seeds = 3              # Token-discovered traces used as seeds per re-seeding round

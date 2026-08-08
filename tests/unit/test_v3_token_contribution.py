@@ -64,8 +64,9 @@ class TestContributionGate:
             return_value=[_hop_row("hop-1", "tok-x", "seed-1")]
         )
         m = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
-        props, contributing = await m._token_hop(
+        props, contributing, witness = await m._token_hop(
             ["seed-1"], {"seed-1": 0.6}, 0.85, 0.1, exclude_ids=["hop-1"]
         )
         assert props == {}
         assert contributing == set()
+        assert witness == {}

@@ -563,7 +563,7 @@ class CognitiveMemory:
             storage_candidates[:seed_count], user_id=user_id
         )
 
-        token_activated = await self._activate_recall_tokens(
+        token_activated, witness_evidence = await self._activate_recall_tokens(
             query_embedding, storage_scored, user_id=user_id
         )
 
@@ -574,6 +574,7 @@ class CognitiveMemory:
             activated,
             entity_matches=entity_matches if entity_matches else None,
             token_activated=token_activated,
+            witness_evidence=witness_evidence,
             user_id=user_id,
         )
 
@@ -1788,20 +1789,22 @@ class CognitiveMemory:
         storage_scored: list[tuple[MemoryTrace, float]],
         *,
         user_id: str | None = None,
-    ) -> dict[str, float]:
+    ) -> tuple[dict[str, float], dict[str, float]]:
         """Query-time token activation with iterative re-seeding.
 
-        Returns {trace_id: propagated_sim} for token-activated traces.
-        Propagated similarity uses the formula:
+        Returns ({trace_id: propagated_sim}, {trace_id: witness_evidence})
+        for token-activated traces. Propagated similarity uses the formula:
             propagated_sim = anchor_cosine * hop_decay
                 * token_strength * token_significance
+        witness_evidence is the best vouching seed's anchor evidence across
+        all rounds -- the witness bound applied at fused scoring.
         Multiple rounds re-seed from top discovered traces until ranking
         stabilizes or max_rounds is reached.
         """
         if not self._config.get("recall_tokens.enabled", True):
-            return {}
+            return {}, {}
         if not storage_scored:
-            return {}
+            return {}, {}
         hop_decay = float(self._config.get("recall_tokens.hop_decay", 0.85))
         strength_threshold = float(
             self._config.get("recall_tokens.strength_threshold", 0.1)
@@ -1819,20 +1822,23 @@ class CognitiveMemory:
         seed_cosines: dict[str, float] = {t.id: sim for t, sim in storage_scored}
         seed_ids = list(seed_cosines.keys())
 
-        # Track best propagated_sim per trace across all rounds
+        # Track best propagated_sim and witness evidence per trace across
+        # all rounds
         propagated_sims: dict[str, float] = {}
+        witness_evidence: dict[str, float] = {}
         all_token_ids: set[str] = set()
         used_seeds: set[str] = set(seed_ids)
 
         # Round 1: one-hop from vector results
-        round1_props, round1_tokens = await self._token_hop(
+        round1_props, round1_tokens, round1_witness = await self._token_hop(
             seed_ids, seed_cosines, hop_decay, strength_threshold, user_id=user_id
         )
         propagated_sims.update(round1_props)
+        witness_evidence.update(round1_witness)
         all_token_ids.update(round1_tokens)
 
         if not propagated_sims:
-            return {}
+            return {}, {}
 
         prev_top_k = self._top_k_ids(propagated_sims, top_seeds)
 
@@ -1846,7 +1852,7 @@ class CognitiveMemory:
             used_seeds.update(new_seed_ids)
             # Seeds for round N use their own propagated_sim as anchor
             seed_props = {tid: propagated_sims[tid] for tid in new_seed_ids}
-            round_props, round_tokens = await self._token_hop(
+            round_props, round_tokens, round_witness = await self._token_hop(
                 new_seed_ids,
                 seed_props,
                 hop_decay,
@@ -1857,6 +1863,10 @@ class CognitiveMemory:
             all_token_ids.update(round_tokens)
             for tid, prop in round_props.items():
                 propagated_sims[tid] = max(propagated_sims.get(tid, 0.0), prop)
+            for tid, evidence in round_witness.items():
+                witness_evidence[tid] = max(
+                    witness_evidence.get(tid, 0.0), evidence
+                )
 
             curr_top_k = self._top_k_ids(propagated_sims, top_seeds)
             overlap = len(set(prev_top_k) & set(curr_top_k))
@@ -1870,7 +1880,7 @@ class CognitiveMemory:
             all_token_ids, reinforce_boost
         )
 
-        return propagated_sims
+        return propagated_sims, witness_evidence
 
     async def _token_hop(
         self,
@@ -1881,10 +1891,13 @@ class CognitiveMemory:
         *,
         exclude_ids: list[str] | None = None,
         user_id: str | None = None,
-    ) -> tuple[dict[str, float], set[str]]:
+    ) -> tuple[dict[str, float], set[str], dict[str, float]]:
         """Single hop of token activation from seed traces.
 
-        Returns (propagated_sims, contributing_token_ids). A token is
+        Returns (propagated_sims, contributing_token_ids,
+        witness_evidence) -- witness_evidence maps each propagated trace
+        to its best vouching seed's anchor evidence, the Law-5 bound on
+        the trace's post-propagation score. A token is
         credited only when one of its rows survives the exclusion filter
         -- it propagated at least one new non-seed trace this hop. Hebbian
         reinforcement rewards firing together, not sitting near seeds: a
@@ -1899,11 +1912,12 @@ class CognitiveMemory:
             )
         except (StorageError, OSError):
             logger.exception("Token hop activation failed")
-            return {}, set()
+            return {}, set(), {}
         exclude = set(exclude_ids) if exclude_ids else set()
         exclude.update(seed_ids)
         propagated: dict[str, float] = {}
         contributing: set[str] = set()
+        witness: dict[str, float] = {}
         for (
             trace_id,
             token_id,
@@ -1919,7 +1933,11 @@ class CognitiveMemory:
             contributing.add(token_id)
             if prop > propagated.get(trace_id, 0.0):
                 propagated[trace_id] = prop
-        return propagated, contributing
+            # Witness level is the best vouching seed's own evidence,
+            # independent of which voucher wins the propagation max.
+            if anchor_sim > witness.get(trace_id, 0.0):
+                witness[trace_id] = anchor_sim
+        return propagated, contributing, witness
 
     @staticmethod
     def _top_k_ids(sims: dict[str, float], k: int) -> list[str]:
@@ -1947,6 +1965,7 @@ class CognitiveMemory:
         activated: list[tuple[MemoryTrace, float]],
         entity_matches: list[tuple[str, float]] | None = None,
         token_activated: dict[str, float] | None = None,
+        witness_evidence: dict[str, float] | None = None,
         *,
         user_id: str | None = None,
     ) -> list[tuple[MemoryTrace, float]]:
@@ -2011,6 +2030,9 @@ class CognitiveMemory:
         propagation_blend = float(
             self._config.get("recall_tokens.propagation_blend", 0.50)
         )
+        witness_bound_margin = float(
+            self._config.get("recall_tokens.witness_bound_margin", 0.0)
+        )
 
         return self._compute_fused_scores(
             traces_by_id,
@@ -2025,6 +2047,8 @@ class CognitiveMemory:
             concept_weight=concept_weight,
             token_bonuses=token_bonuses,
             propagation_blend=propagation_blend,
+            witness_evidence=witness_evidence,
+            witness_bound_margin=witness_bound_margin,
         )
 
     @staticmethod
@@ -2093,6 +2117,8 @@ class CognitiveMemory:
         concept_weight: float = 0.0,
         token_bonuses: dict[str, float] | None = None,
         propagation_blend: float = 0.50,
+        witness_evidence: dict[str, float] | None = None,
+        witness_bound_margin: float = -1.0,
     ) -> list[tuple[MemoryTrace, float]]:
         """Compute fused scores with concept-primary blend, clamped to [0, 1].
 
@@ -2101,8 +2127,11 @@ class CognitiveMemory:
         so weak concepts (extraction noise) never score below the untagged
         twin. Every auxiliary signal is relevance-gated: entity bonus by
         concept similarity, salience boosts by effective similarity. Token
-        propagation stays ungated -- it is the rescue tier for
-        near-zero-base tails.
+        propagation stays relevance-ungated (the rescue tier for
+        near-zero-base tails) but witness-bounded: propagation lifts a
+        candidate at most to its best vouching seed's evidence plus
+        witness_bound_margin, and never below the candidate's own
+        un-propagated score. A negative margin disables the bound.
         """
         if concept_sims is None:
             concept_sims = {}
@@ -2140,7 +2169,12 @@ class CognitiveMemory:
                     * concept_sim
                 )
             if token_bonuses and trace_id in token_bonuses:
-                score += token_bonuses[trace_id] * propagation_blend
+                boosted = score + token_bonuses[trace_id] * propagation_blend
+                witness = (witness_evidence or {}).get(trace_id)
+                if witness is not None and witness_bound_margin >= 0.0:
+                    score = max(score, min(boosted, witness + witness_bound_margin))
+                else:
+                    score = boosted
             # Lower clamp is load-bearing: _fetch_token_traces seeds raw
             # cosine (negative for anti-correlated), and Thought.relevance
             # declares ge=0 -- unclamped, one bad candidate fails the recall.
