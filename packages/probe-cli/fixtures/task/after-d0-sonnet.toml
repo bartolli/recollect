@@ -1,0 +1,33 @@
+# Production-faithful consumer arm: after-d0 with a frontier answer model.
+# Topology under test = the deployed flow: Haiku owns write-time extraction
+# and situational assessment only; the answering seat belongs to the frontier
+# consumer; recall is deterministic. Haiku-answering rows measure the
+# write-time model in a seat it does not hold in production.
+# Code: main e16278a; bound ON at packaged defaults. Decision input for the
+# t3q09 wrong-value observable (story-5 record) and the pre-ship call.
+# DB: fresh probe_task (make probe-task-db-reset immediately before).
+
+[arm]
+name = "task-after-d0-sonnet"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+
+# Required by Arm schema; unused for task arms.
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[task]
+enabled = true
+db_url = "${RECOLLECT_PROBE_TASK_DB_URL}"
+seed_traces_path = "packages/probe-cli/fixtures/task/seed_traces.jsonl"
+questions_path = "packages/probe-cli/fixtures/task/questions.jsonl"
+answer_model = "anthropic:claude-sonnet-5"
+density_tier = 0
+with_recall = true
+with_priming = true
+with_tokens = true
