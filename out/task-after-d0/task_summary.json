@@ -1,0 +1,44 @@
+{
+  "arm_name": "task-after-d0",
+  "runs": 3,
+  "per_label": {
+    "any": {
+      "with_memory_mean": 1.0,
+      "without_memory_mean": 0.0,
+      "delta_mean": 1.0,
+      "questions_per_run": 14
+    },
+    "none": {
+      "with_memory_mean": 1.0,
+      "without_memory_mean": 1.0,
+      "delta_mean": 0.0,
+      "questions_per_run": 6
+    },
+    "t1": {
+      "with_memory_mean": 0.8,
+      "without_memory_mean": 0.0,
+      "delta_mean": 0.8,
+      "questions_per_run": 5
+    },
+    "t2": {
+      "with_memory_mean": 0.875,
+      "without_memory_mean": 0.0,
+      "delta_mean": 0.875,
+      "questions_per_run": 8
+    },
+    "t3": {
+      "with_memory_mean": 0.5714285714285714,
+      "without_memory_mean": 0.0,
+      "delta_mean": 0.5714285714285714,
+      "questions_per_run": 7
+    }
+  },
+  "overall": {
+    "with_memory_mean": 0.875,
+    "without_memory_mean": 0.15,
+    "delta_mean": 0.725,
+    "questions_per_run": 40
+  },
+  "fabrication_rate_with": 0.0,
+  "fabrication_rate_without": 0.0
+}

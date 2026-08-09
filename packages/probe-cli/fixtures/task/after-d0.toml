@@ -1,0 +1,30 @@
+# Combined statics after-sweep, d0 answering arm (measurement of record).
+# Code: main e16278a -- statics bundle ON at packaged defaults: story-7
+# anchors, slice-2 relevance gating, slice-3 witness bound.
+# Compare against the recorded pre-statics d0 baseline (story-5 record).
+# DB: fresh probe_task (make probe-task-db-reset immediately before).
+
+[arm]
+name = "task-after-d0"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+
+# Required by Arm schema; unused for task arms.
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[task]
+enabled = true
+db_url = "${RECOLLECT_PROBE_TASK_DB_URL}"
+seed_traces_path = "packages/probe-cli/fixtures/task/seed_traces.jsonl"
+questions_path = "packages/probe-cli/fixtures/task/questions.jsonl"
+answer_model = "anthropic:claude-haiku-4-5-20251001"
+density_tier = 0
+with_recall = true
+with_priming = true
+with_tokens = true

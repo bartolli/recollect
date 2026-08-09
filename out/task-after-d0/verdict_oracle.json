@@ -1,0 +1,234 @@
+{
+  "arm_name": "task-after-d0",
+  "runs": 3,
+  "facts_surfaced": 2280,
+  "facts_used": 39,
+  "thoughts_surfaced": 840,
+  "thoughts_used": 111,
+  "correct_with_total": 87,
+  "unattributed_correct": 6,
+  "would_promote": [
+    "chain-a-6: CityMed urgent care is_associated_with 5th Avenue",
+    "chain-a-6: CityMed urgent care scheduled_for open until 10pm",
+    "chain-b-6: Elm Street store is_associated_with free delivery and assembly",
+    "chain-c-5: Oak Street Hardware scheduled_for noon closure Saturday",
+    "chain-c-5: Oak Street Hardware scheduled_for closed all day Sunday",
+    "d1: Sasha practices veganism",
+    "i1: Pham works_at Stripe",
+    "i1: Pham practices payments platform engineering",
+    "i2: Aoife studies medieval Irish poetry",
+    "i2: Aoife studies Trinity College",
+    "n2: Maple Avenue recurs_on first Tuesday of every month",
+    "p1: Margot prefers tea",
+    "r1: Hugo is_partner_of Camille",
+    "r1: Hugo is_related_to two young children",
+    "s1: engineering team scheduled_for Monday 9am standup",
+    "s3: community garden recurs_on Saturday mornings during summer"
+  ],
+  "used_by_question": {
+    "t3q02": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t3q04": [
+      "trace:5",
+      "trace:5",
+      "trace:5"
+    ],
+    "t3q05": [
+      "trace:7",
+      "trace:7",
+      "trace:7"
+    ],
+    "t3q06": [
+      "fact:11",
+      "trace:2",
+      "trace:5",
+      "fact:11",
+      "trace:2",
+      "trace:5",
+      "fact:11",
+      "trace:2",
+      "trace:5"
+    ],
+    "t1q01": [
+      "fact:4",
+      "fact:5",
+      "trace:1",
+      "trace:2",
+      "fact:4",
+      "fact:5",
+      "trace:1",
+      "trace:2",
+      "fact:4",
+      "fact:5",
+      "trace:1",
+      "trace:2"
+    ],
+    "t1q03": [
+      "fact:1",
+      "fact:2",
+      "trace:1",
+      "trace:6",
+      "fact:1",
+      "fact:2",
+      "trace:1",
+      "trace:6",
+      "fact:1",
+      "fact:2",
+      "trace:1",
+      "trace:6"
+    ],
+    "t1q04": [
+      "fact:9",
+      "trace:1",
+      "fact:9",
+      "trace:1",
+      "fact:9",
+      "trace:1"
+    ],
+    "t1q05": [
+      "fact:13",
+      "trace:2",
+      "fact:13",
+      "trace:2",
+      "fact:13",
+      "trace:2"
+    ],
+    "t1q06": [
+      "fact:10",
+      "trace:1",
+      "trace:2",
+      "fact:10",
+      "trace:1",
+      "trace:2",
+      "fact:10",
+      "trace:1",
+      "trace:2"
+    ],
+    "t2q01": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q02": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q03": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q04": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q05": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q06": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq01": [
+      "fact:4",
+      "fact:5",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:4",
+      "fact:5",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:4",
+      "fact:5",
+      "trace:1",
+      "trace:2",
+      "trace:3"
+    ],
+    "aq02": [
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "fact:6",
+      "trace:1",
+      "trace:2"
+    ],
+    "aq03": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq04": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq05": [
+      "fact:2",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:2",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:2",
+      "trace:1",
+      "trace:2",
+      "trace:3"
+    ],
+    "aq06": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq07": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq08": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq09": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq10": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq11": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq12": [
+      "fact:7",
+      "trace:1",
+      "trace:2",
+      "fact:7",
+      "trace:1",
+      "trace:2",
+      "fact:7",
+      "trace:1",
+      "trace:2"
+    ]
+  }
+}
