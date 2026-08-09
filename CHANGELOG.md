@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.17.0] - 2026-08-09
+
+### Added
+- `recall_tokens.witness_bound_margin` (default 0.0 = hard bound ON; negative disables): headroom over the vouching seed's evidence for propagated scores
+
+### Changed
+- token propagation is witness-bounded: a propagation-boosted candidate's fused score caps at its best vouching seed's evidence plus the margin, and never falls below the candidate's own un-propagated score -- boosted group mass no longer displaces answer-bearing traces from top-K selection
+
 ## [v0.16.1] - 2026-08-08
 
 ### Changed

@@ -1,6 +1,6 @@
 [project]
 name = "recollect"
-version = "0.16.1"
+version = "0.17.0"
 description = "Human-like memory for AI applications"
 readme = "README.md"
 license = "MIT"
