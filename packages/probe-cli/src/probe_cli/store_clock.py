@@ -48,15 +48,19 @@ _MICROSECOND = timedelta(microseconds=1)
 _PROBE_PREFIX = "probe_"
 
 
-async def _require_probe_database(conn: asyncpg.pool.PoolConnectionProxy) -> None:
-    # Read from the writing connection, not a URL: an empty arm db_url
-    # falls back to DATABASE_URL, which a string check never sees.
-    name = await conn.fetchval("SELECT current_database()")
-    if not str(name).startswith(_PROBE_PREFIX):
+async def require_probe_database(
+    conn: asyncpg.Connection | asyncpg.pool.PoolConnectionProxy,
+) -> str:
+    """Guard of every store-wide write; returns the guarded database name."""
+    # Read from a live connection, not a URL: an empty arm db_url falls
+    # back to DATABASE_URL, which a string check never sees.
+    name = str(await conn.fetchval("SELECT current_database()"))
+    if not name.startswith(_PROBE_PREFIX):
         raise ValueError(
-            f"store clock rewrites every lifecycle timestamp; refusing database "
-            f"{name!r} -- its name must start with {_PROBE_PREFIX!r}"
+            f"store-wide write refused on database {name!r} -- its name "
+            f"must start with {_PROBE_PREFIX!r}"
         )
+    return name
 
 
 _TIME_COLUMNS_SQL = """
@@ -140,7 +144,7 @@ class StoreClock:
                 "targets must increase by more than the real time a step takes"
             )
         async with self._pool.acquire() as conn, conn.transaction():
-            await _require_probe_database(conn)
+            await require_probe_database(conn)
             if not self._classified:
                 await _require_classified_columns(conn)
                 self._classified = True
@@ -158,6 +162,6 @@ class StoreClock:
         planner inputs. VACUUM cannot run inside a transaction.
         """
         async with self._pool.acquire() as conn:
-            await _require_probe_database(conn)
+            await require_probe_database(conn)
             for table in _columns_by_table():
                 await conn.execute(f"VACUUM (FULL, ANALYZE) {table}")

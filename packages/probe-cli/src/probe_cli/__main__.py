@@ -8,12 +8,13 @@ import logging
 import os
 import sys
 from collections import Counter
+from contextlib import aclosing
 from pathlib import Path
 
 from recollect.llm.pydantic_ai import PydanticAIProvider
 from recollect.llm.types import CompletionParams
 
-from probe_cli.aging import Aging
+from probe_cli.aging import Aging, AgingReport, SweepPoint
 from probe_cli.arm import Arm, load_arm
 from probe_cli.corpus import (
     load_corpus,
@@ -60,6 +61,7 @@ from probe_cli.surfacing_situational_runner import (
 from probe_cli.task_metrics import TaskAggregate, aggregate_task_runs
 from probe_cli.task_runner import (
     TaskArmRunner,
+    TaskRunReport,
     TaskVerifyReport,
     VerdictOracleReport,
 )
@@ -108,9 +110,11 @@ def main() -> int:
     run.add_argument(
         "--age-days",
         type=_non_negative,
+        nargs="+",
         help=(
             "Task-arm answering runs only: age the seeded store by this many "
-            "emulated days before evaluating (0 = control, same path)."
+            "emulated days before evaluating (0 = control, same path). "
+            "Several ages sweep one seeding, restored before each point."
         ),
     )
     run.add_argument(
@@ -119,6 +123,14 @@ def main() -> int:
         help=(
             "Emulated consolidation passes per aged day (default 48: one "
             "worker at the packaged interval; 0 = one closing pass)."
+        ),
+    )
+    run.add_argument(
+        "--tokens-off-control",
+        action="store_true",
+        help=(
+            "With --age-days: also evaluate the same seeding at age 0 with "
+            "the recall token hop disabled at read time."
         ),
     )
     args = parser.parse_args()
@@ -136,8 +148,15 @@ def main() -> int:
         if args.verify_reachability and args.audit_fact_channel:
             logger.error("--verify-reachability and --audit-fact-channel are exclusive")
             return 2
-        if args.passes_per_day is not None and args.age_days is None:
-            logger.error("--passes-per-day requires --age-days")
+        if args.age_days is None and (
+            args.passes_per_day is not None or args.tokens_off_control
+        ):
+            logger.error("--passes-per-day and --tokens-off-control require --age-days")
+            return 2
+        ages: list[int] = args.age_days or []
+        if len(set(ages)) != len(ages):
+            # Two points at one age would share an evidence dir.
+            logger.error("--age-days lists an age twice")
             return 2
         return asyncio.run(
             _run_arm(
@@ -145,7 +164,9 @@ def main() -> int:
                 model_override=args.model,
                 verify_reachability=args.verify_reachability,
                 audit_fact_channel=args.audit_fact_channel,
-                aging=_aging(args.age_days, args.passes_per_day),
+                points=_points(
+                    ages, args.passes_per_day, control=args.tokens_off_control
+                ),
             )
         )
     return 1
@@ -158,29 +179,55 @@ def _non_negative(value: str) -> int:
     return number
 
 
-def _aging(age_days: int | None, passes_per_day: int | None) -> Aging | None:
-    if age_days is None:
-        return None
+def _aging(age_days: int, passes_per_day: int | None) -> Aging:
     if passes_per_day is None:
         return Aging(age_days=age_days)
     return Aging(age_days=age_days, passes_per_day=passes_per_day)
+
+
+def _points(
+    ages: list[int], passes_per_day: int | None, *, control: bool
+) -> list[SweepPoint]:
+    points = [SweepPoint(aging=_aging(age, passes_per_day)) for age in ages]
+    if control:
+        points.append(SweepPoint(aging=_aging(0, passes_per_day), tokens_off=True))
+    return points
+
+
+def _single_age(points: list[SweepPoint]) -> Aging | None:
+    """The one aged run that keeps a seeding to itself; None for a sweep."""
+    if len(points) == 1 and not points[0].tokens_off:
+        return points[0].aging
+    return None
+
+
+def _existing_evidence(arm: Arm, points: list[SweepPoint]) -> list[str]:
+    """Evidence dirs an aged run would write that already hold evidence."""
+    if not points:
+        return []
+    # A single-age arm already carries its age suffix.
+    single = _single_age(points) is not None
+    names = [arm.name] if single else [p.arm_name(arm.name) for p in points]
+    return [name for name in names if (Path(arm.output.dir) / name).exists()]
 
 
 def _prepared_arm(
     arm_path: Path,
     *,
     model_override: str | None,
-    aging: Aging | None,
+    points: list[SweepPoint],
     answering: bool,
 ) -> Arm | None:
     """The arm ready to run; None (after logging) on a usage error."""
     arm = load_arm(arm_path)
+    if points and not (answering and arm.task.enabled):
+        logger.error("--age-days applies to task-arm answering runs only")
+        return None
+    aging = _single_age(points)
     if aging is not None:
-        if not (answering and arm.task.enabled):
-            logger.error("--age-days applies to task-arm answering runs only")
-            return None
         # Arm name keys the evidence dir and the user_id: an aged run is
-        # its own arm and never overwrites the unaged one.
+        # its own arm and never overwrites the unaged one. A sweep keeps
+        # the arm's name for its one seeding and suffixes per point.
         arm = arm.model_copy(update={"name": aging.arm_name(arm.name)})
     if model_override:
         arm.extraction.pydantic_ai_model = model_override
@@ -199,15 +246,27 @@ async def _run_arm(
     model_override: str | None,
     verify_reachability: bool = False,
     audit_fact_channel: bool = False,
-    aging: Aging | None = None,
+    points: list[SweepPoint] | None = None,
 ) -> int:
+    points = points or []
     arm = _prepared_arm(
         arm_path,
         model_override=model_override,
-        aging=aging,
+        points=points,
         answering=not (verify_reachability or audit_fact_channel),
     )
     if arm is None:
+        return 2
+    taken = _existing_evidence(arm, points)
+    if taken:
+        # A sweep point and a single-age run share dir names, and every
+        # sweep of an arm shares one seeding identity: evidence written
+        # over or beside an earlier run's reads as one seeding.
+        logger.error(
+            "evidence exists under %s for %s; move it or run a new arm name",
+            arm.output.dir,
+            ", ".join(taken),
+        )
         return 2
 
     provider = PydanticAIProvider(
@@ -221,7 +280,11 @@ async def _run_arm(
         if audit_fact_channel:
             return await _run_fact_audit(arm, provider, out_dir)
         return await _run_task_arm(
-            arm, provider, out_dir, verify_reachability=verify_reachability, aging=aging
+            arm,
+            provider,
+            out_dir,
+            verify_reachability=verify_reachability,
+            points=points,
         )
     if verify_reachability or audit_fact_channel:
         logger.error(
@@ -266,16 +329,11 @@ async def _run_task_arm(
     out_dir: Path,
     *,
     verify_reachability: bool,
-    aging: Aging | None = None,
+    points: list[SweepPoint],
 ) -> int:
-    from probe_cli.report import (
-        write_aging_report,
-        write_task_run_report,
-        write_task_summary,
-        write_task_verify_report,
-        write_verdict_oracle,
-    )
+    from probe_cli.report import write_task_verify_report
 
+    aging = _single_age(points)
     runner = TaskArmRunner.from_arm(arm, provider, aging=aging)
     if verify_reachability:
         verify = await runner.verify_reachability()
@@ -283,17 +341,48 @@ async def _run_task_arm(
         _print_task_verify(arm, verify)
         return 0 if not verify.drifted else 1
 
+    if points and aging is None:
+        # Evidence lands as each point completes: a later point that fails
+        # does not take the finished ones with it.
+        async with aclosing(runner.run_sweep(points)) as results:
+            async for result in results:
+                point_arm = arm.model_copy(update={"name": result.arm_name})
+                summary = _write_task_evidence(
+                    point_arm, result.reports, result.oracle, result.aging
+                )
+                _print_task_summary(point_arm, runner.answer_model, summary)
+                _print_verdict_oracle(result.oracle)
+        return 0
+
     reports, oracle = await runner.run_all()
+    summary = _write_task_evidence(arm, reports, oracle, runner.aging_report)
+    _print_task_summary(arm, runner.answer_model, summary)
+    _print_verdict_oracle(oracle)
+    return 0
+
+
+def _write_task_evidence(
+    arm: Arm,
+    reports: list[TaskRunReport],
+    oracle: VerdictOracleReport,
+    aging_report: AgingReport | None,
+) -> TaskAggregate:
+    from probe_cli.report import (
+        write_aging_report,
+        write_task_run_report,
+        write_task_summary,
+        write_verdict_oracle,
+    )
+
+    out_dir = Path(arm.output.dir) / arm.name
     for report in reports:
         write_task_run_report(report, out_dir)
     summary = aggregate_task_runs(arm.name, reports)
     write_task_summary(summary, out_dir)
     write_verdict_oracle(oracle, out_dir)
-    if runner.aging_report is not None:
-        write_aging_report(runner.aging_report, out_dir)
-    _print_task_summary(arm, runner.answer_model, summary)
-    _print_verdict_oracle(oracle)
-    return 0
+    if aging_report is not None:
+        write_aging_report(aging_report, out_dir)
+    return summary
 
 
 async def _run_fact_audit(arm: Arm, provider: PydanticAIProvider, out_dir: Path) -> int:

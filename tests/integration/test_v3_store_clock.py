@@ -19,6 +19,7 @@ import asyncpg
 import pytest
 from probe_cli.aging import Aging, age_store
 from probe_cli.store_clock import EXCLUDED_COLUMNS, SHIFTED_COLUMNS, StoreClock
+from probe_cli.store_snapshot import StoreSnapshot
 from recollect.core import CognitiveMemory
 from recollect.models import MemoryTrace
 
@@ -54,10 +55,22 @@ def _url(db_name: str) -> str:
     return urlunparse(urlparse(DB_URL)._replace(path=f"/{db_name}"))
 
 
-async def _admin(sql: str) -> None:
-    conn = await asyncpg.connect(_url("postgres"))
+async def _admin_on(db_name: str, sql: str) -> None:
+    conn = await asyncpg.connect(_url(db_name))
     try:
         await conn.execute(sql)
+    finally:
+        await conn.close()
+
+
+async def _admin(sql: str) -> None:
+    await _admin_on("postgres", sql)
+
+
+async def _fetchval(db_name: str, sql: str, *args: object) -> Any:
+    conn = await asyncpg.connect(_url(db_name))
+    try:
+        return await conn.fetchval(sql, *args)
     finally:
         await conn.close()
 
@@ -229,6 +242,39 @@ async def test_shift_refuses_a_database_outside_the_probe_prefix() -> None:
     finally:
         await pool.close()
         await _admin(f'DROP DATABASE "{db_name}" WITH (FORCE)')
+
+
+async def test_restore_refuses_a_database_outside_the_probe_prefix() -> None:
+    db_name = f"clock_guard_{uuid.uuid4().hex[:10]}"
+    await _admin(f'CREATE DATABASE "{db_name}"')
+    # The template exists: only the guard stands between restore and the drop.
+    await _admin(f'CREATE DATABASE "{db_name}_snapshot"')
+    try:
+        await _admin_on(db_name, "CREATE TABLE marker AS SELECT 1 AS kept")
+        snapshot = StoreSnapshot(_url(db_name))
+
+        for operation in (snapshot.capture, snapshot.restore, snapshot.discard):
+            with pytest.raises(ValueError, match="probe_"):
+                await operation()
+
+        assert await _fetchval(db_name, "SELECT kept FROM marker") == 1
+        assert await _fetchval(
+            "postgres",
+            "SELECT count(*) FROM pg_database WHERE datname = $1",
+            f"{db_name}_snapshot",
+        ) == 1
+    finally:
+        await _admin(f'DROP DATABASE "{db_name}_snapshot" WITH (FORCE)')
+        await _admin(f'DROP DATABASE "{db_name}" WITH (FORCE)')
+
+
+async def test_restore_refuses_a_store_without_a_snapshot(db_name: str) -> None:
+    await _admin_on(db_name, "CREATE TABLE marker AS SELECT 1 AS kept")
+
+    with pytest.raises(ValueError, match="no snapshot"):
+        await StoreSnapshot(_url(db_name)).restore()
+
+    assert await _fetchval(db_name, "SELECT kept FROM marker") == 1
 
 
 class _SlowWallClock:

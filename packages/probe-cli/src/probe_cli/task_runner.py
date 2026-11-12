@@ -9,12 +9,15 @@ write-time groups the chains produce.
 
 from __future__ import annotations
 
+import copy
 import logging
 import random
 import time
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, Field
+from recollect.config import config as sdk_config
 from recollect.core import CognitiveMemory
 from recollect.exceptions import MemorySDKError
 from recollect.extraction import PatternExtractor
@@ -22,7 +25,7 @@ from recollect.llm.pydantic_ai import PydanticAIProvider
 from recollect.llm.types import Message
 from recollect.models import SURFACING_STATUSES
 
-from probe_cli.aging import AgingReport, age_store
+from probe_cli.aging import AgingReport, SweepPoint, age_store
 from probe_cli.corpus import (
     AnswerType,
     TaskQuestion,
@@ -32,9 +35,12 @@ from probe_cli.corpus import (
     load_task_seed_traces,
 )
 from probe_cli.store_clock import StoreClock
+from probe_cli.store_snapshot import StoreSnapshot
 from probe_cli.task_scoring import contains_alias, score_answer
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
     from recollect.config import MemoryConfig
     from recollect.llm.protocol import LLMProvider
     from recollect.models import Thought
@@ -99,6 +105,9 @@ class TaskQuestionResult(BaseModel):
     context_thoughts: int = 0
     context_facts: int = 0
     used_lines: list[UsedLineAttribution] = Field(default_factory=list)
+    # think_about window the answer was given, shown order: "rank. seed_key
+    # relevance"; "~{id[:8]}" marks an occupant outside the seeding.
+    window: list[str] = Field(default_factory=list)
     success: bool = True
     error: str = ""
     latency_ms: float = 0.0
@@ -128,6 +137,23 @@ class VerdictOracleReport(BaseModel):
     # "{seed_id}: {subject} {predicate} {object}".
     would_promote: list[str] = Field(default_factory=list)
     used_by_question: dict[str, list[str]] = Field(default_factory=dict)
+
+
+class SweepPointResult(BaseModel):
+    arm_name: str
+    reports: list[TaskRunReport]
+    oracle: VerdictOracleReport
+    aging: AgingReport
+
+
+@dataclass(frozen=True)
+class _Seeding:
+    """What one seeding leaves to every evaluation that reads it."""
+
+    user_id: str
+    session_id: str
+    id_map: dict[str, str]
+    questions: list[TaskQuestion]
 
 
 def aggregate_verdict_oracle(
@@ -278,8 +304,16 @@ class TaskArmRunner:
         ]
         return seeds, questions
 
+    def _session_id(self) -> str:
+        return f"probe-{self._arm_name}-seed-{int(time.time() * 1000)}"
+
     async def _seed(
-        self, memory: CognitiveMemory, seeds: list[TaskSeedTrace], *, user_id: str
+        self,
+        memory: CognitiveMemory,
+        seeds: list[TaskSeedTrace],
+        *,
+        user_id: str,
+        session_id: str | None = None,
     ) -> dict[str, str]:
         # Deterministic shuffle: block-ordered fixture seeding fabricates
         # temporal-association seams between adjacent chains (spreading
@@ -287,7 +321,7 @@ class TaskArmRunner:
         # production shape. Fixed seed keeps runs reproducible.
         ordered = list(seeds)
         random.Random(1889).shuffle(ordered)  # noqa: S311 -- determinism, not crypto
-        session_id = f"probe-{self._arm_name}-seed-{int(time.time() * 1000)}"
+        session_id = session_id or self._session_id()
         id_map: dict[str, str] = {}
         for entry in ordered:
             try:
@@ -331,9 +365,9 @@ class TaskArmRunner:
         memory: CognitiveMemory,
         question: TaskQuestion,
         persona_lines: list[str],
-        *,
-        user_id: str,
+        seeding: _Seeding,
     ) -> TaskQuestionResult:
+        user_id = seeding.user_id
         start = time.perf_counter()
         thoughts: list[Thought] = []
         shown_facts = persona_lines if self._with_priming else []
@@ -375,21 +409,36 @@ class TaskArmRunner:
             context_thoughts=len(thoughts),
             context_facts=len(shown_facts),
             used_lines=used,
+            window=self._format_window(thoughts, seeding.id_map),
             latency_ms=(time.perf_counter() - start) * 1000,
         )
 
-    async def _connected_memory(self) -> CognitiveMemory:
-        memory = CognitiveMemory(extractor=self._extractor, config=self._config)
+    async def _connected_memory(
+        self, config: MemoryConfig | None = None
+    ) -> CognitiveMemory:
+        memory = CognitiveMemory(
+            extractor=self._extractor, config=config or self._config
+        )
         await memory.connect(db_url=self._db_url or None)
         return memory
 
+    def _evaluation_config(self, point: SweepPoint) -> MemoryConfig:
+        if not point.tokens_off:
+            return self._config
+        # Read-time gate only: seeding and stepping ran with tokens on, so
+        # the control differs from its age point by the hop alone.
+        config = copy.deepcopy(self._config)
+        config._set("recall_tokens.enabled", False)
+        return config
+
     async def _aged_memory(
-        self, seeded: CognitiveMemory, aging: Aging, *, user_id: str, seeded_traces: int
-    ) -> CognitiveMemory:
+        self, point: SweepPoint, seeding: _Seeding
+    ) -> tuple[CognitiveMemory, AgingReport]:
         # No in-process state crosses the shift: the working memory buffer
         # holds seed-time trace copies, so seeding, stepping, and evaluation
-        # each run on their own instance.
-        await seeded.close()
+        # each run on their own instance; the seeding one is closed by now.
+        aging = point.aging
+        seeded_traces = len(seeding.id_map)
         # Seeding compresses arrival into minutes. A batch window smaller
         # than the store leaves late traces unread until the early ones
         # clear grace, then archives them undecayed -- a state prod's
@@ -404,73 +453,128 @@ class TaskArmRunner:
             passes_run = await age_store(stepper, clock, aging)
         finally:
             await stepper.close()
-        fresh = await self._connected_memory()
+        config = self._evaluation_config(point)
+        fresh = await self._connected_memory(config)
         skew = clock.emulated_offset() - aging.span
-        self.aging_report = AgingReport(
+        report = AgingReport(
             age_days=aging.age_days,
             passes_per_day=aging.passes_per_day,
             passes_run=passes_run,
-            seeding_user_id=user_id,
+            seeding_user_id=seeding.user_id,
+            seeding_session_id=seeding.session_id,
             seeded_traces=seeded_traces,
             consolidation_batch_size=batch,
             evaluation_skew_seconds=skew.total_seconds(),
-            health=await fresh.health_report(user_id=user_id),
+            recall_tokens_at_evaluation=bool(config.get("recall_tokens.enabled", True)),
+            health=await fresh.health_report(user_id=seeding.user_id),
         )
-        return fresh
+        return fresh, report
 
     async def run_all(self) -> tuple[list[TaskRunReport], VerdictOracleReport]:
         seeds, questions = self._load_fixture()
         user_id = f"probe-{self._arm_name}"
         memory = CognitiveMemory(extractor=self._extractor, config=self._config)
-        out: list[TaskRunReport] = []
         try:
             await memory.connect(db_url=self._db_url or None)
-            id_map = await self._seed(memory, seeds, user_id=user_id)
-            if self._aging is not None:
-                memory = await self._aged_memory(
-                    memory, self._aging, user_id=user_id, seeded_traces=len(id_map)
-                )
-            persona_lines = (
-                await self._persona_lines(memory, user_id=user_id)
-                if self._with_priming
-                else []
+            session_id = self._session_id()
+            id_map = await self._seed(
+                memory, seeds, user_id=user_id, session_id=session_id
             )
-            for i in range(self._runs):
-                logger.info(
-                    "task-arm=%s run=%d/%d density=%d",
-                    self._arm_name,
-                    i + 1,
-                    self._runs,
-                    self._density_tier,
+            seeding = _Seeding(user_id, session_id, id_map, questions)
+            if self._aging is not None:
+                await memory.close()
+                memory, self.aging_report = await self._aged_memory(
+                    SweepPoint(aging=self._aging), seeding
                 )
-                results = [
-                    await self._answer_one(memory, q, persona_lines, user_id=user_id)
-                    for q in questions
-                ]
-                out.append(
-                    TaskRunReport(
-                        arm_name=self._arm_name,
-                        run_index=i,
-                        model=self.model,
-                        answer_model=self.answer_model,
-                        density_tier=self._density_tier,
-                        seeded_traces=len(id_map),
-                        results=results,
-                    )
-                )
-            oracle = aggregate_verdict_oracle(self._arm_name, out)
-            used_ids = {
-                u.trace_id
-                for rep in out
-                for q in rep.results
-                for u in q.used_lines
-                if u.trace_id
-            }
-            oracle.would_promote = await self._would_promote(
-                memory, used_ids, id_map
+            return await self._evaluate(memory, seeding, arm_name=self._arm_name)
+        finally:
+            await memory.close()
+
+    async def run_sweep(
+        self, points: list[SweepPoint]
+    ) -> AsyncGenerator[SweepPointResult, None]:
+        """One seeding, restored from its snapshot before every point."""
+        seeds, questions = self._load_fixture()
+        # The snapshot carries the seeding's user_id to every point; a
+        # point's arm name keys its evidence dir only.
+        user_id = f"probe-{self._arm_name}-sweep"
+        session_id = self._session_id()
+        memory = await self._connected_memory()
+        try:
+            id_map = await self._seed(
+                memory, seeds, user_id=user_id, session_id=session_id
             )
         finally:
             await memory.close()
+        seeding = _Seeding(user_id, session_id, id_map, questions)
+        # Same fallback the SDK pool takes for an empty arm db_url.
+        snapshot = StoreSnapshot(self._db_url or sdk_config.database_url)
+        await snapshot.capture()
+        try:
+            for point in points:
+                yield await self._run_point(snapshot, point, seeding)
+        finally:
+            await snapshot.discard()
+
+    async def _run_point(
+        self, snapshot: StoreSnapshot, point: SweepPoint, seeding: _Seeding
+    ) -> SweepPointResult:
+        arm_name = point.arm_name(self._arm_name)
+        # Evaluation writes boosts and reinforcement: a point that started
+        # from the previous one would carry its exposure.
+        await snapshot.restore()
+        memory, aging_report = await self._aged_memory(point, seeding)
+        try:
+            reports, oracle = await self._evaluate(memory, seeding, arm_name=arm_name)
+        finally:
+            await memory.close()
+        return SweepPointResult(
+            arm_name=arm_name, reports=reports, oracle=oracle, aging=aging_report
+        )
+
+    async def _evaluate(
+        self, memory: CognitiveMemory, seeding: _Seeding, *, arm_name: str
+    ) -> tuple[list[TaskRunReport], VerdictOracleReport]:
+        persona_lines = (
+            await self._persona_lines(memory, user_id=seeding.user_id)
+            if self._with_priming
+            else []
+        )
+        out: list[TaskRunReport] = []
+        for i in range(self._runs):
+            logger.info(
+                "task-arm=%s run=%d/%d density=%d",
+                arm_name,
+                i + 1,
+                self._runs,
+                self._density_tier,
+            )
+            results = [
+                await self._answer_one(memory, q, persona_lines, seeding)
+                for q in seeding.questions
+            ]
+            out.append(
+                TaskRunReport(
+                    arm_name=arm_name,
+                    run_index=i,
+                    model=self.model,
+                    answer_model=self.answer_model,
+                    density_tier=self._density_tier,
+                    seeded_traces=len(seeding.id_map),
+                    results=results,
+                )
+            )
+        oracle = aggregate_verdict_oracle(arm_name, out)
+        used_ids = {
+            u.trace_id
+            for rep in out
+            for q in rep.results
+            for u in q.used_lines
+            if u.trace_id
+        }
+        oracle.would_promote = await self._would_promote(
+            memory, used_ids, seeding.id_map
+        )
         return out, oracle
 
     async def _would_promote(

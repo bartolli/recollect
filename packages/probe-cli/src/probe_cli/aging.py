@@ -43,11 +43,25 @@ class Aging(BaseModel):
         return [self.span * step / steps for step in range(1, steps + 1)]
 
 
+class SweepPoint(BaseModel):
+    """One evaluation of a sweep; every point reads the same seeding."""
+
+    aging: Aging
+    # Control: the same groups and facts, read with the token hop disabled.
+    tokens_off: bool = False
+
+    def arm_name(self, base: str) -> str:
+        name = self.aging.arm_name(base)
+        return f"{name}-tokens-off" if self.tokens_off else name
+
+
 class AgingReport(BaseModel):
     age_days: int
     passes_per_day: int
     passes_run: int
     seeding_user_id: str
+    # Names one seeding; the user_id repeats across sweeps of an arm.
+    seeding_session_id: str
     seeded_traces: int
     # Batch window the passes read through; sized to the seeding so every
     # pass reads every pending trace.
@@ -55,6 +69,7 @@ class AgingReport(BaseModel):
     # Emulated time past the target age when evaluation starts: the final
     # shift, the settle, and reconnection are not absorbed by the clock.
     evaluation_skew_seconds: float
+    recall_tokens_at_evaluation: bool
     # Lifecycle state at evaluation start, before any question writes.
     health: HealthReport
 

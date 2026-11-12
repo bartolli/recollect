@@ -1,0 +1,32 @@
+# Replicate seeding of task-after-d0 for the aged-baseline follow-ups.
+# Run: --age-days 0 1 --tokens-off-control
+# Age 0 against the control is a second reading of the hop-sensitive
+# question set; run 0 against run 1 windows at age 1 decompose the aged
+# first-read misses.
+# Code: the commit that adds this arm (answering runs record the window).
+# DB: fresh probe_task (make probe-task-db-reset immediately before).
+
+[arm]
+name = "task-after-d0-r1"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+
+# Required by Arm schema; unused for task arms.
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[task]
+enabled = true
+db_url = "${RECOLLECT_PROBE_TASK_DB_URL}"
+seed_traces_path = "packages/probe-cli/fixtures/task/seed_traces.jsonl"
+questions_path = "packages/probe-cli/fixtures/task/questions.jsonl"
+answer_model = "anthropic:claude-haiku-4-5-20251001"
+density_tier = 0
+with_recall = true
+with_priming = true
+with_tokens = true

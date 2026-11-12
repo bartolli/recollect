@@ -5,8 +5,8 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from probe_cli.corpus import TaskSeedTrace
-from probe_cli.task_runner import TaskArmRunner
+from probe_cli.corpus import TaskQuestion, TaskSeedTrace
+from probe_cli.task_runner import TaskArmRunner, _Seeding
 from recollect.config import MemoryConfig
 from recollect.models import SURFACING_STATUSES
 
@@ -104,3 +104,26 @@ async def test_persona_lines_read_is_status_filtered_and_unbounded(
     memory.storage.facts.get_persona_facts.assert_awaited_once_with(
         limit=None, user_id="u1", statuses=SURFACING_STATUSES
     )
+
+
+async def test_an_answer_records_the_window_it_was_given(
+    runner: TaskArmRunner,
+) -> None:
+    # The window rides the answer's own retrieval call: an aged first read
+    # is decomposable from the run file without a second exposure.
+    thoughts = [
+        MagicMock(trace=MagicMock(id="uuid-1"), relevance=0.91, reconstruction="a"),
+        MagicMock(trace=MagicMock(id="fact-0001"), relevance=0.5, reconstruction="b"),
+    ]
+    memory = MagicMock()
+    memory.think_about = AsyncMock(return_value=thoughts)
+    runner._answer_provider.complete = AsyncMock(return_value="unknown")
+    question = TaskQuestion(
+        id="q1", question="?", answers=["noon"], answer_type="time", tier_label="any"
+    )
+    seeding = _Seeding("u", "probe-test-seed-1", {"s00": "uuid-1"}, [question])
+
+    result = await runner._answer_one(memory, question, [], seeding)
+
+    assert result.window == ["1. s00 0.910", "2. ~fact-000 0.500"]
+    memory.think_about.assert_awaited_once()

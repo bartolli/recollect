@@ -146,6 +146,7 @@ async def test_aged_run_reports_age_passes_seeding_and_health(
     assert report is not None
     assert (report.age_days, report.passes_per_day, report.passes_run) == (1, 2, 2)
     assert (report.seeding_user_id, report.seeded_traces) == ("probe-test", 2)
+    assert report.seeding_session_id.startswith("probe-test-seed-")
     assert report.health.tokens_dormant == 4
     # Final shift, settle, and reconnection run past the target age.
     assert report.evaluation_skew_seconds == 9.0
