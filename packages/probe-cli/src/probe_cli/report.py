@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from probe_cli.aging import AgingReport
 from probe_cli.fact_audit import FactAuditReport
 from probe_cli.metrics import (
     AggregateMetrics,
@@ -154,6 +155,15 @@ def write_task_summary(summary: TaskAggregate, output_dir: Path | str) -> Path:
     out.mkdir(parents=True, exist_ok=True)
     path = out / "task_summary.json"
     path.write_text(summary.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_aging_report(report: AgingReport, output_dir: Path | str) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "aging.json"
+    path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
     logger.info("wrote %s", path)
     return path
 

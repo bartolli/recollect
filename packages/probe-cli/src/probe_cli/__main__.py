@@ -13,6 +13,7 @@ from pathlib import Path
 from recollect.llm.pydantic_ai import PydanticAIProvider
 from recollect.llm.types import CompletionParams
 
+from probe_cli.aging import Aging
 from probe_cli.arm import Arm, load_arm
 from probe_cli.corpus import (
     load_corpus,
@@ -104,6 +105,22 @@ def main() -> int:
             "(story-9 slice 1); no answering runs."
         ),
     )
+    run.add_argument(
+        "--age-days",
+        type=_non_negative,
+        help=(
+            "Task-arm answering runs only: age the seeded store by this many "
+            "emulated days before evaluating (0 = control, same path)."
+        ),
+    )
+    run.add_argument(
+        "--passes-per-day",
+        type=_non_negative,
+        help=(
+            "Emulated consolidation passes per aged day (default 48: one "
+            "worker at the packaged interval; 0 = one closing pass)."
+        ),
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -119,15 +136,61 @@ def main() -> int:
         if args.verify_reachability and args.audit_fact_channel:
             logger.error("--verify-reachability and --audit-fact-channel are exclusive")
             return 2
+        if args.passes_per_day is not None and args.age_days is None:
+            logger.error("--passes-per-day requires --age-days")
+            return 2
         return asyncio.run(
             _run_arm(
                 args.arm,
                 model_override=args.model,
                 verify_reachability=args.verify_reachability,
                 audit_fact_channel=args.audit_fact_channel,
+                aging=_aging(args.age_days, args.passes_per_day),
             )
         )
     return 1
+
+
+def _non_negative(value: str) -> int:
+    number = int(value)
+    if number < 0:
+        raise argparse.ArgumentTypeError(f"{value} is negative")
+    return number
+
+
+def _aging(age_days: int | None, passes_per_day: int | None) -> Aging | None:
+    if age_days is None:
+        return None
+    if passes_per_day is None:
+        return Aging(age_days=age_days)
+    return Aging(age_days=age_days, passes_per_day=passes_per_day)
+
+
+def _prepared_arm(
+    arm_path: Path,
+    *,
+    model_override: str | None,
+    aging: Aging | None,
+    answering: bool,
+) -> Arm | None:
+    """The arm ready to run; None (after logging) on a usage error."""
+    arm = load_arm(arm_path)
+    if aging is not None:
+        if not (answering and arm.task.enabled):
+            logger.error("--age-days applies to task-arm answering runs only")
+            return None
+        # Arm name keys the evidence dir and the user_id: an aged run is
+        # its own arm and never overwrites the unaged one.
+        arm = arm.model_copy(update={"name": aging.arm_name(arm.name)})
+    if model_override:
+        arm.extraction.pydantic_ai_model = model_override
+    if not arm.extraction.pydantic_ai_model:
+        logger.error(
+            "model required: set arm.extraction.pydantic_ai_model in TOML or "
+            "pass --model"
+        )
+        return None
+    return arm
 
 
 async def _run_arm(
@@ -136,15 +199,15 @@ async def _run_arm(
     model_override: str | None,
     verify_reachability: bool = False,
     audit_fact_channel: bool = False,
+    aging: Aging | None = None,
 ) -> int:
-    arm = load_arm(arm_path)
-    if model_override:
-        arm.extraction.pydantic_ai_model = model_override
-    if not arm.extraction.pydantic_ai_model:
-        logger.error(
-            "model required: set arm.extraction.pydantic_ai_model in TOML or "
-            "pass --model"
-        )
+    arm = _prepared_arm(
+        arm_path,
+        model_override=model_override,
+        aging=aging,
+        answering=not (verify_reachability or audit_fact_channel),
+    )
+    if arm is None:
         return 2
 
     provider = PydanticAIProvider(
@@ -158,7 +221,7 @@ async def _run_arm(
         if audit_fact_channel:
             return await _run_fact_audit(arm, provider, out_dir)
         return await _run_task_arm(
-            arm, provider, out_dir, verify_reachability=verify_reachability
+            arm, provider, out_dir, verify_reachability=verify_reachability, aging=aging
         )
     if verify_reachability or audit_fact_channel:
         logger.error(
@@ -203,15 +266,17 @@ async def _run_task_arm(
     out_dir: Path,
     *,
     verify_reachability: bool,
+    aging: Aging | None = None,
 ) -> int:
     from probe_cli.report import (
+        write_aging_report,
         write_task_run_report,
         write_task_summary,
         write_task_verify_report,
         write_verdict_oracle,
     )
 
-    runner = TaskArmRunner.from_arm(arm, provider)
+    runner = TaskArmRunner.from_arm(arm, provider, aging=aging)
     if verify_reachability:
         verify = await runner.verify_reachability()
         write_task_verify_report(verify, out_dir)
@@ -224,6 +289,8 @@ async def _run_task_arm(
     summary = aggregate_task_runs(arm.name, reports)
     write_task_summary(summary, out_dir)
     write_verdict_oracle(oracle, out_dir)
+    if runner.aging_report is not None:
+        write_aging_report(runner.aging_report, out_dir)
     _print_task_summary(arm, runner.answer_model, summary)
     _print_verdict_oracle(oracle)
     return 0

@@ -22,6 +22,7 @@ from recollect.llm.pydantic_ai import PydanticAIProvider
 from recollect.llm.types import Message
 from recollect.models import SURFACING_STATUSES
 
+from probe_cli.aging import AgingReport, age_store
 from probe_cli.corpus import (
     AnswerType,
     TaskQuestion,
@@ -30,6 +31,7 @@ from probe_cli.corpus import (
     load_task_questions,
     load_task_seed_traces,
 )
+from probe_cli.store_clock import StoreClock
 from probe_cli.task_scoring import contains_alias, score_answer
 
 if TYPE_CHECKING:
@@ -37,6 +39,7 @@ if TYPE_CHECKING:
     from recollect.llm.protocol import LLMProvider
     from recollect.models import Thought
 
+    from probe_cli.aging import Aging
     from probe_cli.arm import Arm
 
 logger = logging.getLogger(__name__)
@@ -208,7 +211,10 @@ class TaskArmRunner:
         density_tier: int = 0,
         with_recall: bool = True,
         with_priming: bool = True,
+        aging: Aging | None = None,
     ) -> None:
+        self._aging = aging
+        self.aging_report: AgingReport | None = None
         self._arm_name = arm_name
         self._provider = provider
         self._answer_provider = answer_provider
@@ -223,7 +229,9 @@ class TaskArmRunner:
         self._extractor = PatternExtractor(provider, config=config)
 
     @classmethod
-    def from_arm(cls, arm: Arm, provider: LLMProvider) -> TaskArmRunner:
+    def from_arm(
+        cls, arm: Arm, provider: LLMProvider, *, aging: Aging | None = None
+    ) -> TaskArmRunner:
         t = arm.task
         if not t.enabled:
             raise ValueError("TaskArmRunner requires arm.task.enabled=True")
@@ -246,6 +254,7 @@ class TaskArmRunner:
             density_tier=t.density_tier,
             with_recall=t.with_recall,
             with_priming=t.with_priming,
+            aging=aging,
         )
 
     @property
@@ -369,6 +378,37 @@ class TaskArmRunner:
             latency_ms=(time.perf_counter() - start) * 1000,
         )
 
+    async def _connected_memory(self) -> CognitiveMemory:
+        memory = CognitiveMemory(extractor=self._extractor, config=self._config)
+        await memory.connect(db_url=self._db_url or None)
+        return memory
+
+    async def _aged_memory(
+        self, seeded: CognitiveMemory, aging: Aging, *, user_id: str, seeded_traces: int
+    ) -> CognitiveMemory:
+        # No in-process state crosses the shift: the working memory buffer
+        # holds seed-time trace copies, so seeding, stepping, and evaluation
+        # each run on their own instance.
+        await seeded.close()
+        stepper = await self._connected_memory()
+        try:
+            clock = StoreClock(await stepper.storage.pool.get_pool())
+            passes_run = await age_store(stepper, clock, aging)
+        finally:
+            await stepper.close()
+        fresh = await self._connected_memory()
+        skew = clock.emulated_offset() - aging.span
+        self.aging_report = AgingReport(
+            age_days=aging.age_days,
+            passes_per_day=aging.passes_per_day,
+            passes_run=passes_run,
+            seeding_user_id=user_id,
+            seeded_traces=seeded_traces,
+            evaluation_skew_seconds=skew.total_seconds(),
+            health=await fresh.health_report(user_id=user_id),
+        )
+        return fresh
+
     async def run_all(self) -> tuple[list[TaskRunReport], VerdictOracleReport]:
         seeds, questions = self._load_fixture()
         user_id = f"probe-{self._arm_name}"
@@ -377,6 +417,10 @@ class TaskArmRunner:
         try:
             await memory.connect(db_url=self._db_url or None)
             id_map = await self._seed(memory, seeds, user_id=user_id)
+            if self._aging is not None:
+                memory = await self._aged_memory(
+                    memory, self._aging, user_id=user_id, seeded_traces=len(id_map)
+                )
             persona_lines = (
                 await self._persona_lines(memory, user_id=user_id)
                 if self._with_priming
