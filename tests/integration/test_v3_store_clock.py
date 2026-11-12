@@ -368,6 +368,9 @@ class _TickingConnection:
     async def fetchval(self, query: str) -> Any:
         return await self._conn.fetchval(query)
 
+    async def fetch(self, query: str) -> Any:
+        return await self._conn.fetch(query)
+
     async def execute(self, query: str, *args: object) -> Any:
         self._wall.now += timedelta(seconds=1)
         return await self._conn.execute(query, *args)
@@ -408,3 +411,17 @@ async def test_time_spent_in_database_work_is_residual_age(
 
     await clock.settle()
     assert clock.emulated_offset() == 2 * day + 2 * work
+
+
+async def test_advance_refuses_an_unclassified_time_column(store: asyncpg.Pool) -> None:
+    # A migration that adds a time column must not be aged around silently.
+    await _seed_rows(store)
+    before = await _stamps(store)
+    await store.execute(
+        "ALTER TABLE memory_traces ADD COLUMN strength_as_of TIMESTAMPTZ"
+    )
+
+    with pytest.raises(ValueError, match=r"memory_traces\.strength_as_of"):
+        await StoreClock(store, now=lambda: FROZEN).advance_to(timedelta(days=1))
+
+    assert await _stamps(store) == before

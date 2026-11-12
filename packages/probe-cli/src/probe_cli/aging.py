@@ -49,6 +49,9 @@ class AgingReport(BaseModel):
     passes_run: int
     seeding_user_id: str
     seeded_traces: int
+    # Batch window the passes read through; sized to the seeding so every
+    # pass reads every pending trace.
+    consolidation_batch_size: int
     # Emulated time past the target age when evaluation starts: the final
     # shift, the settle, and reconnection are not absorbed by the clock.
     evaluation_skew_seconds: float

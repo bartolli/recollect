@@ -73,7 +73,9 @@ def log(monkeypatch: pytest.MonkeyPatch) -> Log:
     return events
 
 
-def _runner(tmp_path: Path, aging: Aging | None) -> TaskArmRunner:
+def _runner(
+    tmp_path: Path, aging: Aging | None, config: MemoryConfig | None = None
+) -> TaskArmRunner:
     seeds = tmp_path / "seeds.jsonl"
     seeds.write_text(
         "\n".join(
@@ -101,7 +103,7 @@ def _runner(tmp_path: Path, aging: Aging | None) -> TaskArmRunner:
         arm_name="test",
         provider=MagicMock(model_name="extract"),
         answer_provider=answer,
-        config=MemoryConfig(),
+        config=config or MemoryConfig(),
         seed_traces_path=str(seeds),
         questions_path=str(questions),
         aging=aging,
@@ -156,3 +158,19 @@ async def test_unaged_run_keeps_one_instance(tmp_path: Path, log: Log) -> None:
 
     assert runner.aging_report is None
     assert log == [*_SEED[:-1], ("think", 0), ("close", 0)]
+
+
+async def test_stepping_reads_every_seeded_trace_per_pass(
+    tmp_path: Path, log: Log
+) -> None:
+    # Seeding compresses arrival into minutes; a batch window smaller than
+    # the store would leave late traces unread, a state prod never holds.
+    config = MemoryConfig()
+    config._set("consolidation.batch_size", 1)
+    runner = _runner(tmp_path, Aging(age_days=1, passes_per_day=2), config)
+
+    await runner.run_all()
+
+    assert config.get("consolidation.batch_size") == 2
+    assert runner.aging_report is not None
+    assert runner.aging_report.consolidation_batch_size == 2

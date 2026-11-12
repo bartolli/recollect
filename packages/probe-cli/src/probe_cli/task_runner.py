@@ -390,6 +390,14 @@ class TaskArmRunner:
         # holds seed-time trace copies, so seeding, stepping, and evaluation
         # each run on their own instance.
         await seeded.close()
+        # Seeding compresses arrival into minutes. A batch window smaller
+        # than the store leaves late traces unread until the early ones
+        # clear grace, then archives them undecayed -- a state prod's
+        # arrival rate never produces. Evaluation runs no pass, so the
+        # shared config carries the override safely.
+        configured = int(self._config.get("consolidation.batch_size", 50))
+        batch = max(configured, seeded_traces)
+        self._config._set("consolidation.batch_size", batch)
         stepper = await self._connected_memory()
         try:
             clock = StoreClock(await stepper.storage.pool.get_pool())
@@ -404,6 +412,7 @@ class TaskArmRunner:
             passes_run=passes_run,
             seeding_user_id=user_id,
             seeded_traces=seeded_traces,
+            consolidation_batch_size=batch,
             evaluation_skew_seconds=skew.total_seconds(),
             health=await fresh.health_report(user_id=user_id),
         )

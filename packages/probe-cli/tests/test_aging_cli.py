@@ -96,6 +96,7 @@ def test_aged_run_writes_its_own_evidence_dir(
             passes_run=aging.age_days * aging.passes_per_day,
             seeding_user_id=f"probe-{arm.name}",
             seeded_traces=2,
+            consolidation_batch_size=50,
             evaluation_skew_seconds=6.5,
             health=HealthReport(status="ok"),
         )

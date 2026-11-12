@@ -59,6 +59,30 @@ async def _require_probe_database(conn: asyncpg.pool.PoolConnectionProxy) -> Non
         )
 
 
+_TIME_COLUMNS_SQL = """
+    SELECT c.table_name, c.column_name
+    FROM information_schema.columns c
+    JOIN information_schema.tables t USING (table_schema, table_name)
+    WHERE c.table_schema = 'public' AND t.table_type = 'BASE TABLE'
+      AND (c.data_type LIKE 'timestamp%' OR c.data_type LIKE 'time %'
+           OR c.data_type IN ('date', 'interval'))
+"""
+
+
+async def _require_classified_columns(conn: asyncpg.pool.PoolConnectionProxy) -> None:
+    # Enforced at run time, not only by a schema test: a migration that
+    # adds a time column would otherwise be aged around silently.
+    rows = await conn.fetch(_TIME_COLUMNS_SQL)
+    schema = {(row["table_name"], row["column_name"]) for row in rows}
+    unknown = sorted(schema - set(SHIFTED_COLUMNS) - set(EXCLUDED_COLUMNS))
+    if unknown:
+        names = ", ".join(f"{table}.{column}" for table, column in unknown)
+        raise ValueError(
+            f"store clock does not classify time column(s) {names}; add each "
+            "to SHIFTED_COLUMNS or EXCLUDED_COLUMNS"
+        )
+
+
 def _columns_by_table() -> dict[str, list[str]]:
     by_table: dict[str, list[str]] = defaultdict(list)
     for table, column in SHIFTED_COLUMNS:
@@ -100,6 +124,7 @@ class StoreClock:
         self._now = now
         self._anchor = now()
         self._shifted = timedelta(0)
+        self._classified = False
 
     def emulated_offset(self) -> timedelta:
         return (self._now() - self._anchor) + self._shifted
@@ -116,6 +141,9 @@ class StoreClock:
             )
         async with self._pool.acquire() as conn, conn.transaction():
             await _require_probe_database(conn)
+            if not self._classified:
+                await _require_classified_columns(conn)
+                self._classified = True
             for statement in _shift_statements():
                 await conn.execute(statement, delta // _MICROSECOND)
         self._shifted += delta
