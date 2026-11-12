@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import math
+from collections.abc import Sequence
 from datetime import timedelta
 from typing import Any, cast
 
@@ -37,6 +38,7 @@ from recollect.llm.types import (
     TokenAssessment,
 )
 from recollect.models import (
+    SURFACING_STATUSES,
     Association,
     ConceptEmbedding,
     ConsolidationResult,
@@ -44,6 +46,7 @@ from recollect.models import (
     FactCategory,
     FactStatus,
     ForgetResult,
+    HealthReport,
     HealthStatus,
     MemoryStats,
     MemoryTrace,
@@ -238,6 +241,20 @@ def _collect_concept_phrases(
             seen.add(key)
             out.append(cleaned)
     return out
+
+
+def _violated_invariants(report: HealthReport, *, tokens_enabled: bool) -> list[str]:
+    violated: list[str] = []
+    unreachable = report.surfacing_total - report.surfacing_reachable
+    if unreachable != 0:
+        violated.append(
+            f"surfacing facts unreachable: {unreachable} of {report.surfacing_total}"
+        )
+    if tokens_enabled and report.tokens_dormant and not report.tokens_propagating:
+        violated.append(
+            f"no propagating recall tokens: {report.tokens_dormant} dormant"
+        )
+    return violated
 
 
 _QUERY_STOP_WORDS = frozenset(
@@ -873,6 +890,53 @@ class CognitiveMemory:
             status="ok" if self._connected else "disconnected",
         )
 
+    async def health_report(self, *, user_id: str | None = None) -> HealthReport:
+        """Lifecycle state by status, plus violated invariants.
+
+        surfacing_reachable goes through facts() -- the read every
+        surfacing path uses -- so the report measures the wiring, not a
+        parallel query. Unreachable storage degrades the report instead
+        of raising: a health read that throws when unhealthy reports
+        nothing.
+        """
+        try:
+            return await self._build_health_report(user_id)
+        except StorageError:
+            logger.exception("Health report failed: storage unreachable")
+            return HealthReport(
+                status="degraded", invariants=["storage unreachable"]
+            )
+
+    async def _build_health_report(self, user_id: str | None) -> HealthReport:
+        facts = await self._storage.facts.count_by_status(user_id=user_id)
+        propagating, dormant = await self._storage.recall_tokens.count_by_propagation(
+            float(self._config.get("recall_tokens.strength_threshold", 0.1))
+        )
+        reachable = await self.facts(
+            user_id=user_id, statuses=SURFACING_STATUSES, limit=None
+        )
+        report = HealthReport(
+            status=self.health().status,
+            traces=await self._storage.traces.count_by_status(user_id=user_id),
+            degraded_traces=await self._storage.traces.count_degraded(user_id=user_id),
+            facts=facts,
+            surfacing_total=sum(facts.get(s, 0) for s in SURFACING_STATUSES),
+            surfacing_reachable=len(reachable),
+            tokens_propagating=propagating,
+            tokens_dormant=dormant,
+            sessions=await self._storage.sessions.count_by_status(user_id=user_id),
+        )
+        return report.model_copy(
+            update={
+                "invariants": _violated_invariants(
+                    report,
+                    tokens_enabled=bool(
+                        self._config.get("recall_tokens.enabled", True)
+                    ),
+                )
+            }
+        )
+
     async def pin(self, trace_id: str) -> list[PersonaFact]:
         """Pin a trace's extracted relations as permanent persona facts.
 
@@ -920,7 +984,7 @@ class CognitiveMemory:
         for audit (adr-pin-upsert-semantics).
         """
         existing = await self._storage.facts.get_persona_facts(
-            subject=fact.subject, user_id=fact.user_id
+            subject=fact.subject, user_id=fact.user_id, limit=None
         )
         live = [f for f in existing if f.status != "archived"]
         match = _find_exact_duplicate(live, fact)
@@ -946,9 +1010,18 @@ class CognitiveMemory:
         subject: str | None = None,
         *,
         user_id: str | None = None,
+        statuses: Sequence[FactStatus] | None = None,
+        limit: int | None = 50,
     ) -> list[PersonaFact]:
-        """List persona facts, optionally filtered by subject and user."""
-        return await self._storage.facts.get_persona_facts(subject, user_id=user_id)
+        """List persona facts, newest first.
+
+        statuses filters in storage ahead of the limit; limit=None reads
+        unbounded. Surfacing callers pass SURFACING_STATUSES with
+        limit=None -- the default window is a browse page, not a contract.
+        """
+        return await self._storage.facts.get_persona_facts(
+            subject, user_id=user_id, statuses=statuses, limit=limit
+        )
 
     async def start_session(
         self,
@@ -1342,8 +1415,10 @@ class CognitiveMemory:
             # cross users (adr-retrieval-user-isolation) -- an unscoped
             # match credits another user's row with this user's mention and
             # swallows this user's write, starving their fact channel.
+            # Unbounded: a windowed dedup read re-inserts any fact older
+            # than the window and never credits its restatement.
             existing = await self._storage.facts.get_persona_facts(
-                subject=fact.subject, user_id=fact.user_id
+                subject=fact.subject, user_id=fact.user_id, limit=None
             )
             # Archived facts are retractions: matching them swallows the
             # re-stated mention (increment-on-archived returns None) and
@@ -1511,7 +1586,8 @@ class CognitiveMemory:
         anchored = [
             (t, weight_by_id.get(t.id, 0.0))
             for t in candidates
-            if trace.user_id is None or t.user_id == trace.user_id
+            if t.status != "forgotten"
+            and (trace.user_id is None or t.user_id == trace.user_id)
         ]
         return anchored[:anchor_k]
 
@@ -2288,7 +2364,9 @@ class CognitiveMemory:
             safety_categories |= _DOMAIN_SAFETY_MAP.get(domain, frozenset())
         if not safety_categories:
             return []
-        facts = await self._storage.facts.get_persona_facts(user_id=user_id)
+        facts = await self._storage.facts.get_persona_facts(
+            user_id=user_id, statuses=SURFACING_STATUSES, limit=None
+        )
         return [
             f
             for f in facts
@@ -2374,6 +2452,8 @@ class CognitiveMemory:
             # Supplement: all promoted/pinned facts bypass the similarity gate
             all_user_facts = await self._storage.facts.get_persona_facts(
                 user_id=user_id,
+                statuses=SURFACING_STATUSES,
+                limit=None,
             )
             promoted_facts = [
                 f for f in all_user_facts

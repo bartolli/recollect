@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from datetime import datetime
 
     from recollect.models import (
@@ -52,6 +53,12 @@ class TraceStore(Protocol):
         *,
         limit: int = 100,
     ) -> list[MemoryTrace]: ...
+
+    async def count_by_status(
+        self, *, user_id: str | None = None
+    ) -> dict[str, int]: ...
+
+    async def count_degraded(self, *, user_id: str | None = None) -> int: ...
 
 
 class VectorIndex(Protocol):
@@ -236,6 +243,12 @@ class RecallTokenStore(Protocol):
         """
         ...
 
+    async def count_by_propagation(
+        self, strength_threshold: float
+    ) -> tuple[int, int]:
+        """(propagating, dormant) token counts under the query-time gate."""
+        ...
+
 
 class SessionStore(Protocol):
     """Store and manage conversation sessions."""
@@ -267,6 +280,10 @@ class SessionStore(Protocol):
         summary_trace_id: str | None = None,
     ) -> None: ...
 
+    async def count_by_status(
+        self, *, user_id: str | None = None
+    ) -> dict[str, int]: ...
+
 
 class FactStore(Protocol):
     """Store and retrieve persona facts."""
@@ -277,8 +294,9 @@ class FactStore(Protocol):
         self,
         subject: str | None = None,
         *,
-        limit: int = 50,
+        limit: int | None = 50,
         user_id: str | None = None,
+        statuses: Sequence[FactStatus] | None = None,
     ) -> list[PersonaFact]: ...
 
     async def get_facts_by_source_trace_id(
@@ -325,6 +343,10 @@ class FactStore(Protocol):
         limit: int = 10,
         user_id: str | None = None,
     ) -> list[tuple[PersonaFact, float]]: ...
+
+    async def count_by_status(
+        self, *, user_id: str | None = None
+    ) -> dict[str, int]: ...
 
 
 class EmbeddingProtocol(Protocol):

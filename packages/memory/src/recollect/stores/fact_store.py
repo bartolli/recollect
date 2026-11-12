@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 
 import asyncpg
 
@@ -69,10 +70,17 @@ class PgFactStore:
         self,
         subject: str | None = None,
         *,
-        limit: int = 50,
+        limit: int | None = 50,
         user_id: str | None = None,
+        statuses: Sequence[FactStatus] | None = None,
     ) -> list[PersonaFact]:
-        """Get persona facts, optionally filtered by subject and user."""
+        """Get persona facts, newest first.
+
+        statuses filters in SQL, ahead of the LIMIT: a status filter
+        applied by the caller after a recency window drops every older
+        matching row. limit=None reads unbounded.
+        """
+        status_filter = list(statuses) if statuses is not None else None
         try:
             pool = await self._pool_mgr.get_pool()
             async with pool.acquire() as conn:
@@ -82,12 +90,14 @@ class PgFactStore:
                         SELECT * FROM persona_facts
                         WHERE subject = $1 AND superseded_by IS NULL
                           AND ($3::text IS NULL OR user_id = $3)
+                          AND ($4::text[] IS NULL OR status = ANY($4))
                         ORDER BY created_at DESC
                         LIMIT $2
                         """,
                         subject,
                         limit,
                         user_id,
+                        status_filter,
                     )
                 else:
                     rows = await conn.fetch(
@@ -95,11 +105,13 @@ class PgFactStore:
                         SELECT * FROM persona_facts
                         WHERE superseded_by IS NULL
                           AND ($2::text IS NULL OR user_id = $2)
+                          AND ($3::text[] IS NULL OR status = ANY($3))
                         ORDER BY created_at DESC
                         LIMIT $1
                         """,
                         limit,
                         user_id,
+                        status_filter,
                     )
             return [row_to_persona_fact(dict(r)) for r in rows]
         except StorageError:
@@ -396,3 +408,23 @@ class PgFactStore:
             raise
         except asyncpg.PostgresError as exc:
             raise StorageError(f"Failed to search facts semantically: {exc}") from exc
+
+    async def count_by_status(self, *, user_id: str | None = None) -> dict[str, int]:
+        """Live (non-superseded) fact counts keyed by status."""
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                rows = await conn.fetch(
+                    """
+                    SELECT status, count(*) AS n FROM persona_facts
+                    WHERE superseded_by IS NULL
+                      AND ($1::text IS NULL OR user_id = $1)
+                    GROUP BY status
+                    """,
+                    user_id,
+                )
+            return {str(r["status"]): int(r["n"]) for r in rows}
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            raise StorageError(f"Failed to count facts: {exc}") from exc

@@ -31,7 +31,8 @@ from recollect.exceptions import (
 from recollect.extraction import PatternExtractor
 from recollect.log_setup import configure_logging
 from recollect.models import (
-    HealthStatus,
+    SURFACING_STATUSES,
+    HealthReport,
     MemoryTrace,
     PersonaFact,
     Thought,
@@ -113,12 +114,12 @@ async def app_lifespan(
         return await _generate_primer(app)
 
     async def _facts() -> str:
-        all_facts = await app.memory.facts(user_id=app.user_id or None)
+        all_facts = await _surfacing_facts(app)
         active = [f for f in all_facts if f.status in ("promoted", "pinned")]
         return _format_facts(active)
 
-    def _health() -> HealthStatus:
-        return app.memory.health()
+    async def _health() -> HealthReport:
+        return await app.memory.health_report(user_id=app.user_id or None)
 
     mcp.add_resource(
         FunctionResource(
@@ -140,7 +141,7 @@ async def app_lifespan(
         FunctionResource(
             uri=AnyUrl("memory://health"),
             name="health",
-            description="System health and statistics.",
+            description="Lifecycle counts by status and violated invariants.",
             fn=_health,
         )
     )
@@ -151,6 +152,14 @@ async def app_lifespan(
         worker.stop()
         await memory.close()
         logger.info("recollect-mcp server stopped")
+
+
+async def _surfacing_facts(app: AppContext) -> list[PersonaFact]:
+    # Status-filtered in storage and unbounded: every always-available
+    # surface reads the whole promoted+pinned graph, never a recency page.
+    return await app.memory.facts(
+        user_id=app.user_id or None, statuses=SURFACING_STATUSES, limit=None
+    )
 
 
 def _get_ctx(ctx: Ctx) -> AppContext:
@@ -350,7 +359,7 @@ async def reflect(ctx: Ctx) -> str:
     app = _get_ctx(ctx)
     app.primed = True
     primer = await _generate_primer(app)
-    all_facts = await app.memory.facts(user_id=app.user_id or None)
+    all_facts = await _surfacing_facts(app)
     active = [f for f in all_facts if f.status in ("promoted", "pinned")]
     facts_text = _format_facts(active)
     return f"{primer}\n\n{facts_text}"
@@ -478,7 +487,7 @@ async def _safety_net_facts(app: AppContext) -> list[PersonaFact]:
     dietary} bypass) so the unreflected path never silently drops
     safety-critical context. Candidates and archived facts excluded.
     """
-    facts = await app.memory.facts(user_id=app.user_id or None)
+    facts = await _surfacing_facts(app)
     return [
         f
         for f in facts
@@ -587,7 +596,7 @@ def _format_single_fact(fact: PersonaFact) -> str:
 
 async def _generate_primer(app: AppContext) -> str:
     """Generate a two-level relational graph from persona facts."""
-    facts = await app.memory.facts(user_id=app.user_id or None)
+    facts = await _surfacing_facts(app)
     active_facts = [f for f in facts if f.status in ("promoted", "pinned")]
 
     if not active_facts:

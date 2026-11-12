@@ -32,7 +32,9 @@ class PgVectorIndex:
         """Find traces by vector similarity, filtered by strength.
 
         Returns (trace, cosine_similarity) tuples sorted by similarity
-        descending.
+        descending. Forgotten traces are excluded ahead of the LIMIT: no
+        caller may deliver, revive, or prompt with one, and a row dropped
+        after the LIMIT still consumes a candidate slot.
         """
         try:
             pool = await self._pool_mgr.get_pool()
@@ -50,6 +52,7 @@ class PgVectorIndex:
                     FROM memory_traces
                     WHERE strength >= $2
                       AND embedding IS NOT NULL
+                      AND status <> 'forgotten'
                       AND ($4::text IS NULL OR session_id = $4)
                       AND ($5::text IS NULL OR user_id = $5)
                       AND ($6::float8 <= 0

@@ -62,6 +62,19 @@ def mem(mock_storage, mock_embeddings, mock_extractor):
 
 
 class TestEntityAnchoredCandidates:
+    async def test_forgotten_entity_neighbor_is_not_a_candidate(
+        self, mem, mock_storage
+    ):
+        new = _trace("tail-1")
+        forgotten = _trace("bridge-1").model_copy(update={"status": "forgotten"})
+        mock_storage.vectors.search_semantic.return_value = []
+        mock_storage.associations.get_associations.return_value = [
+            _entity_edge("bridge-1", "tail-1")
+        ]
+        mock_storage.traces.get_traces_bulk.return_value = [forgotten]
+
+        assert await mem.assess_situational(new) is None
+
     async def test_entity_neighbor_enters_when_semantic_empty(self, mem, mock_storage):
         new = _trace("tail-1")
         neighbor = _trace("bridge-1")

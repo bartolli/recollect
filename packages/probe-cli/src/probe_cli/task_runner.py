@@ -20,6 +20,7 @@ from recollect.exceptions import MemorySDKError
 from recollect.extraction import PatternExtractor
 from recollect.llm.pydantic_ai import PydanticAIProvider
 from recollect.llm.types import Message
+from recollect.models import SURFACING_STATUSES
 
 from probe_cli.corpus import (
     AnswerType,
@@ -293,7 +294,9 @@ class TaskArmRunner:
     async def _persona_lines(
         self, memory: CognitiveMemory, *, user_id: str
     ) -> list[str]:
-        facts = await memory.storage.facts.get_persona_facts(limit=100, user_id=user_id)
+        facts = await memory.storage.facts.get_persona_facts(
+            limit=None, user_id=user_id, statuses=SURFACING_STATUSES
+        )
         return [
             f"{f.subject} {f.predicate} {f.object}"
             for f in facts
@@ -452,7 +455,7 @@ class TaskArmRunner:
             await memory.connect(db_url=self._db_url or None)
             id_map = await self._seed(memory, seeds, user_id=user_id)
             facts = await memory.storage.facts.get_persona_facts(
-                limit=200, user_id=user_id
+                limit=None, user_id=user_id, statuses=SURFACING_STATUSES
             )
             fact_sources = {
                 f.source_trace_id

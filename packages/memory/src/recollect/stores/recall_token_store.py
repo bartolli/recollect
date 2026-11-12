@@ -345,3 +345,31 @@ class PgRecallTokenStore:
         except asyncpg.PostgresError as exc:
             logger.exception("Failed to decay recall tokens")
             raise StorageError(f"Failed to decay recall tokens: {exc}") from exc
+
+    async def count_by_propagation(self, strength_threshold: float) -> tuple[int, int]:
+        """(propagating, dormant) token counts under the query-time gate.
+
+        Same predicate as get_activated_trace_ids -- a token outside it
+        cannot contribute to recall.
+        """
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                # Ungrouped aggregate: exactly one row, always.
+                rows = await conn.fetch(
+                    """
+                    SELECT
+                        count(*) FILTER (
+                            WHERE status = 'active' AND strength > $1
+                        ) AS propagating,
+                        count(*) AS total
+                    FROM recall_tokens
+                    """,
+                    strength_threshold,
+                )
+            propagating = int(rows[0]["propagating"])
+            return propagating, int(rows[0]["total"]) - propagating
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            raise StorageError(f"Failed to count recall tokens: {exc}") from exc

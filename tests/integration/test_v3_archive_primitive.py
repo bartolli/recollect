@@ -280,10 +280,11 @@ class TestErase:
         assert stored.status == "forgotten"
         assert stored.strength == pytest.approx(0.8)
 
-        # Retrieval paths stay status-agnostic -- the storage layer still
-        # sees the row; only the central lifecycle gate drops it.
+        # The vector path excludes forgotten rows in SQL, ahead of the
+        # LIMIT: a row dropped later at the lifecycle gate would still have
+        # spent a candidate slot. The gate remains for the other channels.
         query = await mem._embeddings.generate_embedding(
             "retracted but relevant", task="search_query"
         )
         results = await mem.storage.vectors.search_semantic(query, limit=10)
-        assert trace.id in {t.id for t, _ in results}
+        assert trace.id not in {t.id for t, _ in results}

@@ -38,7 +38,7 @@ recollect-mcp --log-file logs/mcp.jsonl --verbose
 |-----|-------------|
 | `memory://primer` | Relational graph of persona facts. Read at conversation start for user context. |
 | `memory://facts` | All active persona facts with confidence scores and timestamps. |
-| `memory://health` | Server and database health status. |
+| `memory://health` | Lifecycle counts by status (traces, facts, tokens, sessions) and violated invariants. |
 
 Clients that support MCP resources get session priming automatically via `primer`. For clients that don't, `reflect` loads the same context as a tool call. If neither is invoked, the first `recall` of the session still surfaces safety-critical persona facts (pinned, health, dietary) as a fallback -- the full relational context comes from `primer` or `reflect`.
 

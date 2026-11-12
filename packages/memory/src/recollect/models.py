@@ -82,6 +82,8 @@ class Association(BaseModel):
 
 FactStatus = Literal["candidate", "promoted", "pinned", "archived"]
 
+SURFACING_STATUSES: tuple[FactStatus, ...] = ("promoted", "pinned")
+
 FactCategory = Literal[
     "health",
     "dietary",
@@ -233,6 +235,24 @@ class HealthStatus(BaseModel):
     """System health status."""
 
     status: str = "disconnected"
+
+
+class HealthReport(BaseModel):
+    """Lifecycle state by status, plus the invariants it violates.
+
+    Token counts are store-wide: recall_tokens carries no user column.
+    """
+
+    status: str = "disconnected"
+    traces: dict[str, int] = Field(default_factory=dict)
+    degraded_traces: int = Field(default=0, ge=0)
+    facts: dict[str, int] = Field(default_factory=dict)
+    surfacing_total: int = Field(default=0, ge=0)
+    surfacing_reachable: int = Field(default=0, ge=0)
+    tokens_propagating: int = Field(default=0, ge=0)
+    tokens_dormant: int = Field(default=0, ge=0)
+    sessions: dict[str, int] = Field(default_factory=dict)
+    invariants: list[str] = Field(default_factory=list)
 
 
 # -- Strength functions --

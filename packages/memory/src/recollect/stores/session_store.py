@@ -162,3 +162,22 @@ class PgSessionStore:
         except asyncpg.PostgresError as exc:
             logger.exception("Failed to update session")
             raise StorageError(f"Failed to update session {session_id}: {exc}") from exc
+
+    async def count_by_status(self, *, user_id: str | None = None) -> dict[str, int]:
+        """Session counts keyed by status."""
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                rows = await conn.fetch(
+                    """
+                    SELECT status, count(*) AS n FROM sessions
+                    WHERE ($1::text IS NULL OR user_id = $1)
+                    GROUP BY status
+                    """,
+                    user_id,
+                )
+            return {str(r["status"]): int(r["n"]) for r in rows}
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            raise StorageError(f"Failed to count sessions: {exc}") from exc

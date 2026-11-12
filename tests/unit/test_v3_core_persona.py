@@ -195,5 +195,5 @@ class TestPinUnpinFacts:
         mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
         await mem.facts("Sarah", user_id="alex")
         mock_fact_store.get_persona_facts.assert_awaited_once_with(
-            "Sarah", user_id="alex"
+            "Sarah", user_id="alex", statuses=None, limit=50
         )

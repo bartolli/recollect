@@ -138,9 +138,11 @@ class PgTraceStore:
             raise StorageError(f"Failed to archive trace {trace_id}: {exc}") from exc
 
     async def forget_trace(self, trace_id: str) -> bool:
-        """Mark an active trace forgotten. Returns False unless a row flipped.
+        """Mark a live trace forgotten. Returns False unless a row flipped.
 
-        Distinct from archive: forgotten is explicit retraction. The
+        Accepts archived as well as active: a faded trace is still
+        revivable, so retraction must reach it. Distinct from archive:
+        forgotten is explicit retraction. The
         lifecycle gate drops it from retrieval results, and
         reactivate_trace (WHERE status='archived') never revives it.
         Row and derived rows retained for audit; erase() is removal.
@@ -150,7 +152,7 @@ class PgTraceStore:
             async with pool.acquire() as conn:
                 result = await conn.execute(
                     "UPDATE memory_traces SET status = 'forgotten' "
-                    "WHERE id = $1 AND status = 'active'",
+                    "WHERE id = $1 AND status IN ('active', 'archived')",
                     trace_id,
                 )
             return result == "UPDATE 1"
@@ -367,3 +369,51 @@ class PgTraceStore:
             raise StorageError(
                 f"Failed to get traces for session {session_id}: {exc}"
             ) from exc
+
+    async def count_by_status(self, *, user_id: str | None = None) -> dict[str, int]:
+        """Trace counts keyed by lifecycle status."""
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                rows = await conn.fetch(
+                    """
+                    SELECT status, count(*) AS n FROM memory_traces
+                    WHERE ($1::text IS NULL OR user_id = $1)
+                    GROUP BY status
+                    """,
+                    user_id,
+                )
+            return {str(r["status"]): int(r["n"]) for r in rows}
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            raise StorageError(f"Failed to count traces: {exc}") from exc
+
+    async def count_degraded(self, *, user_id: str | None = None) -> int:
+        """Active traces whose extraction produced no concepts.
+
+        CASE, not AND: PostgreSQL does not guarantee evaluation order, and
+        jsonb_array_length raises on a non-array.
+        """
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                n = await conn.fetchval(
+                    """
+                    SELECT count(*) FROM memory_traces
+                    WHERE status = 'active'
+                      AND ($1::text IS NULL OR user_id = $1)
+                      AND NOT COALESCE((pattern->>'session_summary')::boolean, FALSE)
+                      AND CASE
+                            WHEN jsonb_typeof(pattern->'concepts') = 'array'
+                            THEN jsonb_array_length(pattern->'concepts')
+                            ELSE 0
+                          END = 0
+                    """,
+                    user_id,
+                )
+            return int(n)
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            raise StorageError(f"Failed to count degraded traces: {exc}") from exc

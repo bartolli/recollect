@@ -8,6 +8,7 @@ import pytest
 from probe_cli.corpus import TaskSeedTrace
 from probe_cli.task_runner import TaskArmRunner
 from recollect.config import MemoryConfig
+from recollect.models import SURFACING_STATUSES
 
 
 def _seeds(n: int) -> list[TaskSeedTrace]:
@@ -90,3 +91,16 @@ async def test_raw_rank_none_when_absent_from_top(
     question.question = "q"
     rank = await runner._raw_rank(memory, question, {"zz"}, user_id="u")
     assert rank is None
+
+
+async def test_persona_lines_read_is_status_filtered_and_unbounded(
+    runner: TaskArmRunner,
+) -> None:
+    # The priming block is the harness twin of reflect: a windowed read
+    # would measure the window, not the promoted graph.
+    memory = MagicMock()
+    memory.storage.facts.get_persona_facts = AsyncMock(return_value=[])
+    await runner._persona_lines(memory, user_id="u1")
+    memory.storage.facts.get_persona_facts.assert_awaited_once_with(
+        limit=None, user_id="u1", statuses=SURFACING_STATUSES
+    )
