@@ -1,0 +1,120 @@
+"""pydantic-ai provider: a model that rejects temperature is served without it."""
+
+from __future__ import annotations
+
+from typing import Any
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+from pydantic import BaseModel
+from recollect.exceptions import ExtractionError
+from recollect.llm.pydantic_ai import PydanticAIProvider
+from recollect.llm.types import Message
+
+pydantic_ai_exceptions = pytest.importorskip("pydantic_ai.exceptions")
+
+_MESSAGES = [Message(role="user", content="hi")]
+
+
+class _Out(BaseModel):
+    value: str = ""
+
+
+def _rejection(message: str) -> Exception:
+    body = {"type": "error", "error": {"message": message}}
+    error: Exception = pydantic_ai_exceptions.ModelHTTPError(400, "m", body)
+    return error
+
+
+_TEMPERATURE = "`temperature` is deprecated for this model."
+
+
+def _agent(*outcomes: object) -> MagicMock:
+    agent = MagicMock()
+    agent.run = AsyncMock(side_effect=list(outcomes))
+    return agent
+
+
+def _sent(agent: MagicMock) -> list[dict[str, Any]]:
+    return [call.kwargs["model_settings"] for call in agent.run.await_args_list]
+
+
+async def _call(provider: PydanticAIProvider, method: str) -> object:
+    if method == "complete":
+        return await provider.complete(_MESSAGES)
+    return await provider.complete_structured(_MESSAGES, output_type=_Out)
+
+
+@pytest.fixture()
+def provider() -> PydanticAIProvider:
+    return PydanticAIProvider(model="anthropic:claude-haiku-5-5")
+
+
+@pytest.mark.parametrize("method", ["complete", "complete_structured"])
+async def test_a_rejected_temperature_is_dropped_and_the_call_retried(
+    provider: PydanticAIProvider, method: str
+) -> None:
+    agent = _agent(_rejection(_TEMPERATURE), MagicMock(output="ok"))
+
+    with patch("pydantic_ai.Agent", return_value=agent):
+        assert await _call(provider, method) == "ok"
+
+    first, second = _sent(agent)
+    assert first["temperature"] == 0.0
+    assert "temperature" not in second
+    assert second["max_tokens"] == first["max_tokens"]
+
+
+async def test_the_rejection_is_remembered_for_the_provider(
+    provider: PydanticAIProvider,
+) -> None:
+    agent = _agent(
+        _rejection(_TEMPERATURE), MagicMock(output="ok"), MagicMock(output="again")
+    )
+
+    with patch("pydantic_ai.Agent", return_value=agent):
+        await provider.complete(_MESSAGES)
+        assert await provider.complete(_MESSAGES, temperature=0.0) == "again"
+
+    # The later call spends no request rediscovering the rejection.
+    assert ["temperature" in sent for sent in _sent(agent)] == [True, False, False]
+
+
+async def test_a_model_that_accepts_temperature_keeps_it(
+    provider: PydanticAIProvider,
+) -> None:
+    agent = _agent(MagicMock(output="ok"), MagicMock(output="ok"))
+
+    with patch("pydantic_ai.Agent", return_value=agent):
+        await provider.complete(_MESSAGES)
+        await provider.complete(_MESSAGES, temperature=0.3)
+
+    assert [sent["temperature"] for sent in _sent(agent)] == [0.0, 0.3]
+
+
+async def test_another_bad_request_is_not_retried(
+    provider: PydanticAIProvider,
+) -> None:
+    agent = _agent(_rejection("max_tokens: 99999 > 64000"), MagicMock(output="ok"))
+
+    with (
+        patch("pydantic_ai.Agent", return_value=agent),
+        pytest.raises(ExtractionError, match="pydantic-ai API error"),
+    ):
+        await provider.complete(_MESSAGES)
+
+    assert agent.run.await_count == 1
+
+
+async def test_a_rejection_after_the_drop_raises(
+    provider: PydanticAIProvider,
+) -> None:
+    agent = _agent(_rejection(_TEMPERATURE), _rejection(_TEMPERATURE))
+
+    with (
+        patch("pydantic_ai.Agent", return_value=agent),
+        pytest.raises(ExtractionError, match="pydantic-ai API error"),
+    ):
+        await provider.complete(_MESSAGES)
+
+    assert agent.run.await_count == 2

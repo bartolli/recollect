@@ -15,10 +15,18 @@ from recollect.llm.types import CompletionParams, Message
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
+    from pydantic_ai import Agent
+    from pydantic_ai.exceptions import ModelHTTPError
 
 T = TypeVar("T", bound="BaseModel")
 
 logger = logging.getLogger(__name__)
+
+
+def _rejects_temperature(exc: ModelHTTPError) -> bool:
+    # No model list to keep current: a model that takes no sampling
+    # parameter answers one with a 400 that names it.
+    return exc.status_code == 400 and "temperature" in str(exc)
 
 
 class PydanticAIProvider:
@@ -51,6 +59,7 @@ class PydanticAIProvider:
         if max_retries is None:
             max_retries = int(config.get("extraction.max_retries", 5))
         self._max_retries = max_retries
+        self._omit_temperature = False
 
         if api_key or base_url:
             logger.debug(
@@ -73,6 +82,35 @@ class PydanticAIProvider:
         temperature = float(effective.pop("temperature", 0.0))
         return {"max_tokens": max_tokens, "temperature": temperature, **effective}
 
+    async def _run(
+        self, agent: Agent[None, Any], user_prompt: str, kwargs: dict[str, Any]
+    ) -> Any:
+        """Run the agent; serve a model that rejects temperature without it."""
+        from pydantic_ai.exceptions import ModelHTTPError
+        from pydantic_ai.settings import ModelSettings
+
+        settings = self._build_model_settings(self._defaults, **kwargs)
+        without = {k: v for k, v in settings.items() if k != "temperature"}
+        if self._omit_temperature:
+            settings = without
+        try:
+            return await agent.run(
+                user_prompt, model_settings=cast(ModelSettings, settings)
+            )
+        except ModelHTTPError as exc:
+            if self._omit_temperature or not _rejects_temperature(exc):
+                raise
+            logger.exception(
+                "Model %s rejects temperature; omitting it for this provider",
+                self._model,
+            )
+            # Remembered for the provider's lifetime: the rejection is a
+            # property of the model, not of one request.
+            self._omit_temperature = True
+            return await agent.run(
+                user_prompt, model_settings=cast(ModelSettings, without)
+            )
+
     async def complete(
         self,
         messages: list[Message],
@@ -84,13 +122,9 @@ class PydanticAIProvider:
             UnexpectedModelBehavior,
             UserError,
         )
-        from pydantic_ai.settings import ModelSettings
 
         system_prompt = "\n".join(m.content for m in messages if m.role == "system")
         user_prompt = "\n".join(m.content for m in messages if m.role != "system")
-        settings = cast(
-            ModelSettings, self._build_model_settings(self._defaults, **kwargs)
-        )
 
         agent: Agent[None, str] = Agent(
             self._model,
@@ -100,7 +134,7 @@ class PydanticAIProvider:
         )
 
         try:
-            result = await agent.run(user_prompt, model_settings=settings)
+            result = await self._run(agent, user_prompt, kwargs)
             text: str = result.output
             if not text:
                 raise ExtractionError(
@@ -134,13 +168,9 @@ class PydanticAIProvider:
             UnexpectedModelBehavior,
             UserError,
         )
-        from pydantic_ai.settings import ModelSettings
 
         system_prompt = "\n".join(m.content for m in messages if m.role == "system")
         user_prompt = "\n".join(m.content for m in messages if m.role != "system")
-        settings = cast(
-            ModelSettings, self._build_model_settings(self._defaults, **kwargs)
-        )
 
         agent: Agent[None, T] = Agent(
             self._model,
@@ -150,7 +180,7 @@ class PydanticAIProvider:
         )
 
         try:
-            result = await agent.run(user_prompt, model_settings=settings)
+            result = await self._run(agent, user_prompt, kwargs)
             output: T = result.output
             return output
         except ExtractionError:
