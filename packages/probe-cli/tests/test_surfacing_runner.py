@@ -96,7 +96,7 @@ class TestScoreQuery:
         mem._config.get.return_value = 10
         mem._embeddings.generate_embedding = AsyncMock(return_value=[0.1, 0.2])
         mem.storage.vectors.search_semantic = AsyncMock(return_value=[])
-        mem._activate_recall_tokens = AsyncMock(return_value={})
+        mem._activate_recall_tokens = AsyncMock(return_value=({}, {}))
         mem._find_relevant_persona_facts = AsyncMock(return_value=([f], {f.id: 0.72}))
         q = QueryEntry(id="q1", text="hi", relevant_trace_ids=["eval-1"])
         qs = await _runner()._score_query(mem, q, {"db-1": "eval-1"}, user_id="u")
@@ -114,7 +114,10 @@ class TestScoreQuery:
         mem._config.get.return_value = 10
         mem._embeddings.generate_embedding = AsyncMock(return_value=[0.1, 0.2])
         mem.storage.vectors.search_semantic = AsyncMock(return_value=[])
-        mem._activate_recall_tokens = AsyncMock(return_value={"db-1": 0.42})
+        # Production contract: (propagated_sim, witness_evidence) per trace.
+        mem._activate_recall_tokens = AsyncMock(
+            return_value=({"db-1": 0.42}, {"db-1": 0.9})
+        )
         mem._find_relevant_persona_facts = AsyncMock(return_value=([f], {f.id: 0.40}))
         q = QueryEntry(id="q1", text="hi", relevant_trace_ids=["eval-1"])
         qs = await _runner()._score_query(mem, q, {"db-1": "eval-1"}, user_id="u")

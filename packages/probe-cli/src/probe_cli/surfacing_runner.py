@@ -261,6 +261,7 @@ class SurfacingArmRunner:
         storage_scored = await memory.storage.vectors.search_semantic(
             embedding, limit=search_limit, user_id=user_id
         )
-        return await memory._activate_recall_tokens(
+        propagated, _witness = await memory._activate_recall_tokens(
             embedding, storage_scored, user_id=user_id
         )
+        return propagated
