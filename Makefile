@@ -37,13 +37,13 @@ test-integration:
 # -- Code Quality --
 
 lint:
-	$(UV_RUN) ruff check $(if $(FILE),$(FILE),packages/memory/src/recollect/ packages/memory-mcp/src/recollect_mcp/ tests/)
+	$(UV_RUN) ruff check $(if $(FILE),$(FILE),packages/memory/src/recollect/ packages/memory-mcp/src/recollect_mcp/ packages/probe-cli/ tests/)
 
 format:
 	$(UV_RUN) ruff format $(if $(FILE),$(FILE),packages/memory/src/recollect/ packages/memory-mcp/src/recollect_mcp/ tests/)
 
 type-check:
-	$(UV_RUN) mypy $(if $(FILE),$(FILE),packages/memory/src/recollect/ packages/memory-mcp/src/recollect_mcp/) --strict
+	$(UV_RUN) mypy $(if $(FILE),$(FILE),packages/memory/src/recollect/ packages/memory-mcp/src/recollect_mcp/ packages/probe-cli/src/probe_cli/) --strict
 
 check: lint type-check test
 
