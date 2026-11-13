@@ -1,5 +1,22 @@
 # Changelog
 
+## [v0.19.0] - 2026-11-12
+
+### Added
+- `CognitiveMemory.traces_by_id_prefix` / `facts_by_id_prefix`: traces or persona facts whose id starts with a prefix, every status, scoped by `user_id`
+
+### Changed
+- MCP printers emit the first 8 characters of an id: `recall` on each related-memory line (printed no id), and `remember`, `reflect`, `memory://facts`, and the `pin` result (printed full ids); persona-fact lines in `recall` carry no id
+- `forget`, `pin`, and `unpin` accept the 8-character id or the full id and resolve it within the server's user: one match resolves; several are refused with the candidates' full ids and nothing is written; none is not-found; an id under 8 characters is refused before any lookup
+- a full id that belongs to another user no longer resolves through `forget`, `pin`, or `unpin`
+- `forget` and `unpin` replies carry the full id and the opening words or triple of what they acted on
+- `pin` returns not-found and ambiguity for an unresolved id as tool text (an unknown id raised a tool error)
+- SDK `forget`, `pin`, and `unpin` keep exact-id contracts: resolution lives in the MCP server
+- version lockstep 0.19.0; `recollect-mcp` requires `recollect>=0.19.0`
+
+### Fixed
+- the `m002_user_id_backfill` refusal names `MEMORY_USER_ID`, the env var mapped to `server.user_id` (it named `MEMORY_SERVER_USER_ID`, which is never read)
+
 ## [v0.18.0] - 2026-11-12
 
 ### Changed
