@@ -74,6 +74,7 @@ out/**
 !out/**/
 !out/**/task_summary.json
 !out/**/task_reachability.json
+!out/**/fusion_screen.json
 !out/**/fact_audit.json
 !out/**/verdict_oracle.json
 !out/**/aging.json

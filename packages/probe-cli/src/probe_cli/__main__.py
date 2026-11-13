@@ -25,6 +25,8 @@ from probe_cli.corpus import (
 from probe_cli.entity_reach import EntityReachReport, StorePreconditionError
 from probe_cli.entity_reach import measure as measure_entity_reach
 from probe_cli.fact_audit import FactAuditReport
+from probe_cli.fusion_screen import FusionScreenReport, ScreenPreconditionError
+from probe_cli.fusion_screen import screen as screen_fusion
 from probe_cli.metrics import (
     AggregateMetrics,
     RetrievalAggregate,
@@ -36,6 +38,7 @@ from probe_cli.metrics import (
 from probe_cli.report import (
     write_case_breakdown,
     write_entity_reach_report,
+    write_fusion_screen_report,
     write_retrieval_run_report,
     write_retrieval_summary,
     write_run_report,
@@ -155,6 +158,31 @@ def main() -> int:
         help="Embedding cosine thresholds, one rule each (default: 0.90 0.85 0.80).",
     )
     reach.set_defaults(verbose=False)
+    fusion = sub.add_parser(
+        "fusion-screen",
+        help=(
+            "Screen concept fusion forms on a copy of a seeded task-arm store "
+            "(writes the copy only)."
+        ),
+    )
+    fusion.add_argument(
+        "--arm", required=True, type=Path, help="Task arm TOML that seeded the store."
+    )
+    fusion.add_argument(
+        "--template-db",
+        required=True,
+        help="Seeded store to copy from; never connected to.",
+    )
+    fusion.add_argument(
+        "--name", required=True, help="Evidence dir under the arm's output dir."
+    )
+    fusion.add_argument(
+        "--env-file",
+        type=Path,
+        default=Path(".env"),
+        help="Path to .env file (default: ./.env). Pass empty string to skip.",
+    )
+    fusion.set_defaults(verbose=False)
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -193,6 +221,10 @@ def main() -> int:
         )
     if args.cmd == "entity-reach":
         return asyncio.run(_run_entity_reach(args.arm, args.thresholds))
+    if args.cmd == "fusion-screen":
+        return asyncio.run(
+            _run_fusion_screen(args.arm, template_db=args.template_db, name=args.name)
+        )
     return 1
 
 
@@ -433,6 +465,22 @@ async def _run_entity_reach(arm_path: Path, thresholds: list[float]) -> int:
     write_entity_reach_report(report, Path(arm.output.dir) / arm.name)
     _print_entity_reach(report)
     return 0
+
+
+async def _run_fusion_screen(arm_path: Path, *, template_db: str, name: str) -> int:
+    arm = load_arm(arm_path)
+    if not arm.task.enabled:
+        logger.error("fusion-screen requires a task arm")
+        return 2
+    try:
+        report = await screen_fusion(arm, template=template_db)
+    except ScreenPreconditionError as exc:
+        logger.error("%s", exc)
+        return 2
+    write_fusion_screen_report(report, Path(arm.output.dir) / name)
+    _print_fusion_screen(report)
+    # Exit 1 = a pool whose offline prod replay missed think_about's window.
+    return 0 if all(v.matched == v.checks for v in report.validity) else 1
 
 
 async def _run_situational_arm(
@@ -801,6 +849,38 @@ def _print_entity_reach(report: EntityReachReport) -> None:
         print(
             f"{rule.rule:16s} pairs={rule.pair_count:<4d} {labels}"
             f"  t3_reach={len(reached)}/{len(t3)}  candidates={span}"
+        )
+
+
+def _print_fusion_screen(report: FusionScreenReport) -> None:
+    print(
+        f"\nStore: {report.template_db}  user={report.user_id}"
+        f"  traces={report.store_traces}  tier={report.density_tier}"
+    )
+    for v in report.validity:
+        print(
+            f"validity {v.pool}: {v.matched}/{v.checks}"
+            f"  concept_appended={v.concept_appended}"
+        )
+    ref = report.reference
+    print(
+        f"reference {ref.path}: {ref.reference_in_window} -> {ref.screen_in_window}"
+        f"  +{','.join(ref.diff.gained) or '-'}  -{','.join(ref.diff.lost) or '-'}"
+    )
+    for cell in report.cells:
+        diff = cell.versus_prod
+        misses = " ".join(
+            f"{q.question_id}@{q.fused_rank or '-'}"
+            for q in cell.questions
+            if not q.in_window
+        )
+        stretch = "-" if cell.stretch is None else f"{cell.stretch:.1f}"
+        print(
+            f"{cell.pool:15s} {cell.form:16s} {cell.weight:.2f}"
+            f"  {cell.required_in_window:2d}/{len(cell.questions)}"
+            f"  +{','.join(diff.gained) or '-'}  -{','.join(diff.lost) or '-'}"
+            f"  clamp={cell.slots_at_clamp}  slot1={len(cell.slot1_changed)}"
+            f"  stretch={stretch}  dropped={cell.concepts_dropped}  miss: {misses}"
         )
 
 
