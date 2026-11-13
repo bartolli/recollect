@@ -1,0 +1,30 @@
+{
+  "age_days": 0,
+  "passes_per_day": 48,
+  "passes_run": 0,
+  "seeding_user_id": "probe-task-after-d0-r1-sweep",
+  "seeding_session_id": "probe-task-after-d0-r1-seed-1794524412544",
+  "seeded_traces": 66,
+  "consolidation_batch_size": 66,
+  "evaluation_skew_seconds": 0.856931,
+  "recall_tokens_at_evaluation": false,
+  "health": {
+    "status": "ok",
+    "traces": {
+      "active": 66
+    },
+    "degraded_traces": 0,
+    "facts": {
+      "promoted": 21,
+      "candidate": 36
+    },
+    "surfacing_total": 21,
+    "surfacing_reachable": 21,
+    "tokens_propagating": 8,
+    "tokens_dormant": 0,
+    "sessions": {
+      "active": 1
+    },
+    "invariants": []
+  }
+}
