@@ -9,6 +9,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 from recollect.config import MemoryConfig
+from recollect.config import config as sdk_config
 
 
 class ExtractionConfig(BaseModel):
@@ -108,6 +109,12 @@ class Arm(BaseModel):
         for path, value in self.recollect_overrides.items():
             cfg._set(path, value)
         return cfg
+
+    def apply_process_overrides(self) -> None:
+        # Stores and strength factors read the process config, not the injected
+        # one: an override kept out of it never reaches search_semantic.
+        for path, value in self.recollect_overrides.items():
+            sdk_config._set(path, value)
 
 
 def load_arm(path: Path | str) -> Arm:

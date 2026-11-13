@@ -313,6 +313,7 @@ async def _run_arm(
     )
     if arm is None:
         return 2
+    arm.apply_process_overrides()
     taken = _existing_evidence(arm, points)
     if taken:
         # A sweep point and a single-age run share dir names, and every
