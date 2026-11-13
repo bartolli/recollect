@@ -98,7 +98,7 @@ The downstream pipeline uses this category to surface facts during food-related 
 #   openrouter_reasoning = { effort = "high" }
 #   openrouter_usage = { include = true }
 #   openrouter_models = ["anthropic/claude-sonnet-4-6", "deepseek/deepseek-v4-flash"]
-#   anthropic_thinking_budget = 4096
+#   anthropic_effort = "low"
 [extraction.model_settings]
 
 [embedding]

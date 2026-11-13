@@ -259,6 +259,10 @@ async def _run_lifecycle(
     basic_output = await provider.complete(basic_messages)
     basic_duration = time.perf_counter() - start
 
+    # The direct runs below bypass the provider: send what it learned to send.
+    if provider._omit_temperature:
+        del basic_settings["temperature"]
+
     # Run directly through Agent to capture usage for the basic call
     basic_agent: Agent[None, str] = Agent(
         model_str,
@@ -289,7 +293,9 @@ async def _run_lifecycle(
 
     settings = cast(
         ModelSettings,
-        {"max_tokens": max_tokens, "temperature": 0.0},
+        {"max_tokens": max_tokens}
+        if provider._omit_temperature
+        else {"max_tokens": max_tokens, "temperature": 0.0},
     )
     _print_agent_config(
         model_str, ext_system, "ExtractionResult", provider._max_retries, dict(settings)

@@ -11,7 +11,7 @@ dependencies = [
     "orjson>=3.11.7",
     "pgvector>=0.4.2",
     "pydantic>=2.12.5",
-    "pydantic-ai>=2.27",
+    "pydantic-ai>=2.67",
 ]
 
 [project.urls]

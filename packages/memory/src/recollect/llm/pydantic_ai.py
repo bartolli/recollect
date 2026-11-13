@@ -16,17 +16,23 @@ from recollect.llm.types import CompletionParams, Message
 if TYPE_CHECKING:
     from pydantic import BaseModel
     from pydantic_ai import Agent
-    from pydantic_ai.exceptions import ModelHTTPError
+    from pydantic_ai.exceptions import ModelAPIError
 
 T = TypeVar("T", bound="BaseModel")
 
 logger = logging.getLogger(__name__)
 
 
-def _rejects_temperature(exc: ModelHTTPError) -> bool:
+def _rejects_temperature(exc: ModelAPIError) -> bool:
     # No model list to keep current: a model that takes no sampling
-    # parameter answers one with a 400 that names it.
-    return exc.status_code == 400 and "temperature" in str(exc)
+    # parameter refuses a request that carries one and names it.
+    # pydantic-ai reports the refusal as either class, by provider.
+    from pydantic_ai.exceptions import ModelHTTPError, ModelRequestRejectedError
+
+    refused = isinstance(exc, ModelRequestRejectedError) or (
+        isinstance(exc, ModelHTTPError) and exc.status_code == 400
+    )
+    return refused and "temperature" in str(exc)
 
 
 class PydanticAIProvider:
@@ -86,7 +92,7 @@ class PydanticAIProvider:
         self, agent: Agent[None, Any], user_prompt: str, kwargs: dict[str, Any]
     ) -> Any:
         """Run the agent; serve a model that rejects temperature without it."""
-        from pydantic_ai.exceptions import ModelHTTPError
+        from pydantic_ai.exceptions import ModelAPIError
         from pydantic_ai.settings import ModelSettings
 
         settings = self._build_model_settings(self._defaults, **kwargs)
@@ -97,7 +103,7 @@ class PydanticAIProvider:
             return await agent.run(
                 user_prompt, model_settings=cast(ModelSettings, settings)
             )
-        except ModelHTTPError as exc:
+        except ModelAPIError as exc:
             if self._omit_temperature or not _rejects_temperature(exc):
                 raise
             logger.exception(
@@ -118,7 +124,7 @@ class PydanticAIProvider:
     ) -> str:
         from pydantic_ai import Agent
         from pydantic_ai.exceptions import (
-            ModelHTTPError,
+            ModelAPIError,
             UnexpectedModelBehavior,
             UserError,
         )
@@ -143,7 +149,7 @@ class PydanticAIProvider:
             return text
         except ExtractionError:
             raise
-        except (ModelHTTPError, UnexpectedModelBehavior) as exc:
+        except (ModelAPIError, UnexpectedModelBehavior) as exc:
             logger.exception("pydantic-ai API error for model %s", self._model)
             raise ExtractionError(
                 f"pydantic-ai API error ({self._model}): {exc}"
@@ -164,7 +170,7 @@ class PydanticAIProvider:
     ) -> T:
         from pydantic_ai import Agent
         from pydantic_ai.exceptions import (
-            ModelHTTPError,
+            ModelAPIError,
             UnexpectedModelBehavior,
             UserError,
         )
@@ -185,7 +191,7 @@ class PydanticAIProvider:
             return output
         except ExtractionError:
             raise
-        except (ModelHTTPError, UnexpectedModelBehavior) as exc:
+        except (ModelAPIError, UnexpectedModelBehavior) as exc:
             logger.exception("pydantic-ai API error for model %s", self._model)
             raise ExtractionError(
                 f"pydantic-ai API error ({self._model}): {exc}"
