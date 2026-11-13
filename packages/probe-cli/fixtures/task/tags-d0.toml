@@ -1,0 +1,36 @@
+# Relation-tag embedding ON, d0: each relation's context_tags join the
+# trace's concept embeddings (extraction.embed_relation_tags).
+# Run: --verify-reachability
+# Control: task-reach-d0-s1 and task-reach-d0-s2 (same code, key at its
+# packaged default); both hold the required trace in the window for 30 of
+# 34 checks and differ on t3q03 and t3q07.
+# Code: the commit that adds this arm.
+# DB: fresh probe_task (make probe-task-db-reset immediately before).
+
+[arm]
+name = "task-tags-d0"
+runs = 1
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+
+# Required by Arm schema; unused for task arms.
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[recollect_overrides]
+"extraction.embed_relation_tags" = true
+
+[task]
+enabled = true
+db_url = "${RECOLLECT_PROBE_TASK_DB_URL}"
+seed_traces_path = "packages/probe-cli/fixtures/task/seed_traces.jsonl"
+questions_path = "packages/probe-cli/fixtures/task/questions.jsonl"
+answer_model = "anthropic:claude-haiku-4-5-20251001"
+density_tier = 0
+with_recall = true
+with_priming = true
+with_tokens = true
