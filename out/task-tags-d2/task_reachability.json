@@ -1,0 +1,550 @@
+{
+  "arm_name": "task-tags-d2",
+  "density_tier": 2,
+  "checks": [
+    {
+      "question_id": "t3q01",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "not retrieved at all",
+      "raw_rank": null,
+      "window": [
+        "1. chain-a-0 0.840",
+        "2. chain-a-1 0.729",
+        "3. chain-a-2 0.699",
+        "4. hay-120 0.691",
+        "5. c2 0.688",
+        "6. hay-117 0.681",
+        "7. ~1cf294e3 0.617"
+      ]
+    },
+    {
+      "question_id": "t3q02",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. chain-a-6 0.779",
+        "2. chain-a-0 0.775",
+        "3. chain-a-1 0.678",
+        "4. hay-132 0.669",
+        "5. hay-117 0.627",
+        "6. chain-a-3 0.623",
+        "7. hay-096 0.605"
+      ]
+    },
+    {
+      "question_id": "t3q03",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "not retrieved at all",
+      "raw_rank": 9,
+      "window": [
+        "1. chain-c-4 0.699",
+        "2. chain-b-0 0.684",
+        "3. chain-c-3 0.668",
+        "4. hay-050 0.639",
+        "5. hay-107 0.632",
+        "6. chain-e-4 0.624",
+        "7. hay-032 0.624"
+      ]
+    },
+    {
+      "question_id": "t3q04",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "also reachable without tokens",
+      "raw_rank": 2,
+      "window": [
+        "1. chain-b-0 0.671",
+        "2. chain-b-2 0.666",
+        "3. chain-e-5 0.629",
+        "4. hay-058 0.618",
+        "5. hay-115 0.617",
+        "6. chain-b-6 0.612",
+        "7. hay-105 0.603"
+      ]
+    },
+    {
+      "question_id": "t3q05",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "not retrieved at all",
+      "raw_rank": 19,
+      "window": [
+        "1. chain-c-0 0.791",
+        "2. hay-138 0.725",
+        "3. hay-111 0.720",
+        "4. chain-c-1 0.694",
+        "5. c2 0.693",
+        "6. hay-095 0.689",
+        "7. chain-c-2 0.688"
+      ]
+    },
+    {
+      "question_id": "t3q06",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "not retrieved at all",
+      "raw_rank": 3,
+      "window": [
+        "1. hay-098 0.747",
+        "2. hay-111 0.741",
+        "3. hay-103 0.738",
+        "4. hay-121 0.724",
+        "5. hay-101 0.720",
+        "6. hay-122 0.716",
+        "7. hay-138 0.703"
+      ]
+    },
+    {
+      "question_id": "t1q01",
+      "tier_label": "t1",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. chain-a-3 0.649",
+        "2. chain-a-1 0.614",
+        "3. hay-096 0.599",
+        "4. p3 0.598",
+        "5. hay-095 0.594",
+        "6. chain-a-2 0.589",
+        "7. hay-125 0.588"
+      ]
+    },
+    {
+      "question_id": "t1q02",
+      "tier_label": "t1",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. hay-064 0.655",
+        "2. hay-054 0.647",
+        "3. hay-104 0.643",
+        "4. hay-138 0.638",
+        "5. hay-055 0.631",
+        "6. hay-060 0.629",
+        "7. hay-036 0.622"
+      ]
+    },
+    {
+      "question_id": "t1q03",
+      "tier_label": "t1",
+      "holds": false,
+      "detail": "trace retrievable -- gap does not hold",
+      "raw_rank": null,
+      "window": [
+        "1. d4 0.655",
+        "2. hay-089 0.651",
+        "3. d2 0.650",
+        "4. d3 0.647",
+        "5. c1 0.633",
+        "6. hay-141 0.628",
+        "7. chain-a-1 0.608"
+      ]
+    },
+    {
+      "question_id": "t1q04",
+      "tier_label": "t1",
+      "holds": false,
+      "detail": "trace retrievable -- gap does not hold",
+      "raw_rank": null,
+      "window": [
+        "1. c1 0.714",
+        "2. hay-053 0.681",
+        "3. hay-060 0.668",
+        "4. hay-125 0.660",
+        "5. hay-005 0.647",
+        "6. hay-063 0.645",
+        "7. hay-117 0.638"
+      ]
+    },
+    {
+      "question_id": "t1q05",
+      "tier_label": "t1",
+      "holds": false,
+      "detail": "trace retrievable -- gap does not hold",
+      "raw_rank": null,
+      "window": [
+        "1. chain-a-2 0.677",
+        "2. c2 0.674",
+        "3. s1 0.651",
+        "4. hay-117 0.649",
+        "5. hay-139 0.641",
+        "6. chain-e-4 0.629",
+        "7. hay-096 0.626"
+      ]
+    },
+    {
+      "question_id": "t1q06",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. d3 0.876",
+        "2. ~2bbff2d7 0.757",
+        "3. chain-c-1 0.688",
+        "4. hay-141 0.683",
+        "5. hay-095 0.659",
+        "6. hay-089 0.656",
+        "7. hay-092 0.633"
+      ]
+    },
+    {
+      "question_id": "t2q01",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. g1 0.865",
+        "2. hay-048 0.567",
+        "3. chain-c-1 0.561",
+        "4. d4 0.559",
+        "5. hay-138 0.559",
+        "6. hay-119 0.541",
+        "7. hay-032 0.541"
+      ]
+    },
+    {
+      "question_id": "t2q02",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. g2 0.791",
+        "2. chain-a-0 0.655",
+        "3. chain-c-3 0.640",
+        "4. chain-c-4 0.628",
+        "5. hay-132 0.601",
+        "6. chain-a-1 0.600",
+        "7. chain-a-2 0.600"
+      ]
+    },
+    {
+      "question_id": "t2q03",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. g4 0.820",
+        "2. hay-141 0.637",
+        "3. chain-d-6 0.617",
+        "4. chain-d-0 0.600",
+        "5. p4 0.596",
+        "6. chain-d-5 0.592",
+        "7. chain-d-4 0.592"
+      ]
+    },
+    {
+      "question_id": "t2q04",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. s3 0.941",
+        "2. chain-b-4 0.854",
+        "3. chain-b-3 0.843",
+        "4. hay-142 0.784",
+        "5. chain-b-2 0.714",
+        "6. chain-b-1 0.706",
+        "7. hay-076 0.674"
+      ]
+    },
+    {
+      "question_id": "t2q05",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. n1 0.835",
+        "2. hay-070 0.736",
+        "3. hay-076 0.650",
+        "4. hay-141 0.619",
+        "5. g4 0.612",
+        "6. chain-d-6 0.603",
+        "7. s3 0.599"
+      ]
+    },
+    {
+      "question_id": "t2q06",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. n2 0.944",
+        "2. chain-a-6 0.641",
+        "3. hay-132 0.610",
+        "4. chain-b-5 0.602",
+        "5. n1 0.599",
+        "6. chain-c-6 0.595",
+        "7. chain-e-4 0.592"
+      ]
+    },
+    {
+      "question_id": "aq01",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. h1 1.000",
+        "2. ~4018e876 0.827",
+        "3. ~07717bc5 0.730",
+        "4. h3 0.713",
+        "5. d4 0.687",
+        "6. d2 0.635",
+        "7. hay-033 0.629"
+      ]
+    },
+    {
+      "question_id": "aq02",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. h2 1.000",
+        "2. ~c76b9f2b 0.796",
+        "3. chain-a-4 0.714",
+        "4. hay-127 0.701",
+        "5. hay-128 0.696",
+        "6. h4 0.690",
+        "7. h1 0.678"
+      ]
+    },
+    {
+      "question_id": "aq03",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. h4 0.986",
+        "2. h1 0.651",
+        "3. chain-a-3 0.647",
+        "4. h3 0.646",
+        "5. chain-a-4 0.643",
+        "6. h2 0.635",
+        "7. d4 0.634"
+      ]
+    },
+    {
+      "question_id": "aq04",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. d1 1.000",
+        "2. ~1733e87d 0.892",
+        "3. d4 0.678",
+        "4. hay-129 0.637",
+        "5. hay-107 0.627",
+        "6. hay-090 0.626",
+        "7. hay-126 0.618"
+      ]
+    },
+    {
+      "question_id": "aq05",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. d2 1.000",
+        "2. ~b4ca1727 0.914",
+        "3. ~b7329cc2 0.833",
+        "4. d4 0.770",
+        "5. ~6189e69b 0.685",
+        "6. hay-080 0.663",
+        "7. h1 0.651"
+      ]
+    },
+    {
+      "question_id": "aq06",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. i1 0.921",
+        "2. chain-a-4 0.682",
+        "3. i3 0.668",
+        "4. chain-a-1 0.624",
+        "5. chain-a-3 0.587",
+        "6. chain-a-2 0.587",
+        "7. chain-a-5 0.587"
+      ]
+    },
+    {
+      "question_id": "aq07",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. i2 0.969",
+        "2. hay-101 0.641",
+        "3. hay-119 0.632",
+        "4. h2 0.628",
+        "5. hay-092 0.622",
+        "6. hay-135 0.607",
+        "7. hay-133 0.602"
+      ]
+    },
+    {
+      "question_id": "aq08",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. r1 0.957",
+        "2. hay-128 0.644",
+        "3. hay-096 0.613",
+        "4. hay-123 0.608",
+        "5. hay-115 0.600",
+        "6. hay-107 0.594",
+        "7. hay-113 0.588"
+      ]
+    },
+    {
+      "question_id": "aq09",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. p1 1.000",
+        "2. p3 0.697",
+        "3. hay-127 0.646",
+        "4. hay-117 0.637",
+        "5. d4 0.615",
+        "6. h3 0.615",
+        "7. hay-085 0.603"
+      ]
+    },
+    {
+      "question_id": "aq10",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. s1 0.926",
+        "2. chain-e-0 0.644",
+        "3. i1 0.635",
+        "4. hay-129 0.618",
+        "5. chain-d-6 0.613",
+        "6. hay-004 0.609",
+        "7. chain-d-4 0.606"
+      ]
+    },
+    {
+      "question_id": "aq11",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. s2 0.911",
+        "2. chain-e-0 0.610",
+        "3. hay-056 0.600",
+        "4. chain-e-6 0.573",
+        "5. hay-060 0.564",
+        "6. hay-005 0.564",
+        "7. hay-059 0.563"
+      ]
+    },
+    {
+      "question_id": "aq12",
+      "tier_label": "any",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. c3 0.981",
+        "2. ~9d51a0e1 0.894",
+        "3. hay-054 0.676",
+        "4. hay-010 0.650",
+        "5. c1 0.638",
+        "6. hay-121 0.633",
+        "7. chain-e-0 0.557"
+      ]
+    },
+    {
+      "question_id": "t3q07",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "also reachable without tokens",
+      "raw_rank": 10,
+      "window": [
+        "1. chain-d-1 0.964",
+        "2. chain-d-0 0.865",
+        "3. chain-d-6 0.654",
+        "4. chain-d-2 0.648",
+        "5. chain-d-4 0.645",
+        "6. hay-138 0.632",
+        "7. hay-113 0.619"
+      ]
+    },
+    {
+      "question_id": "t3q08",
+      "tier_label": "t3",
+      "holds": false,
+      "detail": "also reachable without tokens",
+      "raw_rank": 4,
+      "window": [
+        "1. chain-d-1 0.831",
+        "2. chain-d-0 0.797",
+        "3. chain-d-6 0.628",
+        "4. chain-d-5 0.580",
+        "5. hay-077 0.568",
+        "6. hay-135 0.564",
+        "7. hay-107 0.562"
+      ]
+    },
+    {
+      "question_id": "t3q09",
+      "tier_label": "t2",
+      "holds": false,
+      "detail": "required trace not retrieved",
+      "raw_rank": null,
+      "window": [
+        "1. chain-e-0 1.000",
+        "2. chain-e-1 0.999",
+        "3. chain-e-2 0.684",
+        "4. hay-138 0.667",
+        "5. chain-e-5 0.661",
+        "6. s2 0.658",
+        "7. chain-e-3 0.647"
+      ]
+    },
+    {
+      "question_id": "t3q10",
+      "tier_label": "t2",
+      "holds": true,
+      "detail": "",
+      "raw_rank": null,
+      "window": [
+        "1. chain-e-1 0.923",
+        "2. chain-e-0 0.780",
+        "3. chain-e-2 0.646",
+        "4. chain-e-5 0.623",
+        "5. p4 0.557",
+        "6. chain-e-6 0.548",
+        "7. chain-d-5 0.538"
+      ]
+    }
+  ]
+}
