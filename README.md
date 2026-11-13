@@ -56,7 +56,7 @@ No custom retrieval logic. The situational connections are maintained by the sam
 
 **Context priming** — Pinned facts load at session start. No query needed. If it matters every session, it's already in context.
 
-**Episodic retrieval** — Fused pipeline: pgvector HNSW, entity trigram matching, spreading activation, working memory scan. Scored with ColBERT-style MaxSim concept attention (0.7) blended with bi-encoder similarity (0.3). Entity bonuses are multiplicatively gated by concept similarity to prevent entity flooding. No LLM calls at read time.
+**Episodic retrieval** — Fused pipeline: pgvector HNSW, entity trigram matching, spreading activation, working memory scan. Scored by bi-encoder similarity, lifted where a 0.7/0.3 blend with ColBERT-style MaxSim concept attention exceeds it. Entity bonuses are multiplicatively gated by concept similarity to prevent entity flooding. No LLM calls at read time.
 
 **Recall tokens** — At write time, the LLM evaluates whether a new memory belongs to an existing situational group or starts a new one. Traces get stamped with shared tokens. At query time, activation propagates through those groups, pulling in traces that vector search missed.
 

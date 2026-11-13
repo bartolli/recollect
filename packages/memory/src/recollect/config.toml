@@ -35,7 +35,7 @@ entity_similarity_threshold = 0.3  # pg_trgm threshold for entity matching
 entity_match_bonus = 0.1       # Additive bonus for entity-matched traces
 significance_weight = 0.15     # Boost weight for trace significance (0.95 allergy -> +0.14)
 valence_weight = 0.05          # Boost weight for emotional intensity (|valence| * weight)
-concept_attention_weight = 0.70  # Concept-primary blend alpha (0.7*concept + 0.3*base)
+concept_attention_weight = 0.70  # Concept lift alpha: effective = max(base, alpha*concept + (1-alpha)*base)
 min_trace_slots = 2             # Guaranteed trace slots (facts cannot exceed max_retrievals - this)
 
 [strengthening]
@@ -77,7 +77,7 @@ timeout = 120                   # Seconds; reasoning models over network need he
 max_concepts = 5
 max_relations = 3
 template_path = ""              # Path to override extraction template (.md with header). Empty = packaged default.
-embed_relation_tags = false     # Embed each relation's context_tags as trace concepts (broadens MaxSim surface symmetric with persona facts). Default off pending A/B confirmation.
+embed_relation_tags = false     # Embed each relation's context_tags as trace concepts (broadens MaxSim surface symmetric with persona facts). Default off: measured no retrieval gain; a wider facet set raises a trace's concept ceiling, which rarely decides its score.
 instructions = """
 Entity types: person, organization, place, food, cuisine, product, event, skill, condition.
 Concepts: abstract lowercase noun phrases that could recur across memories.

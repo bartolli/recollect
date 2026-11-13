@@ -2281,7 +2281,7 @@ class CognitiveMemory:
         witness_evidence: dict[str, float] | None = None,
         witness_bound_margin: float = -1.0,
     ) -> list[tuple[MemoryTrace, float]]:
-        """Compute fused scores with concept-primary blend, clamped to [0, 1].
+        """Compute fused scores: base similarity with a concept lift, clamped to [0, 1].
 
         Blend is monotonic in tag presence: effective = max(base,
         weight*concept + (1-weight)*base) -- blend wins iff concept > base,
