@@ -158,6 +158,7 @@ class TestUnpinArchives:
         app = AppContext(memory=m, worker=MagicMock(), user_id="u1")
         ctx = MagicMock()
         ctx.request_context.lifespan_context = app
+        ctx.headers = None
         reflected = await reflect(ctx)
         assert "shellfish" not in reflected
 

@@ -21,6 +21,7 @@ def _ctx(memory: AsyncMock, user_id: str = "alex") -> MagicMock:
     fake.request_context.lifespan_context = AppContext(
         memory=memory, worker=MagicMock(), user_id=user_id
     )
+    fake.headers = None
     return fake
 
 
@@ -122,7 +123,7 @@ async def test_failed_first_recall_rearms_safety_net(memory: AsyncMock) -> None:
     memory.think_about.side_effect = StorageError("db down")
     result = await recall("first attempt", ctx)
     assert "Recall failed" in result
-    assert ctx.request_context.lifespan_context.primed is False
+    assert not ctx.request_context.lifespan_context.primed
 
     memory.think_about.side_effect = None
     result = await recall("second attempt", ctx)

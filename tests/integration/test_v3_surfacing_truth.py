@@ -101,6 +101,7 @@ def _ctx(mem: CognitiveMemory) -> MagicMock:
     fake.request_context.lifespan_context = AppContext(
         memory=mem, worker=MagicMock(), user_id=USER
     )
+    fake.headers = None
     return fake
 
 

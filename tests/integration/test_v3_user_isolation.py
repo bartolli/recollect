@@ -313,6 +313,7 @@ class TestMcpReadSurfaceParity:
         )
         ctx = MagicMock()
         ctx.request_context.lifespan_context = app
+        ctx.headers = None
 
         reflected = await reflect(ctx)
         assert "Alex" in reflected

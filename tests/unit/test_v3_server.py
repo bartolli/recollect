@@ -74,6 +74,7 @@ def _make_ctx(mock_memory: AsyncMock, user_id: str = "alex") -> MagicMock:
     fake_ctx = MagicMock()
     app = AppContext(memory=mock_memory, worker=MagicMock(), user_id=user_id)
     fake_ctx.request_context.lifespan_context = app
+    fake_ctx.headers = None
     return fake_ctx
 
 

@@ -15,10 +15,8 @@ from pathlib import Path
 from typing import Any
 
 import humanize
-from mcp.server.fastmcp import Context, FastMCP
-from mcp.server.fastmcp.resources import FunctionResource
-from mcp.server.session import ServerSession
-from pydantic import AnyUrl
+from mcp.server.mcpserver import Context, MCPServer
+from mcp.server.mcpserver.resources import FunctionResource
 from recollect.config import config
 from recollect.core import CognitiveMemory
 from recollect.datetime_utils import now_utc
@@ -44,7 +42,10 @@ from recollect_mcp import __version__
 logger = logging.getLogger(__name__)
 
 # Type alias for our Context
-Ctx = Context[ServerSession, "AppContext", Any]
+Ctx = Context["AppContext", Any]
+
+_STDIO_CONNECTION = "stdio"
+_SESSION_HEADER = "mcp-session-id"
 
 
 @dataclass
@@ -55,7 +56,9 @@ class AppContext:
     worker: ConsolidationWorker
     user_id: str
     _sessions: dict[str, str] = field(default_factory=dict)
-    primed: bool = False
+    # Connection keys that had reflect or a delivered safety net. Keyed
+    # because streamable-http shares this context across every client.
+    primed: set[str] = field(default_factory=set)
 
 
 def _create_extractor() -> PatternExtractor:
@@ -83,7 +86,7 @@ def _create_extractor() -> PatternExtractor:
 
 @asynccontextmanager
 async def app_lifespan(
-    server: FastMCP[AppContext],
+    server: MCPServer[AppContext],
 ) -> AsyncIterator[AppContext]:
     """Manage CognitiveMemory and worker lifecycle.
 
@@ -123,7 +126,7 @@ async def app_lifespan(
 
     mcp.add_resource(
         FunctionResource(
-            uri=AnyUrl("memory://primer"),
+            uri="memory://primer",
             name="primer",
             description="Known relationships and key facts as a relational graph.",
             fn=_primer,
@@ -131,7 +134,7 @@ async def app_lifespan(
     )
     mcp.add_resource(
         FunctionResource(
-            uri=AnyUrl("memory://facts"),
+            uri="memory://facts",
             name="facts",
             description="Promoted and pinned persona facts.",
             fn=_facts,
@@ -139,7 +142,7 @@ async def app_lifespan(
     )
     mcp.add_resource(
         FunctionResource(
-            uri=AnyUrl("memory://health"),
+            uri="memory://health",
             name="health",
             description="Lifecycle counts by status and violated invariants.",
             fn=_health,
@@ -168,6 +171,19 @@ def _get_ctx(ctx: Ctx) -> AppContext:
 
 def _get_memory(ctx: Ctx) -> CognitiveMemory:
     return _get_ctx(ctx).memory
+
+
+def _connection_key(ctx: Ctx) -> str | None:
+    """Identity of the calling connection; None when the transport has none.
+
+    stdio serves one client per process. Streamable HTTP carries
+    `Mcp-Session-Id` on session-based connections only: a request without
+    one (protocol 2026-07-28 single exchange) has no connection to prime.
+    """
+    headers = ctx.headers
+    if headers is None:
+        return _STDIO_CONNECTION
+    return headers.get(_SESSION_HEADER)
 
 
 async def _ensure_session(ctx: Ctx) -> str | None:
@@ -238,16 +254,12 @@ RESOURCES:
   memory://health -- System health and statistics.\
 """
 
-mcp = FastMCP(
+mcp = MCPServer(
     name="recollect-mcp",
     instructions=_INSTRUCTIONS,
-    host=str(config.get("server.host", "127.0.0.1")),
-    port=int(config.get("server.port", 8000)),
+    version=__version__,
     lifespan=app_lifespan,
 )
-# FastMCP exposes no version parameter; the lowlevel server's attribute feeds
-# serverInfo, which otherwise falls back to the mcp library version.
-mcp._mcp_server.version = __version__
 
 
 # -- Tools --
@@ -318,11 +330,12 @@ async def recall(
     # (unreflected) recall, prepend a narrow safety net -- pinned + recall
     # safety-bypass facts -- so safety-critical context is never dropped
     # when an agent skips reflect.
-    surface_safety = not app.primed
-    if surface_safety:
+    key = _connection_key(ctx)
+    surface_safety = key not in app.primed
+    if surface_safety and key is not None:
         # Claimed before the await so concurrent first calls fire the net once;
         # restored on failure below so a failed delivery re-arms the one-shot.
-        app.primed = True
+        app.primed.add(key)
     try:
         thoughts = await app.memory.think_about(
             query,
@@ -332,13 +345,13 @@ async def recall(
         safety_facts = await _safety_net_facts(app) if surface_safety else ()
         return _format_thoughts(thoughts, safety_facts=safety_facts)
     except StorageError as exc:
-        if surface_safety:
-            app.primed = False
+        if key is not None and surface_safety:
+            app.primed.discard(key)
         logger.exception("Storage error in recall")
         return f"Recall failed: {exc}"
     except MemorySDKError as exc:
-        if surface_safety:
-            app.primed = False
+        if key is not None and surface_safety:
+            app.primed.discard(key)
         logger.exception("Unexpected SDK error in recall")
         return f"Recall failed: {exc}"
 
@@ -357,7 +370,9 @@ async def reflect(ctx: Ctx) -> str:
     No parameters required.
     """
     app = _get_ctx(ctx)
-    app.primed = True
+    key = _connection_key(ctx)
+    if key is not None:
+        app.primed.add(key)
     primer = await _generate_primer(app)
     all_facts = await _surfacing_facts(app)
     active = [f for f in all_facts if f.status in ("promoted", "pinned")]
@@ -745,7 +760,11 @@ def main() -> None:
     )
 
     if args.transport == "streamable-http":
-        mcp.run(transport="streamable-http")
+        mcp.run(
+            transport="streamable-http",
+            host=str(config.get("server.host", "127.0.0.1")),
+            port=int(config.get("server.port", 8000)),
+        )
     else:
         mcp.run(transport="stdio")
 

@@ -29,6 +29,7 @@ def _make_ctx(mock_memory: AsyncMock, user_id: str = "alex") -> MagicMock:
     fake_ctx = MagicMock()
     app = AppContext(memory=mock_memory, worker=MagicMock(), user_id=user_id)
     fake_ctx.request_context.lifespan_context = app
+    fake_ctx.headers = None
     return fake_ctx
 
 
@@ -134,7 +135,7 @@ async def test_recall_without_reflect_no_primer_dump(
     assert "KNOWN FACTS AND RELATIONSHIPS" not in result
     assert "dinner recipe" in result
     app = ctx.request_context.lifespan_context
-    assert app.primed is True
+    assert app.primed
 
 
 async def test_recall_after_reflect_no_primer(
@@ -160,8 +161,8 @@ async def test_recall_after_reflect_no_primer(
 
 
 async def test_reflect_sets_primed_flag(ctx: MagicMock) -> None:
-    """Calling reflect should set primed = True."""
+    """Calling reflect primes the connection."""
     app = ctx.request_context.lifespan_context
-    assert app.primed is False
+    assert not app.primed
     await reflect(ctx)
-    assert app.primed is True
+    assert app.primed

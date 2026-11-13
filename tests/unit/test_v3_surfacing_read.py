@@ -66,6 +66,7 @@ def _ctx(memory: AsyncMock) -> MagicMock:
     fake.request_context.lifespan_context = AppContext(
         memory=memory, worker=MagicMock(), user_id="alex"
     )
+    fake.headers = None
     return fake
 
 
