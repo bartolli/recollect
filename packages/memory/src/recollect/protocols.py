@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from recollect.models import (
         Association,
         ConceptEmbedding,
+        EntityEdge,
         EntityRelation,
         FactStatus,
         KnownEntity,
@@ -136,15 +137,12 @@ class AssociationStore(Protocol):
 
 
 class EntityRelationStore(Protocol):
-    """Store and traverse entity-to-entity relationships."""
+    """Store per-trace relation assertions and read them as entity edges."""
 
     async def store_relation(self, rel: EntityRelation) -> str: ...
-    async def get_relations(
-        self, entity_name: str, *, limit: int = 20
-    ) -> list[EntityRelation]: ...
-    async def get_related_entities(
-        self, entity_name: str, *, max_depth: int = 3, limit: int = 50
-    ) -> list[str]: ...
+    async def get_edges(
+        self, entity_id: str, *, user_id: str | None = None, limit: int = 50
+    ) -> list[EntityEdge]: ...
     async def delete_by_trace(self, trace_id: str) -> int: ...
 
 

@@ -228,20 +228,6 @@ class PostgresStorage:
         """Store an entity-to-entity relationship."""
         return await self._ctx.entity_relations.store_relation(rel)
 
-    async def get_entity_relations(
-        self, entity_name: str, *, limit: int = 20
-    ) -> list[EntityRelation]:
-        """Get direct relations for an entity."""
-        return await self._ctx.entity_relations.get_relations(entity_name, limit=limit)
-
-    async def get_related_entities(
-        self, entity_name: str, *, max_depth: int = 3
-    ) -> list[str]:
-        """Get entities reachable via relationship graph."""
-        return await self._ctx.entity_relations.get_related_entities(
-            entity_name, max_depth=max_depth
-        )
-
     # -- Lifecycle --
 
     async def close(self) -> None:

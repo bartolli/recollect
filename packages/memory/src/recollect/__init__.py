@@ -6,6 +6,7 @@ from recollect.core import CognitiveMemory
 from recollect.models import (
     Association,
     ConsolidationResult,
+    EntityEdge,
     HealthReport,
     HealthStatus,
     KnownEntity,
@@ -25,6 +26,7 @@ __all__ = [
     "Association",
     "CognitiveMemory",
     "ConsolidationResult",
+    "EntityEdge",
     "HealthReport",
     "HealthStatus",
     "KnownEntity",

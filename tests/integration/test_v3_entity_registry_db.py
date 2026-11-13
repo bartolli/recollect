@@ -287,6 +287,10 @@ class TestM007EntityRegistry:
             await m007_entity_registry.up(conn)
             assert await _registry_shape(conn) == fresh
             await conn.execute("ALTER TABLE trace_entities DROP COLUMN entity_id")
+            await conn.execute(
+                "ALTER TABLE entity_relations"
+                " DROP COLUMN source_entity_id, DROP COLUMN target_entity_id"
+            )
             await conn.execute("DROP TABLE entity_names")
             await conn.execute("DROP TABLE entities")
             await m007_entity_registry.up(conn)

@@ -43,6 +43,7 @@ from recollect.models import (
     Association,
     ConceptEmbedding,
     ConsolidationResult,
+    EntityEdge,
     EntityRelation,
     FactCategory,
     FactStatus,
@@ -1034,11 +1035,29 @@ class CognitiveMemory:
         """List registry entities, most-mentioned first."""
         return await self._storage.entities.get_entities(user_id=user_id, limit=limit)
 
-    async def merge_entities(self, source_id: str, into_id: str) -> KnownEntity:
-        """Merge source into into: its names and mentions move, source is deleted.
+    async def entity_edges(
+        self, entity_id: str, *, user_id: str | None = None, limit: int = 50
+    ) -> list[EntityEdge]:
+        """Relation edges with the entity at either end, most-asserted first.
 
-        Identity only: associations between stored traces are untouched;
-        later writes link through the merged identity.
+        Assertions of forgotten traces are hidden; their rows remain.
+
+        Raises:
+            ValueError: entity_id is empty.
+            StorageError: the relation store fails.
+        """
+        if not entity_id:
+            raise ValueError("Entity ID must be a non-empty string")
+        return await self._storage.entity_relations.get_edges(
+            entity_id, user_id=user_id, limit=limit
+        )
+
+    async def merge_entities(self, source_id: str, into_id: str) -> KnownEntity:
+        """Merge source into into: names, mentions and relation ends move.
+
+        The source entity is deleted. Identity only: associations between
+        stored traces are untouched; later writes link through the merged
+        identity.
 
         Raises:
             ValueError: an id is empty, the ids are identical, or the two

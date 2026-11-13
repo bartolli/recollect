@@ -87,8 +87,7 @@ def mock_fact_store() -> AsyncMock:
 def mock_entity_relation_store() -> AsyncMock:
     er = AsyncMock()
     er.store_relation = AsyncMock(return_value="rel-id")
-    er.get_relations = AsyncMock(return_value=[])
-    er.get_related_entities = AsyncMock(return_value=[])
+    er.get_edges = AsyncMock(return_value=[])
     er.delete_by_trace = AsyncMock(return_value=0)
     return er
 

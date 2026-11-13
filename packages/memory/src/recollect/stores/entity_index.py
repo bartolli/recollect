@@ -113,6 +113,15 @@ WHERE s.id = $1 AND i.id = $2 AND s.id <> i.id
 FOR UPDATE
 """
 
+_REPOINT_RELATIONS_SQL = """
+UPDATE entity_relations SET
+    source_entity_id = CASE WHEN source_entity_id = $1 THEN $2
+                            ELSE source_entity_id END,
+    target_entity_id = CASE WHEN target_entity_id = $1 THEN $2
+                            ELSE target_entity_id END
+WHERE source_entity_id = $1 OR target_entity_id = $1
+"""
+
 _INHERIT_TYPE_SQL = """
 UPDATE entities i SET entity_type = s.entity_type
 FROM entities s
@@ -314,7 +323,7 @@ class PgEntityIndex:
             raise StorageError(f"Failed to get entity: {exc}") from exc
 
     async def merge_entities(self, source_id: str, into_id: str) -> bool:
-        """Move source's names and mentions onto into, then delete source.
+        """Move source's names, mentions and relation ends onto into; delete source.
 
         False with nothing changed unless both exist, differ, and share an
         owner. Merge rewrites identity only; associations are untouched.
@@ -343,6 +352,7 @@ class PgEntityIndex:
                     source_id,
                     into_id,
                 )
+                await conn.execute(_REPOINT_RELATIONS_SQL, source_id, into_id)
                 await conn.execute(_INHERIT_TYPE_SQL, source_id, into_id)
                 await conn.execute("DELETE FROM entities WHERE id = $1", source_id)
             return True

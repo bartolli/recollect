@@ -154,8 +154,12 @@ CREATE TABLE IF NOT EXISTS entity_relations (
     target_entity TEXT NOT NULL,
     context TEXT DEFAULT '',
     weight FLOAT DEFAULT 0.5,
-    source_trace_id TEXT REFERENCES memory_traces(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    source_trace_id TEXT REFERENCES memory_traces(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    -- Resolved only through the asserting trace's own mentions, so a
+    -- referenced entity always keeps a mention and the erase sweep holds.
+    source_entity_id TEXT REFERENCES entities(id),
+    target_entity_id TEXT REFERENCES entities(id)
 );
 
 CREATE TABLE IF NOT EXISTS concept_embeddings (
@@ -196,6 +200,8 @@ CREATE INDEX IF NOT EXISTS idx_trace_entities_name
     ON trace_entities(entity_name);
 CREATE INDEX IF NOT EXISTS idx_trace_entities_entity
     ON trace_entities(entity_id);
+CREATE INDEX IF NOT EXISTS idx_trace_entities_trace
+    ON trace_entities(trace_id);
 CREATE INDEX IF NOT EXISTS idx_trace_concepts_concept
     ON trace_concepts(concept);
 CREATE INDEX IF NOT EXISTS idx_persona_facts_subject
@@ -208,12 +214,12 @@ CREATE INDEX IF NOT EXISTS idx_traces_content_fts
     ON memory_traces USING gin (content_tsv);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_assoc_pair_key
     ON associations(pair_key);
-CREATE INDEX IF NOT EXISTS idx_entity_rel_source
-    ON entity_relations(source_entity);
-CREATE INDEX IF NOT EXISTS idx_entity_rel_target
-    ON entity_relations(target_entity);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_entity_rel_pair
-    ON entity_relations(source_entity, relation, target_entity);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_entity_rel_assertion
+    ON entity_relations(source_trace_id, source_entity, relation, target_entity);
+CREATE INDEX IF NOT EXISTS idx_entity_rel_source_id
+    ON entity_relations(source_entity_id);
+CREATE INDEX IF NOT EXISTS idx_entity_rel_target_id
+    ON entity_relations(target_entity_id);
 CREATE INDEX IF NOT EXISTS idx_concept_emb_owner
     ON concept_embeddings(owner_type, owner_id);
 

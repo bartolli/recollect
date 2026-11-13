@@ -201,6 +201,22 @@ class EntityRelation(BaseModel):
     created_at: dt = Field(default_factory=memory_timestamp_for_storage)
 
 
+class EntityEdge(BaseModel):
+    """Assertions sharing a relation and endpoint references, aggregated.
+
+    A reference is the entity id when resolved, else the name key of the
+    surface string; trace_count counts distinct asserting traces.
+    """
+
+    source: str
+    source_entity_id: str | None
+    relation: str
+    target: str
+    target_entity_id: str | None
+    weight: float = Field(ge=0.0, le=1.0)
+    trace_count: int = Field(ge=1)
+
+
 class ConsolidationResult(BaseModel):
     """Result of a consolidation pass."""
 
