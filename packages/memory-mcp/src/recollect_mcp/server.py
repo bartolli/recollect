@@ -8,6 +8,7 @@ Supports stdio and streamable-http transports.
 """
 
 import logging
+import re
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -46,6 +47,8 @@ Ctx = Context["AppContext", Any]
 
 _STDIO_CONNECTION = "stdio"
 _SESSION_HEADER = "mcp-session-id"
+_SHORT_ID_LEN = 8
+_ID_INPUT = re.compile(r"[0-9A-Za-z_-]{8,}")
 
 
 @dataclass
@@ -208,6 +211,65 @@ async def _ensure_session(ctx: Ctx) -> str | None:
     return app._sessions[connection_key]
 
 
+def _short_id(full_id: str) -> str:
+    return full_id[:_SHORT_ID_LEN]
+
+
+def _id_prefix(raw: str) -> str | None:
+    """A model-supplied id without pasted brackets; None under 8 characters."""
+    candidate = raw.strip().strip("[]").strip()
+    return candidate if _ID_INPUT.fullmatch(candidate) else None
+
+
+def _opening(text: str | None, width: int = 60) -> str:
+    text = text or ""
+    return text if len(text) <= width else f"{text[:width].rstrip()}..."
+
+
+async def _resolve_trace(app: AppContext, raw: str) -> MemoryTrace | str:
+    """The one trace `raw` names for the server's user, else the refusal text.
+
+    Unique or refuse: forget does not auto-revive, so an ambiguous id lists
+    its candidates instead of choosing one.
+    """
+    prefix = _id_prefix(raw)
+    if prefix is None:
+        return (
+            f"'{raw}' is not a memory id. Pass the 8-character id printed by "
+            "recall or remember, or the full id."
+        )
+    matches = await app.memory.traces_by_id_prefix(
+        prefix, user_id=app.user_id or None
+    )
+    if len(matches) == 1:
+        return matches[0]
+    if not matches:
+        return f"No memory trace matches id {prefix}."
+    lines = [f"Id {prefix} matches more than one memory. Repeat with one full id:"]
+    lines.extend(
+        f"[{t.id}] ({t.created_at:%Y-%m-%d}) {_opening(t.content)}" for t in matches
+    )
+    return "\n".join(lines)
+
+
+async def _resolve_fact(app: AppContext, raw: str) -> PersonaFact | str:
+    """The one persona fact `raw` names for the server's user, else the refusal."""
+    prefix = _id_prefix(raw)
+    if prefix is None:
+        return (
+            f"'{raw}' is not a persona fact id. Pass the 8-character id printed "
+            "by reflect or pin, or the full id."
+        )
+    matches = await app.memory.facts_by_id_prefix(prefix, user_id=app.user_id or None)
+    if len(matches) == 1:
+        return matches[0]
+    if not matches:
+        return f"Persona fact {prefix} not found."
+    lines = [f"Id {prefix} matches more than one fact. Repeat with one full id:"]
+    lines.extend(f"[{f.id}] {f.subject} {f.predicate} {f.object}" for f in matches)
+    return "\n".join(lines)
+
+
 _INSTRUCTIONS = """\
 Cognitive memory system for personal AI assistants.
 
@@ -317,6 +379,8 @@ async def recall(
 
     Returns persona facts as IMPORTANT CONTEXT followed by related
     memories. The more specific the query, the more precise the results.
+    Each related memory starts with its id in brackets; pass it to pin
+    or forget.
 
     If you haven't called reflect this session, do so before using this tool.
 
@@ -391,10 +455,17 @@ async def pin(
     Pinned facts are always surfaced during relevant recall.
 
     Args:
-        trace_id: ID of the memory trace to pin.
+        trace_id: Id of the memory trace: the 8-character id printed by
+            recall or remember, or the full id.
     """
+    app = _get_ctx(ctx)
     try:
-        return _format_pin_result(await _get_memory(ctx).pin(trace_id))
+        target = await _resolve_trace(app, trace_id)
+        if isinstance(target, str):
+            # Returned, not raised: the refusal quotes memory text, and a
+            # raised refusal would reach the exception log below.
+            return target
+        return _format_pin_result(await app.memory.pin(target.id))
     except TraceNotFoundError:
         logger.exception("Trace not found for pin")
         raise
@@ -414,13 +485,21 @@ async def unpin(
     retained for audit.
 
     Args:
-        fact_id: ID of the persona fact to archive.
+        fact_id: Id of the persona fact: the 8-character id printed by
+            reflect or pin, or the full id.
     """
+    app = _get_ctx(ctx)
     try:
-        archived = await _get_memory(ctx).unpin(fact_id)
-        if archived:
-            return f"Persona fact {fact_id} archived; it will no longer surface."
-        return f"Persona fact {fact_id} not found."
+        target = await _resolve_fact(app, fact_id)
+        if isinstance(target, str):
+            return target
+        if await app.memory.unpin(target.id):
+            triple = f"{target.subject} {target.predicate} {target.object}"
+            return (
+                f"Persona fact {target.id} archived ({triple}); "
+                "it will no longer surface."
+            )
+        return f"Persona fact {target.id} not found."
     except MemorySDKError as exc:
         logger.exception("SDK error in unpin")
         return f"Failed to unpin fact {fact_id}: {exc}"
@@ -440,17 +519,22 @@ async def forget(
     facts, which are retained unless force=true.
 
     Args:
-        trace_id: ID of the memory trace to forget.
+        trace_id: Id of the memory trace: the 8-character id printed by
+            recall or remember, or the full id.
         force: Also archive safety-critical and pinned derived facts.
     """
+    app = _get_ctx(ctx)
     try:
-        result = await _get_memory(ctx).forget(trace_id, force=force)
+        target = await _resolve_trace(app, trace_id)
+        if isinstance(target, str):
+            return target
+        result = await app.memory.forget(target.id, force=force)
     except TraceNotFoundError:
         return f"Trace {trace_id} not found."
     except MemorySDKError as exc:
         logger.exception("SDK error in forget")
         return f"Failed to forget trace {trace_id}: {exc}"
-    parts = [f"Trace {trace_id} forgotten."]
+    parts = [f'Trace {target.id} forgotten ("{_opening(target.content)}").']
     if result.archived_fact_ids:
         parts.append(f"{len(result.archived_fact_ids)} derived facts archived.")
     if result.retained_facts:
@@ -469,14 +553,13 @@ def _format_remember_result(
 ) -> str:
     """Format a stored trace as a compact confirmation.
 
-    Returns the full trace ID so pin/forget can reference it.
-    Previous short-ID format (8 chars) broke downstream lookups.
+    Prints the short trace id; pin and forget resolve it.
     Write-time surfaced persona facts follow as an IMPORTANT CONTEXT block.
     """
     entities = trace.pattern.get("entities", [])
     concepts = trace.pattern.get("concepts", [])
     sig = trace.significance
-    parts = [f"Remembered [{trace.id}] (significance {sig:.2f}"]
+    parts = [f"Remembered [{_short_id(trace.id)}] (significance {sig:.2f}"]
     if entities:
         parts.append(f", {len(entities)} entities")
     if concepts:
@@ -548,9 +631,10 @@ def _format_thoughts(
         date = thought.trace.created_at.strftime("%Y-%m-%d")
         line = f"[score: {score}, {date}] {thought.reconstruction}"
         if thought.trace.pattern.get("persona_fact"):
+            # A fact thought rides a synthetic trace: its id names no row.
             important.append(line)
         else:
-            regular.append(line)
+            regular.append(f"[{_short_id(thought.trace.id)}] {line}")
 
     parts: list[str] = []
     if important:
@@ -595,12 +679,12 @@ def _format_pin_result(facts: list[PersonaFact]) -> str:
 def _format_single_fact(fact: PersonaFact) -> str:
     """Format one persona fact as a compact multi-line block.
 
-    Emits the full fact ID: unpin matches ids exactly, so a truncated
-    id printed here can never round-trip back through the tool surface.
+    Prints the short fact id; unpin resolves it.
     """
     age = humanize.naturaltime(now_utc() - fact.created_at)
     meta = f"{fact.category}, {fact.confidence:.2f}, {fact.status}, {age}"
-    header = f"[{fact.id}] {fact.subject} {fact.predicate} {fact.object}  ({meta})"
+    triple = f"{fact.subject} {fact.predicate} {fact.object}"
+    header = f"[{_short_id(fact.id)}] {triple}  ({meta})"
     if fact.content:
         return f"{header}\n  {fact.content}"
     return header

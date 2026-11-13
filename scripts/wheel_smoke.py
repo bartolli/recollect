@@ -39,7 +39,7 @@ HEALTH_KEYS = {
     "sessions",
     "invariants",
 }
-UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+SHORT_ID = r"[0-9a-f]{8}"
 UNRELATED = "When is the quarterly tax filing due?"
 PORT = int(os.environ["SMOKE_HTTP_PORT"])
 failures: list[str] = []
@@ -138,7 +138,8 @@ async def stdio_legacy_full_cycle(params: StdioServerParameters) -> None:
             "and must never be served peanuts or peanut oil.",
         )
         m = re.search(
-            rf"\[({UUID})\] \(significance [\d.]+, (\d+) entities, (\d+) concepts\)",
+            rf"\[({SHORT_ID})\] \(significance [\d.]+, "
+            r"(\d+) entities, (\d+) concepts\)",
             kept,
         )
         assert m is not None, kept
@@ -152,7 +153,7 @@ async def stdio_legacy_full_cycle(params: StdioServerParameters) -> None:
         )
         check(f"{arm}: recall surfaces the memory", "peanut" in recalled.lower())
         pinned = await tool(c, arm, "pin", trace_id=m.group(1))
-        fact_ids = re.findall(rf"\[({UUID})\]", pinned)
+        fact_ids = re.findall(rf"\[({SHORT_ID})\]", pinned)
         check(f"{arm}: pin returns fact ids", len(fact_ids) > 0)
 
         pref = await tool(
@@ -161,7 +162,7 @@ async def stdio_legacy_full_cycle(params: StdioServerParameters) -> None:
             "remember",
             content="Ines Marchetti prefers aisle seats on long-haul flights.",
         )
-        p = re.search(rf"\[({UUID})\]", pref)
+        p = re.search(rf"\[({SHORT_ID})\]", pref)
         assert p is not None, pref
         await tool(c, arm, "pin", trace_id=p.group(1))
 
@@ -179,17 +180,35 @@ async def stdio_legacy_full_cycle(params: StdioServerParameters) -> None:
             mid["surfacing_total"] == mid["surfacing_reachable"] != 0,
             f"{mid['surfacing_reachable']}/{mid['surfacing_total']}",
         )
-        await tool(c, arm, "unpin", fact_id=fact_ids[0])
-        doomed = await tool(
+        # The fact id comes from the facts resource, not from the pin reply.
+        listed_fact = re.search(
+            rf"^\[({SHORT_ID})\] .*peanut",
+            await resource(c, "memory://facts"),
+            re.MULTILINE | re.IGNORECASE,
+        )
+        check(f"{arm}: facts resource prints fact ids", listed_fact is not None)
+        assert listed_fact is not None
+        unpinned = await tool(c, arm, "unpin", fact_id=listed_fact.group(1))
+        check(f"{arm}: unpin reports the archived fact", "archived" in unpinned)
+        await tool(
             c,
             arm,
             "remember",
             content="Ines Marchetti wrongly noted that her car is a blue Volvo.",
         )
-        d = re.search(rf"\[({UUID})\]", doomed)
-        assert d is not None, doomed
+        # The id comes from recall output: a trace the caller did not create.
+        listed = await tool(
+            c, arm, "recall", query="What car does Ines Marchetti drive?"
+        )
+        d = re.search(rf"^- \[({SHORT_ID})\] .*Volvo", listed, re.MULTILINE)
+        check(f"{arm}: recall prints an id on the memory line", d is not None)
+        assert d is not None, listed
         forgotten = await tool(c, arm, "forget", trace_id=d.group(1))
-        check(f"{arm}: forget reports forgotten", "forgotten" in forgotten)
+        check(
+            f"{arm}: forget reports the forgotten memory",
+            "forgotten" in forgotten and "Volvo" in forgotten,
+            forgotten[:120],
+        )
         after = await tool(
             c, arm, "recall", query="What car does Ines Marchetti drive?"
         )

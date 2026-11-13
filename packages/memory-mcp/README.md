@@ -32,6 +32,8 @@ recollect-mcp --log-file logs/mcp.jsonl --verbose
 | `unpin` | `fact_id: str` | Archive a persona fact. It stops surfacing in recall and reflect; the row is retained. |
 | `forget` | `trace_id: str`, `force: bool = false` | Forget a memory trace: it stops surfacing in recall and never auto-revives. Derived facts archive; safety-critical (health/dietary/constraint) and pinned facts are retained unless `force=true`. Nothing is hard-deleted. |
 
+Memories and facts are printed with an 8-character id (`[3f2a9c1e]`). `pin`, `unpin`, and `forget` take that id or the full one, and refuse an id that matches more than one row instead of choosing.
+
 ## Resources
 
 | URI | Description |

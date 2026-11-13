@@ -119,6 +119,31 @@ class PgFactStore:
         except asyncpg.PostgresError as exc:
             raise StorageError(f"Failed to get persona facts: {exc}") from exc
 
+    async def find_facts_by_id_prefix(
+        self, prefix: str, *, user_id: str | None = None, limit: int = 5
+    ) -> list[PersonaFact]:
+        """Facts whose id starts with prefix, oldest first, any status."""
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                rows = await conn.fetch(
+                    """
+                    SELECT * FROM persona_facts
+                    WHERE starts_with(id, $1)
+                      AND ($2::text IS NULL OR user_id = $2)
+                    ORDER BY created_at
+                    LIMIT $3
+                    """,
+                    prefix,
+                    user_id,
+                    limit,
+                )
+            return [row_to_persona_fact(dict(r)) for r in rows]
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            raise StorageError(f"Failed to find facts by id prefix: {exc}") from exc
+
     async def get_facts_by_source_trace_id(
         self, trace_id: str
     ) -> list[PersonaFact]:

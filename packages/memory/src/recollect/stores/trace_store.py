@@ -101,6 +101,35 @@ class PgTraceStore:
         except asyncpg.PostgresError as exc:
             raise StorageError(f"Failed to get traces in bulk: {exc}") from exc
 
+    async def find_traces_by_id_prefix(
+        self, prefix: str, *, user_id: str | None = None, limit: int = 5
+    ) -> list[MemoryTrace]:
+        """Traces whose id starts with prefix, oldest first.
+
+        Every lifecycle status is returned: a short id is judged unique
+        against the user's whole store, not the surfacing subset.
+        """
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                rows = await conn.fetch(
+                    """
+                    SELECT * FROM memory_traces
+                    WHERE starts_with(id, $1)
+                      AND ($2::text IS NULL OR user_id = $2)
+                    ORDER BY created_at
+                    LIMIT $3
+                    """,
+                    prefix,
+                    user_id,
+                    limit,
+                )
+            return [row_to_trace(dict(r)) for r in rows]
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            raise StorageError(f"Failed to find traces by id prefix: {exc}") from exc
+
     async def delete_trace(self, trace_id: str) -> bool:
         """Hard delete; bypasses archive. FK cascades fire. Returns True if deleted."""
         try:

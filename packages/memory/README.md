@@ -46,6 +46,7 @@ asyncio.run(main())
 | `unpin(fact_id)` | Archive a persona fact. It stops surfacing but is retained. |
 | `facts(subject=None, statuses=None, limit=50)` | List persona facts, newest first. `statuses` filters before the limit; `limit=None` reads all. |
 | `health_report()` | Lifecycle counts by status and violated invariants. Returns `HealthReport`. |
+| `traces_by_id_prefix(prefix)` / `facts_by_id_prefix(prefix)` | Traces or persona facts whose id starts with `prefix`, any status. The lookup behind short ids. |
 | `start_session(user_id)` | Begin a scoped session. |
 | `close()` | Disconnect and release resources. |
 

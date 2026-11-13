@@ -46,6 +46,16 @@ def mock_memory() -> AsyncMock:
         )
     ]
     memory.forget.return_value = ForgetResult(trace_id="trace-123")
+    # Every id resolves to itself: these tests exercise the tool bodies,
+    # not short-id resolution.
+    memory.traces_by_id_prefix.side_effect = lambda prefix, user_id=None: [
+        MemoryTrace(id=prefix, content="stored memory")
+    ]
+    memory.facts_by_id_prefix.side_effect = lambda prefix, user_id=None: [
+        PersonaFact(
+            id=prefix, subject="s", predicate="p", object="o", content="s p o"
+        )
+    ]
     memory.pin.return_value = [
         PersonaFact(
             subject="Alex",
@@ -274,7 +284,7 @@ async def test_forget_not_found(
     mock_memory: AsyncMock,
 ) -> None:
     mock_memory.forget.side_effect = TraceNotFoundError("not found")
-    result = await forget("bad-id", ctx)
+    result = await forget("bad-trace-id", ctx)
     assert "not found" in result.lower()
 
 
@@ -314,7 +324,7 @@ async def test_pin_not_found(
 ) -> None:
     mock_memory.pin.side_effect = TraceNotFoundError("no such trace")
     with pytest.raises(TraceNotFoundError):
-        await pin("bad-id", ctx)
+        await pin("bad-trace-id", ctx)
 
 
 async def test_unpin_sdk_error(
@@ -322,7 +332,7 @@ async def test_unpin_sdk_error(
     mock_memory: AsyncMock,
 ) -> None:
     mock_memory.unpin.side_effect = MemorySDKError("unexpected")
-    result = await unpin("fact-id", ctx)
+    result = await unpin("fact-id-1", ctx)
     assert "unexpected" in result
     assert isinstance(result, str)
 

@@ -1023,6 +1023,30 @@ class CognitiveMemory:
             subject, user_id=user_id, statuses=statuses, limit=limit
         )
 
+    async def traces_by_id_prefix(
+        self, prefix: str, *, user_id: str | None = None, limit: int = 5
+    ) -> list[MemoryTrace]:
+        """Traces of any status whose id starts with prefix, oldest first.
+
+        The lookup behind short ids: a caller acts on a single match and
+        treats several as ambiguous.
+        """
+        if not prefix:
+            raise ValueError("Id prefix must be a non-empty string")
+        return await self._storage.traces.find_traces_by_id_prefix(
+            prefix, user_id=user_id, limit=limit
+        )
+
+    async def facts_by_id_prefix(
+        self, prefix: str, *, user_id: str | None = None, limit: int = 5
+    ) -> list[PersonaFact]:
+        """Persona facts of any status whose id starts with prefix."""
+        if not prefix:
+            raise ValueError("Id prefix must be a non-empty string")
+        return await self._storage.facts.find_facts_by_id_prefix(
+            prefix, user_id=user_id, limit=limit
+        )
+
     async def start_session(
         self,
         *,
