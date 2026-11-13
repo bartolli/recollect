@@ -22,6 +22,8 @@ from probe_cli.corpus import (
     load_query_corpus,
     load_seed_groups,
 )
+from probe_cli.entity_reach import EntityReachReport, StorePreconditionError
+from probe_cli.entity_reach import measure as measure_entity_reach
 from probe_cli.fact_audit import FactAuditReport
 from probe_cli.metrics import (
     AggregateMetrics,
@@ -33,6 +35,7 @@ from probe_cli.metrics import (
 )
 from probe_cli.report import (
     write_case_breakdown,
+    write_entity_reach_report,
     write_retrieval_run_report,
     write_retrieval_summary,
     write_run_report,
@@ -133,6 +136,25 @@ def main() -> int:
             "the recall token hop disabled at read time."
         ),
     )
+    reach = sub.add_parser(
+        "entity-reach",
+        help="Measure entity-graph reach on a seeded task-arm store (read-only).",
+    )
+    reach.add_argument("--arm", required=True, type=Path, help="Path to arm TOML.")
+    reach.add_argument(
+        "--env-file",
+        type=Path,
+        default=Path(".env"),
+        help="Path to .env file (default: ./.env). Pass empty string to skip.",
+    )
+    reach.add_argument(
+        "--thresholds",
+        type=float,
+        nargs="+",
+        default=[0.90, 0.85, 0.80],
+        help="Embedding cosine thresholds, one rule each (default: 0.90 0.85 0.80).",
+    )
+    reach.set_defaults(verbose=False)
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -169,6 +191,8 @@ def main() -> int:
                 ),
             )
         )
+    if args.cmd == "entity-reach":
+        return asyncio.run(_run_entity_reach(args.arm, args.thresholds))
     return 1
 
 
@@ -393,6 +417,21 @@ async def _run_fact_audit(arm: Arm, provider: PydanticAIProvider, out_dir: Path)
     report = await runner.run()
     write_fact_audit_report(report, out_dir)
     _print_fact_audit(arm, report)
+    return 0
+
+
+async def _run_entity_reach(arm_path: Path, thresholds: list[float]) -> int:
+    arm = load_arm(arm_path)
+    if not arm.task.enabled:
+        logger.error("entity-reach requires a task arm")
+        return 2
+    try:
+        report = await measure_entity_reach(arm, thresholds)
+    except StorePreconditionError as exc:
+        logger.error("%s", exc)
+        return 2
+    write_entity_reach_report(report, Path(arm.output.dir) / arm.name)
+    _print_entity_reach(report)
     return 0
 
 
@@ -745,6 +784,23 @@ def _print_fact_audit(arm: Arm, report: FactAuditReport) -> None:
                 else ""
             ),
             file=sys.stderr,
+        )
+
+
+def _print_entity_reach(report: EntityReachReport) -> None:
+    print(
+        f"\nArm: {report.arm_name} (entity reach)  traces={report.store_traces}"
+        f"  entities={report.entities}"
+        f"  single_trace={report.single_trace_entities}"
+    )
+    for rule in report.rules:
+        t3 = [q for q in rule.questions if q.tier_label == "t3"]
+        reached = [q.candidates for q in t3 if q.candidates is not None]
+        span = f"{min(reached)}-{max(reached)}" if reached else "-"
+        labels = "  ".join(f"{k}={n}" for k, n in rule.label_counts.items())
+        print(
+            f"{rule.rule:16s} pairs={rule.pair_count:<4d} {labels}"
+            f"  t3_reach={len(reached)}/{len(t3)}  candidates={span}"
         )
 
 

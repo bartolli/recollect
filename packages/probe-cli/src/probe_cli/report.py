@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 
 from probe_cli.aging import AgingReport
+from probe_cli.entity_reach import EntityReachReport
 from probe_cli.fact_audit import FactAuditReport
 from probe_cli.metrics import (
     AggregateMetrics,
@@ -190,6 +191,17 @@ def write_fact_audit_report(report: FactAuditReport, output_dir: Path | str) -> 
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / "fact_audit.json"
+    path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_entity_reach_report(
+    report: EntityReachReport, output_dir: Path | str
+) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "entity_reach.json"
     path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
     logger.info("wrote %s", path)
     return path

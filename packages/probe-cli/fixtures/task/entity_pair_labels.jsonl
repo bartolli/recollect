@@ -1,0 +1,48 @@
+# Entity-name pair labels for the entity-reach instrument (probe entity-reach).
+# A surface-form rule joins two extracted entity names; the label says what the
+# join means. same: one referent under two forms. related: distinct referents
+# tied by place, part, or composition. different: no tie beyond lexical form.
+# Keys are unordered pairs of normalized names (lowercase, whitespace-collapsed).
+# Labels are judged against the seed texts, not the names alone. Extraction
+# varies per seeding: add the pairs a new seeding reports as unlabeled.
+{"a": "auto-injector", "b": "epinephrine auto-injector", "label": "same"}
+{"a": "epinephrine auto-injector", "b": "epipen", "label": "same"}
+{"a": "cedar raised beds", "b": "cedar raised garden beds with seating ledges", "label": "same"}
+{"a": "cedar raised garden beds with seating ledges", "b": "raised garden beds", "label": "same"}
+{"a": "cedar raised beds", "b": "raised garden beds", "label": "same"}
+{"a": "clayworks", "b": "clayworks studio", "label": "same"}
+{"a": "community orchestra", "b": "orchestra", "label": "same"}
+{"a": "oak street hardware", "b": "oak street hardware store", "label": "same"}
+{"a": "showcase", "b": "student showcase", "label": "same"}
+{"a": "thai place on main street", "b": "thai restaurant on main street", "label": "same"}
+{"a": "bad knees", "b": "knee pain", "label": "same"}
+{"a": "elm street store", "b": "garden center on elm street", "label": "same"}
+{"a": "baking soda", "b": "baking soda volcano", "label": "related"}
+{"a": "main street", "b": "thai place on main street", "label": "related"}
+{"a": "main street", "b": "thai restaurant on main street", "label": "related"}
+{"a": "oak street", "b": "oak street hardware", "label": "related"}
+{"a": "oak street", "b": "oak street hardware store", "label": "related"}
+{"a": "peanut", "b": "peanut oil", "label": "related"}
+{"a": "cello", "b": "orchestra", "label": "related"}
+{"a": "celiac disease", "b": "gluten", "label": "related"}
+{"a": "ceramic bowls", "b": "ceramics class", "label": "related"}
+{"a": "cedar avenue", "b": "maple avenue", "label": "different"}
+{"a": "5th avenue", "b": "maple avenue", "label": "different"}
+{"a": "5th avenue", "b": "cedar avenue", "label": "different"}
+{"a": "elm street store", "b": "oak street hardware store", "label": "different"}
+{"a": "elm street store", "b": "oak street hardware", "label": "different"}
+{"a": "bookstore", "b": "elm street store", "label": "different"}
+{"a": "lila", "b": "margot", "label": "different"}
+{"a": "camille", "b": "margot", "label": "different"}
+{"a": "lila", "b": "nadia", "label": "different"}
+{"a": "sofi", "b": "soraya", "label": "different"}
+{"a": "cedar avenue", "b": "cedar raised beds", "label": "different"}
+{"a": "cedar avenue", "b": "cedar raised garden beds with seating ledges", "label": "different"}
+{"a": "oak street", "b": "pine street", "label": "different"}
+{"a": "main street", "b": "pine street", "label": "different"}
+{"a": "main street", "b": "oak street", "label": "different"}
+{"a": "maple avenue", "b": "oak street", "label": "different"}
+{"a": "community garden", "b": "raised garden beds", "label": "different"}
+{"a": "community garden", "b": "garden center on elm street", "label": "different"}
+{"a": "coffee", "b": "tea", "label": "different"}
+{"a": "loud restaurants", "b": "quiet cafes", "label": "different"}

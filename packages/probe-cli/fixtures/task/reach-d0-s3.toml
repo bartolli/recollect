@@ -1,0 +1,30 @@
+# Replicate seeding 3 of 3 for the entity-reach measurement.
+# Run: probe run --arm packages/probe-cli/fixtures/task/reach-d0-s3.toml --verify-reachability
+# then: probe entity-reach --arm packages/probe-cli/fixtures/task/reach-d0-s3.toml
+# Code: the commit that adds this arm.
+# DB: fresh probe_task (make probe-task-db-reset immediately before).
+
+[arm]
+name = "task-reach-d0-s3"
+runs = 1
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+
+# Required by Arm schema; unused for task arms.
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[task]
+enabled = true
+db_url = "${RECOLLECT_PROBE_TASK_DB_URL}"
+seed_traces_path = "packages/probe-cli/fixtures/task/seed_traces.jsonl"
+questions_path = "packages/probe-cli/fixtures/task/questions.jsonl"
+answer_model = "anthropic:claude-haiku-4-5-20251001"
+density_tier = 0
+with_recall = true
+with_priming = true
+with_tokens = true

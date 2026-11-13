@@ -177,3 +177,18 @@ def load_task_seed_traces(path: Path | str) -> list[TaskSeedTrace]:
 def load_task_questions(path: Path | str) -> list[TaskQuestion]:
     entries, _ = _load_jsonl(path, TaskQuestion, "task question")
     return entries
+
+
+PairLabel = Literal["same", "related", "different"]
+
+
+class EntityPairLabel(BaseModel):
+    # a and b are entity name keys; the pair is unordered.
+    a: str
+    b: str
+    label: PairLabel
+
+
+def load_entity_pair_labels(path: Path | str) -> list[EntityPairLabel]:
+    entries, _ = _load_jsonl(path, EntityPairLabel, "entity pair label")
+    return entries
