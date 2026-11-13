@@ -1,7 +1,8 @@
 # Entity-name pair labels for the entity-reach instrument (probe entity-reach).
 # A surface-form rule joins two extracted entity names; the label says what the
 # join means. same: one referent under two forms. related: distinct referents
-# tied by place, part, or composition. different: no tie beyond lexical form.
+# tied by place, part, composition, or relationship. different: no tie beyond
+# lexical form.
 # Keys are unordered pairs of normalized names (lowercase, whitespace-collapsed).
 # Labels are judged against the seed texts, not the names alone. Extraction
 # varies per seeding: add the pairs a new seeding reports as unlabeled.
@@ -46,3 +47,19 @@
 {"a": "community garden", "b": "garden center on elm street", "label": "different"}
 {"a": "coffee", "b": "tea", "label": "different"}
 {"a": "loud restaurants", "b": "quiet cafes", "label": "different"}
+{"a": "cedar raised beds", "b": "cedar raised garden beds with built-in seating ledges", "label": "same"}
+{"a": "cedar raised garden beds with built-in seating ledges", "b": "raised garden beds", "label": "same"}
+{"a": "hardware store on oak street", "b": "oak street hardware", "label": "same"}
+{"a": "hardware store on oak street", "b": "oak street hardware store", "label": "same"}
+{"a": "hardware store on oak street", "b": "oak street", "label": "related"}
+{"a": "cello", "b": "cello repairs", "label": "related"}
+{"a": "peanut oil", "b": "peanuts", "label": "related"}
+{"a": "devansh", "b": "priya (devansh's college friend)", "label": "related"}
+{"a": "cedar avenue", "b": "cedar raised garden beds with built-in seating ledges", "label": "different"}
+{"a": "elm street store", "b": "hardware store on oak street", "label": "different"}
+{"a": "cello", "b": "cello repair", "label": "related"}
+{"a": "raised garden beds", "b": "raised garden beds with built-in seating ledges", "label": "same"}
+{"a": "elm street garden center", "b": "elm street store", "label": "same"}
+{"a": "glaze batch", "b": "glaze firing", "label": "related"}
+{"a": "cedar raised beds", "b": "raised garden beds with built-in seating ledges", "label": "same"}
+{"a": "elm street store", "b": "pine street bookstore", "label": "different"}
