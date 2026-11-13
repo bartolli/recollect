@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.18.0] - 2026-11-12
+
+### Changed
+- `recollect-mcp` requires `mcp>=2.3.0,<3` and builds on `mcp.server.mcpserver.MCPServer` (was `mcp>=1.26.0,<2` on `FastMCP`); environments that pin `mcp<2` cannot co-install it
+- the server answers both the `initialize` handshake (protocol 2025-11-25) and the `server/discover` handshake (protocol 2026-07-28), on stdio and on streamable-http
+- streamable-http: the lifespan runs once per server process (mcp 1 ran it once per HTTP session) -- one `CognitiveMemory`, connection pool, consolidation worker, working memory, and recollect session serve every HTTP client
+- the skip-reflect safety net is one-shot per connection: the stdio process, or the streamable-http `Mcp-Session-Id`; a request that carries no session id is never primed, so it gets the net on every recall and `reflect` does not suppress it
+- `server.host` and `server.port` are passed at `run()`; `serverInfo.version` comes from the `MCPServer` `version` argument
+- version lockstep 0.18.0; `recollect-mcp` requires `recollect>=0.18.0`; the SDK package carries no code change
+
 ## [v0.17.1] - 2026-11-12
 
 ### Added
