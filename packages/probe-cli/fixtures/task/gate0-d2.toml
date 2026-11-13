@@ -1,0 +1,38 @@
+# Strength gate off, d2 aged sweep: retrieval.selection_threshold = 0, so
+# search_semantic admits archived traces below the packaged gate.
+# Run: --age-days 0 1 --tokens-off-control (one seeding, three points).
+# Gate: every question the tokens-off control answers on its first run is
+# answered on the first run at age 1; none-tier abstention and fabrication
+# hold.
+# Baseline at the packaged gate: task-after-d2 aged sweep.
+# Code: the commit that adds this arm (arm overrides reach the process
+# config the stores read).
+# DB: fresh probe_task (make probe-task-db-reset immediately before).
+
+[arm]
+name = "task-gate0-d2"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-4-5-20251001"
+
+# Required by Arm schema; unused for task arms.
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[recollect_overrides]
+"retrieval.selection_threshold" = 0
+
+[task]
+enabled = true
+db_url = "${RECOLLECT_PROBE_TASK_DB_URL}"
+seed_traces_path = "packages/probe-cli/fixtures/task/seed_traces.jsonl"
+questions_path = "packages/probe-cli/fixtures/task/questions.jsonl"
+answer_model = "anthropic:claude-haiku-4-5-20251001"
+density_tier = 2
+with_recall = true
+with_priming = true
+with_tokens = true
