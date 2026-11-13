@@ -26,15 +26,25 @@ ENTITIES_SQL = f"""\
 CREATE TABLE IF NOT EXISTS entities (
     id TEXT PRIMARY KEY,
     user_id TEXT,
-    name TEXT NOT NULL,
-    name_key TEXT GENERATED ALWAYS AS ({ENTITY_NAME_KEY_SQL.format("name")}) STORED,
     entity_type TEXT NOT NULL DEFAULT 'unknown',
     created_at TIMESTAMPTZ NOT NULL
 );
 
--- name_key leads: link lookups filter on it with no entities.user_id predicate.
-CREATE UNIQUE INDEX IF NOT EXISTS idx_entities_key_user
-    ON entities (name_key, user_id) NULLS NOT DISTINCT;
+CREATE TABLE IF NOT EXISTS entity_names (
+    entity_id TEXT NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+    -- Repeats the entity's owner so name uniqueness is per user; only
+    -- mention resolution and merge write it.
+    user_id TEXT,
+    name TEXT NOT NULL,
+    name_key TEXT GENERATED ALWAYS AS ({ENTITY_NAME_KEY_SQL.format("name")}) STORED,
+    created_at TIMESTAMPTZ NOT NULL
+);
+
+-- name_key leads: link lookups filter on it with no entity_names.user_id predicate.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_entity_names_key_user
+    ON entity_names (name_key, user_id) NULLS NOT DISTINCT;
+CREATE INDEX IF NOT EXISTS idx_entity_names_entity
+    ON entity_names(entity_id);
 """
 
 SCHEMA_SQL = (

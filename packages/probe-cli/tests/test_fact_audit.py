@@ -1,9 +1,12 @@
-"""classify_tail gate-stage branches, aggregation, scratch-DB guard."""
+"""classify_tail gate-stage branches, aggregation, scratch-DB guard, round reset."""
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from probe_cli.fact_audit import (
+    _DATA_TABLES,
     AuditRound,
     Classification,
     TailOutcome,
@@ -12,6 +15,7 @@ from probe_cli.fact_audit import (
     classify_tail,
 )
 from recollect.models import FactStatus, PersonaFact
+from recollect.pool import SCHEMA_SQL
 
 _ALIASES = ["6pm", "6 pm", "after 6pm"]
 
@@ -143,3 +147,8 @@ def test_scratch_db_guard_rejects_other_databases() -> None:
     with pytest.raises(ValueError, match="probe_fact_audit"):
         _require_scratch_db("")
     _require_scratch_db("postgresql://u@localhost:5432/probe_fact_audit")
+
+
+def test_round_reset_covers_every_schema_table() -> None:
+    created = re.findall(r"CREATE TABLE IF NOT EXISTS (\w+)", SCHEMA_SQL)
+    assert sorted(_DATA_TABLES) == sorted(created)

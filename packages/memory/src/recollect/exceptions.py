@@ -25,6 +25,10 @@ class TraceNotFoundError(MemorySDKError):
     """Raised when a memory trace is not found."""
 
 
+class EntityNotFoundError(MemorySDKError):
+    """Raised when a registry entity is not found."""
+
+
 class SessionNotFoundError(MemorySDKError):
     """Raised when a session is not found."""
 

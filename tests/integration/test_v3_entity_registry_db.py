@@ -1,8 +1,8 @@
 """Integration: per-user entity identity behind trace_entities.
 
-Every mention resolves to one entities row per (user_id, name_key) inside
-store_trace_entities; linking reads match through that identity, so case
-and whitespace variants of one name link.
+Every mention resolves through one entity_names row per (name_key, user_id)
+inside store_trace_entities; linking reads match through that identity, so
+case and whitespace variants of one name link.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ import asyncpg
 import pytest
 from recollect.bootstrap.migrations import m007_entity_registry
 from recollect.core import CognitiveMemory
+from recollect.exceptions import StorageError
 from recollect.models import KnownEntity, MemoryTrace, TraceEntity
 
 if TYPE_CHECKING:
@@ -93,9 +94,12 @@ class TestIdentityResolution:
     ) -> None:
         first = await _trace(mem, ("spaCy", "unknown"))
         second = await _trace(mem, ("  spacy ", "unknown"))
-        entities = await _rows(mem, "SELECT id, name FROM entities")
+        entities = await _rows(mem, "SELECT id FROM entities")
         assert len(entities) == 1
-        assert entities[0]["name"] == "spaCy"
+        names = await _rows(mem, "SELECT entity_id, name FROM entity_names")
+        assert [(n["entity_id"], n["name"]) for n in names] == [
+            (entities[0]["id"], "spaCy")
+        ]
         mentions = await _rows(
             mem,
             "SELECT trace_id, entity_id FROM trace_entities",
@@ -110,6 +114,12 @@ class TestIdentityResolution:
         await _trace(mem, ("alex", "person"), user_id=None)
         owners = await _rows(mem, "SELECT user_id FROM entities")
         assert sorted(o["user_id"] or "" for o in owners) == ["", "u-a", "u-b"]
+        name_owners = await _rows(
+            mem,
+            "SELECT en.user_id IS NOT DISTINCT FROM e.user_id AS same"
+            " FROM entity_names en JOIN entities e ON e.id = en.entity_id",
+        )
+        assert [n["same"] for n in name_owners] == [True, True, True]
         linked = await mem.storage.entities.get_traces_by_entity("Alex", user_id="u-a")
         assert linked == [a.id]
 
@@ -136,7 +146,11 @@ class TestIdentityResolution:
         trace = await _trace(
             mem, ("spaCy", "unknown"), ("spaCy", "unknown"), ("SPACY", "product")
         )
-        entities = await _rows(mem, "SELECT name, entity_type FROM entities")
+        entities = await _rows(
+            mem,
+            "SELECT en.name, e.entity_type FROM entities e"
+            " JOIN entity_names en ON en.entity_id = e.id",
+        )
         assert [(e["name"], e["entity_type"]) for e in entities] == [
             ("spaCy", "product")
         ]
@@ -144,6 +158,22 @@ class TestIdentityResolution:
         assert sorted(m["entity_name"] for m in mentions) == ["SPACY", "spaCy"]
         linked = await mem.storage.entities.get_traces_by_entity("spacy")
         assert linked == [trace.id]
+
+    async def test_missing_trace_fails_and_stores_nothing(
+        self, mem: CognitiveMemory
+    ) -> None:
+        with pytest.raises(StorageError):
+            await mem.storage.entities.store_trace_entities(
+                "no-such-trace",
+                [TraceEntity(entity_name="Ghost", trace_id="no-such-trace")],
+            )
+        counts = await _rows(
+            mem,
+            "SELECT (SELECT count(*) FROM entities),"
+            " (SELECT count(*) FROM entity_names),"
+            " (SELECT count(*) FROM trace_entities)",
+        )
+        assert tuple(counts[0]) == (0, 0, 0)
 
 
 class TestIdentityLinking:
@@ -182,9 +212,9 @@ class TestKnownEntities:
         await _trace(mem, ("Alex", "person"), user_id="u-b")
         entities = await mem.entities(user_id="u-a")
         assert all(isinstance(e, KnownEntity) for e in entities)
-        assert [(e.name, e.trace_count) for e in entities] == [
-            ("Alex", 2),
-            ("Borealis", 1),
+        assert [(e.names, e.name, e.trace_count) for e in entities] == [
+            (["Alex"], "Alex", 2),
+            (["Borealis"], "Borealis", 1),
         ]
         assert {e.user_id for e in entities} == {"u-a"}
         assert entities[0].entity_type == "person"
@@ -217,18 +247,27 @@ class TestEraseReleasesEntities:
         assert [(e.name, e.trace_count) for e in entities] == [("Solo", 1)]
 
 
-_REGISTRY_SHAPE = """
-SELECT
-    (SELECT count(*) FROM information_schema.columns
-     WHERE table_name = 'trace_entities' AND column_name = 'entity_id'),
-    (SELECT count(*) FROM pg_tables WHERE tablename = 'entities'),
-    (SELECT count(*) FROM pg_indexes
-     WHERE indexname IN ('idx_entities_key_user', 'idx_trace_entities_entity'))
-"""
+_REGISTRY_SHAPE = (
+    "SELECT table_name, column_name, data_type, is_nullable, column_default,"
+    " generation_expression FROM information_schema.columns"
+    " WHERE table_name IN ('entities', 'entity_names')"
+    " OR (table_name = 'trace_entities' AND column_name = 'entity_id')"
+    " ORDER BY table_name, column_name",
+    "SELECT indexname, indexdef FROM pg_indexes WHERE indexname IN"
+    " ('idx_entity_names_key_user', 'idx_entity_names_entity',"
+    " 'idx_trace_entities_entity') ORDER BY indexname",
+    "SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint"
+    " WHERE conrelid IN ('entities'::regclass, 'entity_names'::regclass,"
+    " 'trace_entities'::regclass) ORDER BY conname",
+)
+
+
+async def _registry_shape(conn: asyncpg.Connection) -> list[list[tuple[object, ...]]]:
+    return [[tuple(r) for r in await conn.fetch(sql)] for sql in _REGISTRY_SHAPE]
 
 
 class TestM007EntityRegistry:
-    async def test_fresh_twin_and_legacy_restore_idempotent(
+    async def test_twin_matches_fresh_schema_and_reapplies(
         self, scratch_db: str
     ) -> None:
         m = CognitiveMemory()
@@ -236,12 +275,22 @@ class TestM007EntityRegistry:
         await m.close()
         conn = await asyncpg.connect(scratch_db)
         try:
-            assert tuple(await conn.fetchrow(_REGISTRY_SHAPE)) == (1, 1, 2)
+            fresh = await _registry_shape(conn)
+            columns, indexes, _ = fresh
+            assert [c[1] for c in columns if c[0] == "entities"] == [
+                "created_at",
+                "entity_type",
+                "id",
+                "user_id",
+            ]
+            assert len(indexes) == 3
             await m007_entity_registry.up(conn)
+            assert await _registry_shape(conn) == fresh
             await conn.execute("ALTER TABLE trace_entities DROP COLUMN entity_id")
+            await conn.execute("DROP TABLE entity_names")
             await conn.execute("DROP TABLE entities")
             await m007_entity_registry.up(conn)
             await m007_entity_registry.up(conn)
-            assert tuple(await conn.fetchrow(_REGISTRY_SHAPE)) == (1, 1, 2)
+            assert await _registry_shape(conn) == fresh
         finally:
             await conn.close()

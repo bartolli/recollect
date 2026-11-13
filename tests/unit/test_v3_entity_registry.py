@@ -18,8 +18,12 @@ class TestNameKeySingleSource:
         assert generated in ENTITIES_SQL
         assert ENTITIES_SQL in SCHEMA_SQL
 
-    def test_identity_is_unique_per_user_including_null(self) -> None:
-        assert "ON entities (name_key, user_id) NULLS NOT DISTINCT" in ENTITIES_SQL
+    def test_name_is_unique_per_user_including_null(self) -> None:
+        assert "ON entity_names (name_key, user_id) NULLS NOT DISTINCT" in ENTITIES_SQL
+
+    def test_names_cascade_with_their_entity(self) -> None:
+        assert "REFERENCES entities(id) ON DELETE CASCADE" in ENTITIES_SQL
+        assert "idx_entity_names_entity" in ENTITIES_SQL
 
     def test_key_collapses_whitespace_before_trimming(self) -> None:
         assert ENTITY_NAME_KEY_SQL.index("regexp_replace") > (
@@ -52,8 +56,19 @@ class TestM007EntityRegistry:
 
 class TestKnownEntitiesSurface:
     def test_trace_count_rejects_negative(self) -> None:
-        with pytest.raises(ValidationError):
-            KnownEntity(id="e-1", name="Alex", trace_count=-1)
+        with pytest.raises(ValidationError) as caught:
+            KnownEntity(id="e-1", names=["Alex"], trace_count=-1)
+        assert [e["loc"] for e in caught.value.errors()] == [("trace_count",)]
+
+    def test_names_reject_empty(self) -> None:
+        with pytest.raises(ValidationError) as caught:
+            KnownEntity(id="e-1", names=[])
+        assert [e["loc"] for e in caught.value.errors()] == [("names",)]
+
+    def test_name_is_the_first_name(self) -> None:
+        known = KnownEntity(id="e-1", names=["auto-injector", "EpiPen"])
+        assert known.name == "auto-injector"
+        assert "name" not in known.model_dump()
 
     async def test_entities_delegates_with_user_scope(
         self,
@@ -61,7 +76,7 @@ class TestKnownEntitiesSurface:
         mock_embeddings: AsyncMock,
         mock_entity_index: AsyncMock,
     ) -> None:
-        known = KnownEntity(id="e-1", user_id="u1", name="Alex", trace_count=2)
+        known = KnownEntity(id="e-1", user_id="u1", names=["Alex"], trace_count=2)
         mock_entity_index.get_entities.return_value = [known]
         mem = CognitiveMemory(storage=mock_storage, embeddings=mock_embeddings)
         assert await mem.entities(user_id="u1", limit=10) == [known]

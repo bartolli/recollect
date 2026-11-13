@@ -30,6 +30,7 @@ SHIFTED_COLUMNS: tuple[tuple[str, str], ...] = (
     ("associations", "created_at"),
     ("associations", "last_activation"),
     ("entities", "created_at"),
+    ("entity_names", "created_at"),
     ("persona_facts", "created_at"),
     ("persona_facts", "updated_at"),
     ("entity_relations", "created_at"),

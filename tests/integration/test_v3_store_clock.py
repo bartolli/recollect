@@ -40,7 +40,7 @@ T0 = datetime(2026, 11, 12, 12, 0, tzinfo=UTC)
 FROZEN = datetime(2026, 11, 12, 18, 0, tzinfo=UTC)
 DST_ZONE = "America/New_York"
 VEC = "[" + ",".join(["0.1"] * 768) + "]"
-_ROW_KEY = {"token_stamps": "token_id, trace_id"}
+_ROW_KEY = {"token_stamps": "token_id, trace_id", "entity_names": "name_key, user_id"}
 _TIME_TYPES = [
     "timestamp with time zone",
     "timestamp without time zone",
@@ -137,7 +137,11 @@ async def _seed_rows(pool: asyncpg.Pool) -> None:
             T0 + h,
         )
         await conn.execute(
-            "INSERT INTO entities (id, user_id, name, created_at)"
+            "INSERT INTO entities (id, user_id, created_at) VALUES ('e1', 'u', $1)",
+            T0,
+        )
+        await conn.execute(
+            "INSERT INTO entity_names (entity_id, user_id, name, created_at)"
             " VALUES ('e1', 'u', 'n', $1)",
             T0,
         )
@@ -201,7 +205,7 @@ async def test_shift_is_exact_seconds_across_a_dst_boundary(
     await StoreClock(store, now=lambda: FROZEN).advance_to(shift)
 
     after = await _stamps(store)
-    assert len(before) == 16
+    assert len(before) == 17
     for key, values in before.items():
         assert values, f"{key} has no seeded row"
         expected = [None if v is None else v - shift for v in values]

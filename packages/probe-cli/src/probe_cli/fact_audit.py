@@ -44,6 +44,7 @@ _DATA_TABLES = (
     "associations",
     "concept_embeddings",
     "entities",
+    "entity_names",
     "entity_relations",
     "memory_traces",
     "persona_facts",

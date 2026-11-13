@@ -22,6 +22,7 @@ from recollect.datetime_utils import memory_timestamp_for_comparison, now_utc
 from recollect.embeddings import FastEmbedProvider
 from recollect.exceptions import (
     EmbeddingError,
+    EntityNotFoundError,
     ExtractionError,
     PromptValidationError,
     SessionNotFoundError,
@@ -1032,6 +1033,37 @@ class CognitiveMemory:
     ) -> list[KnownEntity]:
         """List registry entities, most-mentioned first."""
         return await self._storage.entities.get_entities(user_id=user_id, limit=limit)
+
+    async def merge_entities(self, source_id: str, into_id: str) -> KnownEntity:
+        """Merge source into into: its names and mentions move, source is deleted.
+
+        Identity only: associations between stored traces are untouched;
+        later writes link through the merged identity.
+
+        Raises:
+            ValueError: an id is empty, the ids are identical, or the two
+                entities have different owners.
+            EntityNotFoundError: either entity does not exist, or one is gone
+                before the merge commits.
+            StorageError: the entity store fails.
+        """
+        if not source_id or not into_id:
+            raise ValueError("Entity IDs must be non-empty strings")
+        if source_id == into_id:
+            raise ValueError("Cannot merge an entity into itself")
+        source = await self._storage.entities.get_entity(source_id)
+        target = await self._storage.entities.get_entity(into_id)
+        if source is None or target is None:
+            missing = source_id if source is None else into_id
+            raise EntityNotFoundError(f"Entity {missing} not found")
+        if source.user_id != target.user_id:
+            raise ValueError("Cannot merge entities with different owners")
+        if not await self._storage.entities.merge_entities(source_id, into_id):
+            raise EntityNotFoundError(f"Entity {source_id} or {into_id} not found")
+        merged = await self._storage.entities.get_entity(into_id)
+        if merged is None:
+            raise EntityNotFoundError(f"Entity {into_id} not found")
+        return merged
 
     async def traces_by_id_prefix(
         self, prefix: str, *, user_id: str | None = None, limit: int = 5

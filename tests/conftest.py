@@ -52,6 +52,8 @@ def mock_entity_index() -> AsyncMock:
     e.get_traces_by_concept = AsyncMock(return_value=[])
     e.match_entities = AsyncMock(return_value=[])
     e.get_entities = AsyncMock(return_value=[])
+    e.get_entity = AsyncMock(return_value=None)
+    e.merge_entities = AsyncMock(return_value=True)
     e.delete_unmentioned_entities = AsyncMock(return_value=0)
     return e
 
