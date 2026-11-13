@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class _M001Initial:
     name = "m001_initial"
-    description = "Initial schema: 10 tables, 27 indexes, 3 HNSW vector indexes."
+    description = "Initial schema: 11 tables, 29 indexes, 3 HNSW vector indexes."
 
     async def up(self, conn: asyncpg.Connection[Any]) -> None:
         await conn.execute(SCHEMA_SQL)

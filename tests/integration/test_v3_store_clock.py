@@ -137,6 +137,11 @@ async def _seed_rows(pool: asyncpg.Pool) -> None:
             T0 + h,
         )
         await conn.execute(
+            "INSERT INTO entities (id, user_id, name, created_at)"
+            " VALUES ('e1', 'u', 'n', $1)",
+            T0,
+        )
+        await conn.execute(
             "INSERT INTO persona_facts (id, subject, predicate, object, content,"
             " user_id, created_at, updated_at)"
             " VALUES ('f1', 's', 'p', 'o', 'c', 'u', $1, $2)",
@@ -196,7 +201,7 @@ async def test_shift_is_exact_seconds_across_a_dst_boundary(
     await StoreClock(store, now=lambda: FROZEN).advance_to(shift)
 
     after = await _stamps(store)
-    assert len(before) == 15
+    assert len(before) == 16
     for key, values in before.items():
         assert values, f"{key} has no seeded row"
         expected = [None if v is None else v - shift for v in values]

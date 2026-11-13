@@ -128,6 +128,17 @@ class TraceEntity(BaseModel):
     trace_id: str
 
 
+class KnownEntity(BaseModel):
+    """Per-user entity identity behind mentions; name is the first-seen form."""
+
+    id: str
+    user_id: str | None = None
+    name: str
+    entity_type: str = "unknown"
+    trace_count: int = Field(default=0, ge=0)
+    created_at: dt = Field(default_factory=memory_timestamp_for_storage)
+
+
 class TraceConcept(BaseModel):
     """Links a concept to a memory trace."""
 

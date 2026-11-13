@@ -25,6 +25,9 @@ from recollect.bootstrap.migrations.m005_trace_status import (
 from recollect.bootstrap.migrations.m006_decay_anchor import (
     m006_decay_anchor,
 )
+from recollect.bootstrap.migrations.m007_entity_registry import (
+    m007_entity_registry,
+)
 
 
 def default_registry() -> MigrationRegistry:
@@ -35,6 +38,7 @@ def default_registry() -> MigrationRegistry:
     registry.register(m004_fact_orphan_cleanup)
     registry.register(m005_trace_status)
     registry.register(m006_decay_anchor)
+    registry.register(m007_entity_registry)
     return registry
 
 
@@ -46,4 +50,5 @@ __all__ = [
     "m004_fact_orphan_cleanup",
     "m005_trace_status",
     "m006_decay_anchor",
+    "m007_entity_registry",
 ]

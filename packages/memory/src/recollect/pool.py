@@ -16,7 +16,29 @@ from recollect.exceptions import StorageError
 
 logger = logging.getLogger(__name__)
 
-SCHEMA_SQL = """\
+# Entity identity key: the DDL and every input-name lookup format this one
+# expression; Python never computes the key (Unicode case rules would drift).
+# Collapse precedes trim: btrim strips spaces only, so an edge tab or newline
+# must become the space it removes.
+ENTITY_NAME_KEY_SQL = r"lower(btrim(regexp_replace({}, '\s+', ' ', 'g')))"
+
+ENTITIES_SQL = f"""\
+CREATE TABLE IF NOT EXISTS entities (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    name TEXT NOT NULL,
+    name_key TEXT GENERATED ALWAYS AS ({ENTITY_NAME_KEY_SQL.format("name")}) STORED,
+    entity_type TEXT NOT NULL DEFAULT 'unknown',
+    created_at TIMESTAMPTZ NOT NULL
+);
+
+-- name_key leads: link lookups filter on it with no entities.user_id predicate.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_entities_key_user
+    ON entities (name_key, user_id) NULLS NOT DISTINCT;
+"""
+
+SCHEMA_SQL = (
+    """\
 CREATE EXTENSION IF NOT EXISTS vector;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
@@ -75,10 +97,15 @@ CREATE TABLE IF NOT EXISTS associations (
     ) STORED
 );
 
+"""
+    + ENTITIES_SQL
+    + """
 CREATE TABLE IF NOT EXISTS trace_entities (
     entity_name TEXT NOT NULL,
     entity_type TEXT DEFAULT 'unknown',
     trace_id TEXT REFERENCES memory_traces(id) ON DELETE CASCADE,
+    -- No ON DELETE action: a mentioned entity cannot be deleted.
+    entity_id TEXT REFERENCES entities(id),
     PRIMARY KEY (entity_name, trace_id)
 );
 
@@ -157,6 +184,8 @@ CREATE INDEX IF NOT EXISTS idx_assoc_target
     ON associations (target_trace_id);
 CREATE INDEX IF NOT EXISTS idx_trace_entities_name
     ON trace_entities(entity_name);
+CREATE INDEX IF NOT EXISTS idx_trace_entities_entity
+    ON trace_entities(entity_id);
 CREATE INDEX IF NOT EXISTS idx_trace_concepts_concept
     ON trace_concepts(concept);
 CREATE INDEX IF NOT EXISTS idx_persona_facts_subject
@@ -190,6 +219,7 @@ CREATE INDEX IF NOT EXISTS idx_facts_user ON persona_facts(user_id);
 CREATE INDEX IF NOT EXISTS idx_token_stamps_trace ON token_stamps(trace_id);
 CREATE INDEX IF NOT EXISTS idx_token_stamps_token ON token_stamps(token_id);
 """
+)
 
 # HNSW index created separately -- requires pgvector 0.5+ but works on
 # empty tables unlike IVFFlat.

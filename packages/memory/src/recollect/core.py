@@ -48,6 +48,7 @@ from recollect.models import (
     ForgetResult,
     HealthReport,
     HealthStatus,
+    KnownEntity,
     MemoryStats,
     MemoryTrace,
     PersonaFact,
@@ -788,6 +789,9 @@ class CognitiveMemory:
             await self._storage.concept_embeddings.delete_by_owner(
                 "trace", trace_id
             )
+            # The cascade dropped this trace's mentions; an entity left with
+            # none is erased text surviving as a name.
+            await self._storage.entities.delete_unmentioned_entities()
         return deleted
 
     async def _gate_retired_candidates(
@@ -1022,6 +1026,12 @@ class CognitiveMemory:
         return await self._storage.facts.get_persona_facts(
             subject, user_id=user_id, statuses=statuses, limit=limit
         )
+
+    async def entities(
+        self, *, user_id: str | None = None, limit: int = 50
+    ) -> list[KnownEntity]:
+        """List registry entities, most-mentioned first."""
+        return await self._storage.entities.get_entities(user_id=user_id, limit=limit)
 
     async def traces_by_id_prefix(
         self, prefix: str, *, user_id: str | None = None, limit: int = 5

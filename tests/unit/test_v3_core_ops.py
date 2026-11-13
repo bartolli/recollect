@@ -45,6 +45,7 @@ class TestForgetAndReinforce:
         mem: CognitiveMemory,
         mock_trace_store: AsyncMock,
         mock_concept_embedding_store: AsyncMock,
+        mock_entity_index: AsyncMock,
     ) -> None:
         trace = MemoryTrace(id="erase-1", content="x")
         mem._buffer.add(trace)
@@ -56,16 +57,19 @@ class TestForgetAndReinforce:
         mock_concept_embedding_store.delete_by_owner.assert_awaited_once_with(
             "trace", "erase-1"
         )
+        mock_entity_index.delete_unmentioned_entities.assert_awaited_once_with()
 
     async def test_erase_missing_returns_false(
         self,
         mem: CognitiveMemory,
         mock_trace_store: AsyncMock,
         mock_concept_embedding_store: AsyncMock,
+        mock_entity_index: AsyncMock,
     ) -> None:
         mock_trace_store.delete_trace.return_value = False
         assert await mem.erase("nonexistent") is False
         mock_concept_embedding_store.delete_by_owner.assert_not_awaited()
+        mock_entity_index.delete_unmentioned_entities.assert_not_awaited()
 
     async def test_erase_rejects_empty_id(self, mem: CognitiveMemory) -> None:
         with pytest.raises(ValueError, match="non-empty"):

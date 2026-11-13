@@ -17,6 +17,7 @@ if TYPE_CHECKING:
         ConceptEmbedding,
         EntityRelation,
         FactStatus,
+        KnownEntity,
         MemoryTrace,
         PersonaFact,
         RecallToken,
@@ -115,6 +116,12 @@ class EntityIndex(Protocol):
     ) -> list[tuple[str, float]]:
         """Match entity names by trigram similarity."""
         ...
+
+    async def get_entities(
+        self, *, user_id: str | None = None, limit: int = 50
+    ) -> list[KnownEntity]: ...
+
+    async def delete_unmentioned_entities(self) -> int: ...
 
 
 class AssociationStore(Protocol):

@@ -29,6 +29,7 @@ SHIFTED_COLUMNS: tuple[tuple[str, str], ...] = (
     ("memory_traces", "last_decayed_at"),
     ("associations", "created_at"),
     ("associations", "last_activation"),
+    ("entities", "created_at"),
     ("persona_facts", "created_at"),
     ("persona_facts", "updated_at"),
     ("entity_relations", "created_at"),

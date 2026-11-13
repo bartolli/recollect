@@ -1,6 +1,6 @@
 """Integration test: bootstrap.apply on a fresh scratch DB.
 
-Verifies the full schema lands (10 tables, 3 HNSW vector indexes, 2
+Verifies the full schema lands (11 tables, 3 HNSW vector indexes, 2
 extensions, applied_migrations row count == registry size) and that a
 second apply() call is a no-op (idempotency invariant).
 """
@@ -94,7 +94,7 @@ class TestFreshBootstrap:
                 "sessions", "memory_traces", "associations",
                 "trace_entities", "trace_concepts", "persona_facts",
                 "entity_relations", "concept_embeddings", "recall_tokens",
-                "token_stamps", "applied_migrations",
+                "token_stamps", "applied_migrations", "entities",
             }
             assert expected_tables.issubset(tables)
 
