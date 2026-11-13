@@ -86,6 +86,7 @@ ignore = [
 "examples/*" = ["T201", "BLE001", "S110"]
 "packages/probe-cli/src/probe_cli/__main__.py" = ["T201"]
 "packages/probe-cli/tests/*" = ["S108"]
+"scripts/wheel_smoke.py" = ["T201", "S603"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10  # Enforce low complexity
