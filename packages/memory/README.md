@@ -44,7 +44,8 @@ asyncio.run(main())
 | `reinforce(trace_id, factor=1.1)` | Strengthen a trace. |
 | `pin(trace_id)` | Promote a trace's extracted relations to permanent persona facts. Returns the promoted facts. |
 | `unpin(fact_id)` | Archive a persona fact. It stops surfacing but is retained. |
-| `facts(subject=None)` | List persona facts. |
+| `facts(subject=None, statuses=None, limit=50)` | List persona facts, newest first. `statuses` filters before the limit; `limit=None` reads all. |
+| `health_report()` | Lifecycle counts by status and violated invariants. Returns `HealthReport`. |
 | `start_session(user_id)` | Begin a scoped session. |
 | `close()` | Disconnect and release resources. |
 
@@ -103,7 +104,7 @@ pydantic_ai_model = "ollama:ministral-3"   # pydantic-ai provider:model format
 | `[working_memory]` | Working memory capacity | `capacity` (default 7, range 5-9) |
 | `[retrieval]` | Retrieval pipeline tuning | `max_retrievals`, `search_limit`, `selection_threshold`, `reactivation_floor` |
 | `[extraction]` | LLM extraction | `max_tokens`, `max_concepts`, `max_relations`, `pydantic_ai_model`, `template_path`, `embed_relation_tags` |
-| `[extraction.model_settings]` | Provider-specific settings forwarded to pydantic-ai | `openrouter_reasoning`, `anthropic_thinking_budget`, `thinking`, `top_p` |
+| `[extraction.model_settings]` | Provider-specific settings forwarded to pydantic-ai | `openrouter_reasoning`, `anthropic_effort`, `thinking`, `top_p` |
 | `[embedding]` | Local embedding model | `model`, `dimensions` |
 | `[persona]` | Persona fact management | `auto_extract`, `confidence_threshold`, `ranking_strategy`, `max_facts_per_query`, `recall_relevance_floor` |
 | `[recall_tokens]` | Situational grouping at write + propagation at read | `enabled`, `assessment_max_tokens`, `assessment_template_path`, `write_time_anchor_k` (entity-anchored assessment candidates below the similarity threshold; 0 disables), plus strength / decay / propagation knobs (env-var-exposed above) |

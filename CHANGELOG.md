@@ -1,5 +1,22 @@
 # Changelog
 
+## [v0.17.1] - 2026-11-12
+
+### Added
+- `CognitiveMemory.health_report()` -> `HealthReport`: trace, fact, and session counts by status, degraded traces (active, no extracted concepts), surfacing facts total vs reachable, propagating vs dormant recall tokens, and violated invariants; unreachable storage yields `status=degraded` instead of raising; token counts are store-wide
+- `CognitiveMemory.facts` / `get_persona_facts`: `statuses` filters in SQL ahead of the limit; `limit=None` reads unbounded; the default stays a 50-row browse page
+
+### Changed
+- `memory://health` payload is `HealthReport` (was a bare `status`)
+- `forget` accepts archived traces (was active only)
+- `recollect` requires `pydantic-ai>=2.67` -- the release-verified resolved closure; `recollect-mcp` requires `recollect>=0.17.1`
+
+### Fixed
+- promoted and pinned persona facts reach reflect, `memory://primer`, `memory://facts`, the skip-reflect safety net, write-time safety surfacing, and the recall promoted supplement regardless of how many newer facts exist: every surfacing read is status-filtered and unbounded (was the 50 newest facts, status-filtered after the cut)
+- persona-fact dedup and pin reconciliation read every live fact for the subject: a restated fact outside the 50 newest increments its mention count instead of writing a duplicate row
+- forgotten traces are excluded from semantic search in SQL ahead of the limit, and from write-time assessment candidates
+- `PydanticAIProvider` serves models that refuse `temperature`: a refusal that names it, as an HTTP 400 or as `ModelRequestRejectedError`, is retried without it and `temperature` is omitted for the provider's lifetime; every `ModelAPIError` translates to `ExtractionError` (0.17.0 always sent `temperature` and stored the trace with empty extraction on a refusal)
+
 ## [v0.17.0] - 2026-08-09
 
 ### Added
