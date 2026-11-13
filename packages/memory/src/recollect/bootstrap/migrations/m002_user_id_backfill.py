@@ -48,7 +48,7 @@ class _M002UserIdBackfill:
         if null_count and not default_uid:
             raise BootstrapError(
                 f"persona_facts has {null_count} rows with NULL user_id; "
-                "set server.user_id in config (or MEMORY_SERVER_USER_ID env) "
+                "set server.user_id in config (or MEMORY_USER_ID env) "
                 "before this migration can apply."
             )
         if default_uid:
