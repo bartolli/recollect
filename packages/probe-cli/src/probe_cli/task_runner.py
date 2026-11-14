@@ -211,7 +211,9 @@ class TaskVerifyReport(BaseModel):
         return [c for c in self.checks if not c.holds]
 
 
-async def ask(provider: LLMProvider, question: str, context: str) -> str:
+async def ask(
+    provider: LLMProvider, question: str, context: str, *, max_tokens: int = 256
+) -> str:
     content = (
         f"{context}\n\nQuestion: {question}" if context else (f"Question: {question}")
     )
@@ -220,7 +222,7 @@ async def ask(provider: LLMProvider, question: str, context: str) -> str:
             Message(role="system", content=_ANSWER_SYSTEM),
             Message(role="user", content=content),
         ],
-        max_tokens=256,
+        max_tokens=max_tokens,
     )
 
 

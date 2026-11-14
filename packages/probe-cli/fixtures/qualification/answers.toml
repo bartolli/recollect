@@ -1,0 +1,23 @@
+# Qualification answers: free-form queries answered from the MCP recall text of the store qualification/arm.toml seeded under user probe-qualification-haiku55, read on a copy.
+#   uv run --env-file .env probe recall-answers --arm packages/probe-cli/fixtures/qualification/answers.toml --template-db probe_qualification_keep --queries packages/probe-cli/fixtures/qualification/queries.jsonl --user-id probe-qualification-haiku55 --out-dir out/qualification-haiku55
+# probe_qualification_keep is a template copy of probe_eval taken after the seeding; it lives on the server RECOLLECT_PROBE_DB_URL names.
+# Packaged retrieval defaults apply: no recollect_overrides. The artifact joins the seeding run's evidence directory.
+
+[arm]
+name = "qualification-answers-haiku55"
+runs = 1
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-5-5"
+
+[corpus]
+# Schema-required; recall-answers reads its queries from --queries.
+path = ""
+
+[output]
+dir = "out"
+
+[task]
+enabled = true
+db_url = "${RECOLLECT_PROBE_DB_URL}"
+answer_model = "anthropic:claude-haiku-5-5"

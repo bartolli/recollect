@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from probe_cli.corpus import TaskQuestion, TaskSeedTrace
-from probe_cli.task_runner import TaskArmRunner, _Seeding
+from probe_cli.task_runner import TaskArmRunner, _Seeding, ask
 from recollect.config import MemoryConfig
 from recollect.models import SURFACING_STATUSES
 
@@ -127,3 +127,10 @@ async def test_an_answer_records_the_window_it_was_given(
 
     assert result.window == ["1. s00 0.910", "2. ~fact-000 0.500"]
     memory.think_about.assert_awaited_once()
+
+
+async def test_ask_keeps_the_task_arm_answer_budget_by_default() -> None:
+    provider = MagicMock()
+    provider.complete = AsyncMock(return_value="answer")
+    await ask(provider, "question", "context")
+    assert provider.complete.await_args.kwargs["max_tokens"] == 256

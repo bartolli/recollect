@@ -36,10 +36,13 @@ from probe_cli.metrics import (
     aggregate_retrieval_runs,
     aggregate_runs,
 )
+from probe_cli.recall_answers import RecallAnswersReport
+from probe_cli.recall_answers import read as read_recall_answers
 from probe_cli.report import (
     write_case_breakdown,
     write_entity_reach_report,
     write_fusion_screen_report,
+    write_recall_answers_report,
     write_retrieval_run_report,
     write_retrieval_summary,
     write_run_report,
@@ -250,6 +253,38 @@ def main() -> int:
         help="Path to .env file (default: ./.env). Pass empty string to skip.",
     )
     labels.set_defaults(verbose=False)
+    recall = sub.add_parser(
+        "recall-answers",
+        help=(
+            "Answer free-form queries from the MCP recall text of one captured "
+            "window per query on a store copy (writes the copy only)."
+        ),
+    )
+    recall.add_argument(
+        "--arm", required=True, type=Path, help="Task arm TOML: config, DB URL, model."
+    )
+    recall.add_argument(
+        "--template-db",
+        required=True,
+        help="Store to copy from; never connected to.",
+    )
+    recall.add_argument(
+        "--queries",
+        required=True,
+        type=Path,
+        help="JSONL of {id, text, relevant_trace_ids} (retrieval query corpus).",
+    )
+    recall.add_argument(
+        "--out-dir", required=True, type=Path, help="Directory for the artifact."
+    )
+    recall.add_argument("--user-id", help="Store user (default: probe-<arm name>).")
+    recall.add_argument(
+        "--env-file",
+        type=Path,
+        default=Path(".env"),
+        help="Path to .env file (default: ./.env). Pass empty string to skip.",
+    )
+    recall.set_defaults(verbose=False)
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -302,15 +337,8 @@ def main() -> int:
                 queries_path=args.queries,
             )
         )
-    if args.cmd == "weak-label-answers":
-        return asyncio.run(
-            _run_weak_label_answers(
-                args.arm,
-                template_db=args.template_db,
-                out_dir=args.out_dir,
-                user_id=args.user_id,
-            )
-        )
+    if args.cmd in ("weak-label-answers", "recall-answers"):
+        return asyncio.run(_run_answers(args))
     return 1
 
 
@@ -599,6 +627,24 @@ async def _run_weak_match_screen(
     return 0 if report.validity.matched == report.validity.checks else 1
 
 
+async def _run_answers(args: argparse.Namespace) -> int:
+    # One branch for both answer commands keeps main under the C901 cap.
+    if args.cmd == "recall-answers":
+        return await _run_recall_answers(
+            args.arm,
+            template_db=args.template_db,
+            queries_path=args.queries,
+            out_dir=args.out_dir,
+            user_id=args.user_id,
+        )
+    return await _run_weak_label_answers(
+        args.arm,
+        template_db=args.template_db,
+        out_dir=args.out_dir,
+        user_id=args.user_id,
+    )
+
+
 async def _run_weak_label_answers(
     arm_path: Path, *, template_db: str, out_dir: Path, user_id: str | None
 ) -> int:
@@ -624,6 +670,40 @@ async def _run_weak_label_answers(
     write_weak_label_answers_report(report, out_dir)
     _print_weak_label_answers(report)
     # Exit 1 = a question whose offline replay missed think_about's window.
+    return 0 if report.validity.matched == report.validity.checks else 1
+
+
+async def _run_recall_answers(
+    arm_path: Path,
+    *,
+    template_db: str,
+    queries_path: Path,
+    out_dir: Path,
+    user_id: str | None,
+) -> int:
+    arm = load_arm(arm_path)
+    if not arm.task.enabled or not arm.task.answer_model:
+        logger.error("recall-answers requires a task arm with an answer_model")
+        return 2
+    # The provider reads extraction timeout, retries and settings from process config.
+    arm.apply_process_overrides()
+    try:
+        report = await read_recall_answers(
+            arm,
+            template=template_db,
+            user_id=user_id or f"probe-{arm.name}",
+            queries_path=queries_path,
+            provider=PydanticAIProvider(model=arm.task.answer_model),
+        )
+    except ScreenPreconditionError as exc:
+        logger.error("%s", exc)
+        return 2
+    except MemorySDKError:
+        logger.exception("recall-answers failed; no artifact written")
+        return 1
+    write_recall_answers_report(report, out_dir)
+    _print_recall_answers(report)
+    # Exit 1 = a query whose offline replay missed think_about's window.
     return 0 if report.validity.matched == report.validity.checks else 1
 
 
@@ -1092,6 +1172,19 @@ def _print_weak_label_totals(report: WeakLabelAnswersReport) -> None:
         f"none-tier abstained: current {cur}/{total} (fabricated {total - cur})"
         f"  labelled {lab}/{total} (fabricated {total - lab})"
     )
+
+
+def _print_recall_answers(report: RecallAnswersReport) -> None:
+    v = report.validity
+    print(
+        f"\nStore: {report.template_db}  user={report.user_id}"
+        f"  validity={v.matched}/{v.checks}  repeats={report.repeats}"
+    )
+    for q in report.queries:
+        # repr keeps a multi-line response on its query's one line.
+        counts = Counter(q.responses).most_common()
+        answers = "  ".join(f"{n}x {response!r}" for response, n in counts)
+        print(f"{q.query_id}  delivered={q.delivered}  {answers}")
 
 
 def _print_situational_summary(
