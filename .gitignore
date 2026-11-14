@@ -83,3 +83,4 @@ out/**
 !out/**/verdict_oracle.json
 !out/**/aging.json
 !out/**/situational_summary.json
+!out/authoring-guidance-haiku45/**

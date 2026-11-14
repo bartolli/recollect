@@ -1,0 +1,529 @@
+{
+  "name": "guidance-haiku45",
+  "execution_id": "9ace3bf0",
+  "model": "anthropic:claude-haiku-4-5-20251001",
+  "sessions": [
+    {
+      "variant": "served",
+      "conversation_id": "elliptical-referent",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "bouncy castle": true,
+            "Larkspur": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "served",
+      "conversation_id": "elliptical-referent",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "bouncy castle": true,
+            "Larkspur": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "served",
+      "conversation_id": "conversation-dependency",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 3,
+          "remember_calls": 1,
+          "mentions": {
+            "Corvina": true,
+            "sommelier": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "served",
+      "conversation_id": "conversation-dependency",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 3,
+          "remember_calls": 1,
+          "mentions": {
+            "Corvina": true,
+            "sommelier": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "served",
+      "conversation_id": "reported-uncertain",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Halvard": true,
+            "hive": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "served",
+      "conversation_id": "reported-uncertain",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Halvard": true,
+            "hive": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "served",
+      "conversation_id": "implied-consequence",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "jury": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "served",
+      "conversation_id": "implied-consequence",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "jury": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "served",
+      "conversation_id": "correction",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 0,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        },
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "served",
+      "conversation_id": "correction",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 0,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        },
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "client-v1",
+      "conversation_id": "elliptical-referent",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "bouncy castle": true,
+            "Larkspur": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "client-v1",
+      "conversation_id": "elliptical-referent",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "bouncy castle": true,
+            "Larkspur": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "client-v1",
+      "conversation_id": "conversation-dependency",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 3,
+          "remember_calls": 1,
+          "mentions": {
+            "Corvina": true,
+            "sommelier": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "client-v1",
+      "conversation_id": "conversation-dependency",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 3,
+          "remember_calls": 1,
+          "mentions": {
+            "Corvina": true,
+            "sommelier": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "client-v1",
+      "conversation_id": "reported-uncertain",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Halvard": true,
+            "hive": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "client-v1",
+      "conversation_id": "reported-uncertain",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Halvard": true,
+            "hive": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "client-v1",
+      "conversation_id": "implied-consequence",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "jury": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "client-v1",
+      "conversation_id": "implied-consequence",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "jury": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "client-v1",
+      "conversation_id": "correction",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 0,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        },
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "client-v1",
+      "conversation_id": "correction",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 0,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        },
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "proposed",
+      "conversation_id": "elliptical-referent",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "bouncy castle": true,
+            "Larkspur": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "proposed",
+      "conversation_id": "elliptical-referent",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "bouncy castle": true,
+            "Larkspur": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "proposed",
+      "conversation_id": "conversation-dependency",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 3,
+          "remember_calls": 1,
+          "mentions": {
+            "Corvina": true,
+            "sommelier": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "proposed",
+      "conversation_id": "conversation-dependency",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 3,
+          "remember_calls": 1,
+          "mentions": {
+            "Corvina": true,
+            "sommelier": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "proposed",
+      "conversation_id": "reported-uncertain",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Halvard": true,
+            "hive": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "proposed",
+      "conversation_id": "reported-uncertain",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Halvard": true,
+            "hive": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "proposed",
+      "conversation_id": "implied-consequence",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "jury": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "proposed",
+      "conversation_id": "implied-consequence",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "jury": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "proposed",
+      "conversation_id": "correction",
+      "run": 0,
+      "error": null,
+      "targets": [
+        {
+          "turn": 0,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        },
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        }
+      ]
+    },
+    {
+      "variant": "proposed",
+      "conversation_id": "correction",
+      "run": 1,
+      "error": null,
+      "targets": [
+        {
+          "turn": 0,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        },
+        {
+          "turn": 2,
+          "remember_calls": 1,
+          "mentions": {
+            "Quillmere": true,
+            "railway": true
+          }
+        }
+      ]
+    }
+  ]
+}
