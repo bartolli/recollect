@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -97,6 +98,28 @@ async def test_the_rejection_is_remembered_for_the_provider(
 
     # The later call spends no request rediscovering the rejection.
     assert ["temperature" in sent for sent in _sent(agent)] == [True, False, False]
+
+
+async def test_concurrent_calls_each_retry_their_own_rejection(
+    provider: PydanticAIProvider, _rejection: _Rejection
+) -> None:
+    # The yield puts every request in flight, temperature sent, before the
+    # first rejection is handled.
+    async def _run(_: str, *, model_settings: dict[str, Any]) -> MagicMock:
+        await asyncio.sleep(0)
+        if "temperature" in model_settings:
+            raise _rejection(_TEMPERATURE)
+        return MagicMock(output="ok")
+
+    agent = MagicMock()
+    agent.run = AsyncMock(side_effect=_run)
+
+    with patch("pydantic_ai.Agent", return_value=agent):
+        calls = (provider.complete(_MESSAGES) for _ in range(3))
+        assert await asyncio.gather(*calls) == ["ok"] * 3
+
+    carried = sorted("temperature" in sent for sent in _sent(agent))
+    assert carried == [False] * 3 + [True] * 3
 
 
 async def test_a_model_that_accepts_temperature_keeps_it(

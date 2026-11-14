@@ -97,14 +97,17 @@ class PydanticAIProvider:
 
         settings = self._build_model_settings(self._defaults, **kwargs)
         without = {k: v for k, v in settings.items() if k != "temperature"}
-        if self._omit_temperature:
+        omitted = self._omit_temperature
+        if omitted:
             settings = without
         try:
             return await agent.run(
                 user_prompt, model_settings=cast(ModelSettings, settings)
             )
         except ModelAPIError as exc:
-            if self._omit_temperature or not _rejects_temperature(exc):
+            # What this request sent, not the flag: a concurrent request can
+            # set the flag while this one is in flight with temperature.
+            if omitted or not _rejects_temperature(exc):
                 raise
             logger.exception(
                 "Model %s rejects temperature; omitting it for this provider",
