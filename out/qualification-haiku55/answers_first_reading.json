@@ -1,0 +1,123 @@
+{
+  "note": "First reading of recall_answers.json; the owner's reading decides. The rule was fixed before the run.",
+  "rule": [
+    "An answer passes when it gives the stated value and keeps what the query asks about: certainty, source, current value.",
+    "`unknown` on an answerable query fails.",
+    "A query is stable at 5 of 5, unstable at 1 to 4, failed at 0.",
+    "When both corrected queries are stable with the original and the correction both delivered, an undeleted original is not a demonstrated answer cost."
+  ],
+  "items": [
+    {
+      "id": "q-might-1",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "\"No\" or \"nothing has been booked\": the outing is not given as confirmed"
+    },
+    {
+      "id": "q-will-1",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "4 March 2027 and 45 pounds per lesson"
+    },
+    {
+      "id": "q-reported-1",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "names Femi Adeyemi; the query asks only who says it, and no answer restates the emigration as fact"
+    },
+    {
+      "id": "q-might-2",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "\"No\"; one answer adds \"only considering it and has not committed any money\""
+    },
+    {
+      "id": "q-corrected-1b",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "29 May 2027; the window holds the original first (0.99) and the correction second (0.94)"
+    },
+    {
+      "id": "q-will-2",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "9:30 am on 14 April 2027"
+    },
+    {
+      "id": "q-reported-2",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "a loose exhaust heat shield as what Rasmus Ekdahl thinks is probably the cause; all five keep \"thinks\" or \"probably\""
+    },
+    {
+      "id": "q-corrected-2b",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "the Old Granary in Norwich; the window holds the original first (0.92) and the correction second (0.89)"
+    },
+    {
+      "id": "q-might-3",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "undecided, only if Pemberton and Lisle values the collection above 6,000 pounds"
+    },
+    {
+      "id": "q-will-3",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "yes, with the election on 10 June 2027"
+    },
+    {
+      "id": "q-reported-3",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "names Corrado Bellini; the user's \"not convinced\" is given as \"not convinced\" once, \"does not agree\" three times and \"no\" once, to a query that asks whether the user agrees"
+    },
+    {
+      "id": "q-screen-1",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "Halvard Lunde; merging is not settled, only being considered"
+    },
+    {
+      "id": "q-screen-2",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "Halvard Lunde"
+    },
+    {
+      "id": "q-screen-3",
+      "passes": "1 of 5",
+      "verdict": "unstable",
+      "reason": "four answers are \"unknown\" and one is \"No.\"; the statement promises the job if the user passes in October 2026, the memory prints 2026-11-14 and no trace records the result. \"unknown\" does not harden the condition; it fails only as `unknown` on a query whose intended answer is no"
+    },
+    {
+      "id": "q-screen-4",
+      "passes": "5 of 5",
+      "verdict": "stable",
+      "reason": "jury service March 23 to 27, 2026; Marisol arrives March 20"
+    }
+  ],
+  "totals": {
+    "stable": 14,
+    "unstable": 1,
+    "failed": 0,
+    "answers_passing": "71 of 75",
+    "superseded_value_given_as_current": 0,
+    "possibility_condition_or_opinion_hardened": 0
+  },
+  "corrected_pairs": "Both corrected queries are stable with the original ranked first and the correction second in the window. Both corrections name what they replace (\"replacing the earlier ...\"): for such a correction, on this store, an undeleted original is not a demonstrated answer cost.",
+  "observations": [
+    "No persona fact appears in any window: the store's two facts are candidates. Every answer is read from trace content.",
+    "Every window delivers 7 of the 17 stored traces; at most 2 bear on the query and the rest score 0.52 to 0.68.",
+    "A first run at the task arm's 256-token answer budget ended with no artifact: one ask returned \"Model token limit (256) exceeded before any response was generated\". This run uses 2048.",
+    "The answer prompt asks for the shortest factual phrase: \"No.\" is the whole answer in 6 of 10 answers to the two yes-or-no `might` queries."
+  ],
+  "unmeasured": [
+    "A persona fact line in the answerer's context: no promoted or pinned fact exists in this store.",
+    "A correction that does not name what it replaces: both corrections in this store do.",
+    "A corrected pair when only the original is delivered: both halves were delivered for both queries.",
+    "A consumer other than claude-haiku-5-5, and `reflect` output.",
+    "One query per statement, matched to its statement by id only."
+  ]
+}

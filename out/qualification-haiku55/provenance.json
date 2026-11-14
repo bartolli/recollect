@@ -1,0 +1,13 @@
+{
+  "note": "The run recorded no commit or input hashes. Recorded at export time: the head commit, that the fixtures were untracked, input hashes, and that the 17 stored trace contents equal traces.jsonl in file order.",
+  "head_at_export": "95316b7c195ab2e4f433ab4680951cdae21231da",
+  "fixtures_untracked_at_run": true,
+  "input_sha256": {
+    "traces.jsonl": "5595f377abeef1c68593912b925fc38457494481701a6916a56b0b8bc5900822",
+    "queries.jsonl": "80d04e45455a1bb683ebe0b354c9d91851c2a835693f980f3d205a94eb7028a5",
+    "reader_key.jsonl": "2f34d64b66b1c7450cc25baaedadecf7386aefd1004b5fdce09d93b862e55fb3",
+    "arm.toml": "9f69acc2ef523b9aeaf7ca4d1fdfdd7190f2735c30d641eaafa8289c07b6a69a"
+  },
+  "ingested_contents_equal_fixture": true,
+  "user_id": "probe-qualification-haiku55"
+}

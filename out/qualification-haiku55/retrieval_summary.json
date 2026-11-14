@@ -1,0 +1,19 @@
+{
+  "arm_name": "qualification-haiku55",
+  "runs": 1,
+  "queries_per_run": 15,
+  "top_k": 5,
+  "prompt_version": "1.2.1",
+  "model": "anthropic:claude-haiku-5-5",
+  "recall_at_k_mean": 1.0,
+  "recall_at_k_std": 0.0,
+  "mrr_mean": 0.9,
+  "mrr_std": 0.0,
+  "intrusion_rate_mean": 0.8,
+  "intrusion_rate_std": 0.0,
+  "distractor_intrusion_mean": 0.0,
+  "distractor_intrusion_std": 0.0,
+  "persona_facts_per_query_mean": 0.0,
+  "persona_facts_per_query_std": 0.0,
+  "per_category": {}
+}

@@ -1,0 +1,230 @@
+{
+  "note": "First reading; the owner's reading decides. One verdict per item on its kind checks (source, certainty, condition, current state), for relation triples read alone and relation contexts read alone. A corrected pair is read with both statements together.",
+  "items": [
+    {
+      "id": "might-1",
+      "triple_alone": "fail",
+      "triple_reason": "`hot-air ballooning over the Cotswolds scheduled_for July 2027` reads as scheduled",
+      "context_alone": "pass",
+      "context_reason": "\"tentatively planned ... with no booking made\""
+    },
+    {
+      "id": "might-2",
+      "triple_alone": "pass",
+      "triple_reason": "`user is_interested_in racehorse syndicate share` reads as interest, not a purchase",
+      "context_alone": "pass",
+      "context_reason": "\"is considering ... has not committed money yet\""
+    },
+    {
+      "id": "might-3",
+      "triple_alone": "not carried",
+      "triple_reason": "only `user is_associated_with Pemberton and Lisle`; no triple speaks about selling",
+      "context_alone": "pass",
+      "context_reason": "\"weighing whether to sell ... only if ... appraises it above 6,000 pounds\""
+    },
+    {
+      "id": "will-1",
+      "triple_alone": "fail",
+      "triple_reason": "`user takes_medication fencing lessons`: wrong predicate, no date or price",
+      "context_alone": "pass",
+      "context_reason": "\"has booked ten fencing lessons ... starting 4 March 2027 at 45 pounds per lesson\""
+    },
+    {
+      "id": "will-2",
+      "triple_alone": "fail",
+      "triple_reason": "`Noor Haddad (tattoo artist) scheduled_for 14 April 2027 9:30 am`: read alone it schedules Noor Haddad; the user's session is not in the triple",
+      "context_alone": "pass",
+      "context_reason": "\"has a tattoo session ... on 14 April 2027 at 9:30 am\""
+    },
+    {
+      "id": "will-3",
+      "triple_alone": "pass",
+      "triple_reason": "`user holds_role Ashcombe Parish Council candidate`, `user scheduled_for parish election 10 June 2027`",
+      "context_alone": "pass",
+      "context_reason": "\"has filed nomination papers ... election on 10 June 2027\""
+    },
+    {
+      "id": "reported-1",
+      "triple_alone": "fail",
+      "triple_reason": "`user's great-grandfather originates_from Cork`, `... lives_in Halifax`: stated as fact, no source",
+      "context_alone": "pass",
+      "context_reason": "\"is believed to have emigrated ... per the genealogist Femi Adeyemi's view\""
+    },
+    {
+      "id": "reported-2",
+      "triple_alone": "fail",
+      "triple_reason": "`camper van is_associated_with loose exhaust heat shield`: no source, no uncertainty",
+      "context_alone": "pass",
+      "context_reason": "\"the mechanic Rasmus Ekdahl thinks is probably ...; the diagnosis is unconfirmed\""
+    },
+    {
+      "id": "reported-3",
+      "triple_alone": "fail",
+      "triple_reason": "`Corrado Bellini (user's friend) is_associated_with field mushrooms gathered in Hatherley Woods`: identification read as fact, user's doubt absent",
+      "context_alone": "pass",
+      "context_reason": "\"Corrado Bellini identified as edible field mushrooms, a claim the user doubts\""
+    },
+    {
+      "id": "corrected-1 (pair)",
+      "triple_alone": "fail",
+      "triple_reason": "`... scheduled_for graduation ceremony on 22 May 2027` and `... scheduled_for 29 May 2027` both live, no order between them",
+      "context_alone": "pass",
+      "context_reason": "the b context says \"replacing the earlier date of 22 May 2027\""
+    },
+    {
+      "id": "corrected-2 (pair)",
+      "triple_alone": "pass",
+      "triple_reason": "only `Lindy Hop practice is_associated_with Old Granary (Norwich)` names a place",
+      "context_alone": "pass",
+      "context_reason": "the b context says \"now takes place at the Old Granary ..., replacing the earlier Kingsmill Rooms venue\""
+    },
+    {
+      "id": "screen-1",
+      "triple_alone": "fail",
+      "triple_reason": "`user's hive with low entrance activity is_associated_with suspected queen loss`: uncertainty kept, Halvard absent; no triple about the merge",
+      "context_alone": "fail",
+      "context_reason": "source and uncertainty kept, but one context says \"the planned October 2026 colony merger\" where the statement says \"are considering merging\""
+    },
+    {
+      "id": "screen-2",
+      "triple_alone": "fail",
+      "triple_reason": "`low-activity hive (user's hive) scheduled_for colony merge in October 2026` for \"might be merged\"; Halvard absent from the queen triple",
+      "context_alone": "pass",
+      "context_reason": "\"The bee inspector suggested merging\", \"before deciding on a merge\""
+    },
+    {
+      "id": "screen-3",
+      "triple_alone": "fail",
+      "triple_reason": "`user (boss-promised candidate) is_interested_in head of wine role`: not held, but the condition is absent",
+      "context_alone": "pass",
+      "context_reason": "\"promised the head of wine position contingent on passing\""
+    },
+    {
+      "id": "screen-4",
+      "triple_alone": "pass",
+      "triple_reason": "`User scheduled_for jury service March 23-27, 2026`, `Marisol (User's cousin) scheduled_for visit March 20-27, 2026`",
+      "context_alone": "pass",
+      "context_reason": "dates restated as written"
+    }
+  ],
+  "contexts_with_added_claim": [
+    {
+      "id": "might-1",
+      "quote": "so dates and reservations need coordinating early"
+    },
+    {
+      "id": "might-1",
+      "quote": "weather windows and operator availability constrain the date"
+    },
+    {
+      "id": "corrected-1a",
+      "quote": "so the user should plan to attend and arrange travel and accommodation to Bath around that date"
+    },
+    {
+      "id": "corrected-2a",
+      "quote": "so it constrains weekly scheduling and evening availability"
+    },
+    {
+      "id": "corrected-1b",
+      "quote": "the user should plan around the corrected date"
+    },
+    {
+      "id": "will-2",
+      "quote": "Noor Haddad works at Inkwell Parlour in Brighton"
+    },
+    {
+      "id": "will-3",
+      "quote": "this is a significant civic commitment shaping schedule and public-facing activity"
+    },
+    {
+      "id": "will-3",
+      "quote": "so it anchors campaign planning"
+    },
+    {
+      "id": "reported-2",
+      "quote": "so he is the reference point for any follow-up repair of the van"
+    },
+    {
+      "id": "reported-3",
+      "quote": "whose identification of wild fungi the user should weigh when deciding whether foraged mushrooms are safe to eat"
+    },
+    {
+      "id": "screen-2",
+      "quote": "suggested a queen check"
+    },
+    {
+      "id": "screen-2",
+      "quote": "so the queen status should be verified before deciding on a merge"
+    },
+    {
+      "id": "screen-2",
+      "quote": "which requires timing and preparation"
+    },
+    {
+      "id": "screen-4",
+      "quote": "so the user will be unavailable during part of her stay"
+    }
+  ],
+  "ruling_on_added_claims": "A retrieval hint (relevant when ..., useful when ...) is not a claim. Advice (should ...), an unstated fact, or an asserted consequence is.",
+  "retrieval_hints_not_counted": [
+    {
+      "id": "reported-2",
+      "quote": "matters before long drives or trips"
+    },
+    {
+      "id": "reported-3",
+      "quote": "the disagreement matters before anyone eats them"
+    }
+  ],
+  "representations_read": {
+    "relation_triple_alone": "items[].triple_alone",
+    "relation_context_alone": "items[].context_alone",
+    "persona_fact_as_printed": "Only corrected-2a produced persona facts (2 candidates); it is the one statement extracted as fact_type semantic, and the fact gate skips every other fact_type. Read as a pair with corrected-2b this fails: `user practices Lindy Hop -- The user attends a weekly Lindy Hop practice session at Kingsmill Rooms in Norwich, so it constrains weekly scheduling and evening availability.` states the superseded place as current, adds \"evening availability\", and no fact derived from corrected-2b supersedes it.",
+    "trace_content": "Each trace is its statement, so it passes its own checks by construction. For both corrected pairs the query returned the original first and the correction second; the correction's text says what it replaces."
+  },
+  "contexts_with_added_claim_count": "at least 14 of 33",
+  "borderline_contexts_not_counted": [
+    {
+      "id": "corrected-1b",
+      "quote": "so the ceremony and related family logistics center on that institution"
+    },
+    {
+      "id": "corrected-2a",
+      "quote": "so she is a link between work and this dance activity"
+    },
+    {
+      "id": "might-3",
+      "quote": "this is a conditional, one-time financial decision"
+    },
+    {
+      "id": "screen-1",
+      "quote": "is advising on whether to merge colonies in October 2026"
+    }
+  ],
+  "triples_with_added_claim": [
+    {
+      "id": "will-1",
+      "triple": "user takes_medication fencing lessons",
+      "note": "false predicate; extractor confidence 0.3"
+    },
+    {
+      "id": "reported-1",
+      "triple": "user's great-grandfather lives_in Halifax",
+      "note": "present-tense residence for \"emigrated from Cork to Halifax as a teenager\""
+    }
+  ],
+  "rulings": [
+    "will-2 fails on the triple: the date and time are kept, and a triple read alone takes no meaning from the statement it came from.",
+    "\"suggested merging\" passes for \"might be merged\" (screen-2).",
+    "\"tentatively planned ... with no booking made\" passes for \"might\" (might-1); \"the planned October 2026 colony merger\" fails for \"are considering merging\" (screen-1).",
+    "screen-4 \"unavailable during part of her stay\" is counted as an added claim, following the earlier ruling on \"unavailable\".",
+    "\"matters before ...\" names when a context is relevant: a retrieval hint, not counted (reported-2, reported-3)."
+  ],
+  "unmeasured": [
+    "A hedged persona fact as printed: no hedged statement produced a persona fact in this run.",
+    "Situational group labels: no group formed, and the run does not record whether the assessment returned none or failed.",
+    "Regression recurrence: one extraction per statement. screen-2's scheduled_for merge triple recurred; screen-1's merge triple and holds_role head of wine did not, which is not a fix.",
+    "The fast-track promotion path for a hedged statement.",
+    "Queries were matched to statements by id only."
+  ]
+}

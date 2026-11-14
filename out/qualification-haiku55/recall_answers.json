@@ -1,0 +1,212 @@
+{
+  "arm_name": "qualification-answers-haiku55",
+  "template_db": "probe_qualification_keep",
+  "user_id": "probe-qualification-haiku55",
+  "queries_path": "packages/probe-cli/fixtures/qualification/queries.jsonl",
+  "queries_sha256": "80d04e45455a1bb683ebe0b354c9d91851c2a835693f980f3d205a94eb7028a5",
+  "answer_model": "anthropic:claude-haiku-5-5",
+  "repeats": 5,
+  "validity": {
+    "matched": 15,
+    "checks": 15,
+    "archived_candidates": 0,
+    "mismatches": []
+  },
+  "queries": [
+    {
+      "query_id": "q-might-1",
+      "query": "Is the Cotswolds ballooning with Corinne Mbeki confirmed?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [da462cad] [score: 0.93, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.\n- [868f2599] [score: 0.61, 2026-11-14] The user's friend Corrado Bellini, an amateur mycologist, says the mushrooms the user picked in Hatherley Woods on 9 October 2027 are edible field mushrooms; the user is not convinced.\n- [c66d80ff] [score: 0.61, 2026-11-14] The graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 22 May 2027.\n- [639003bd] [score: 0.60, 2026-11-14] The user's boss has promised the user the head of wine job if the user passes the Level 3 sommelier certificate in October 2026. This promotion is the user's main reason for sitting the exam. (Reported by the user.)\n- [66126d81] [score: 0.59, 2026-11-14] Bee inspector Halvard Lunde thinks the user's low-activity hive (one of two hives) has probably lost its queen. Halvard suggested the colony might be merged with the other hive next month (October 2026).\n- [f6a9b5aa] [score: 0.59, 2026-11-14] Correction: the graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 29 May 2027, replacing the earlier date of 22 May 2027.\n- [5b752600] [score: 0.57, 2026-11-14] Bee inspector Halvard Lunde, who inspected the user's hive on 2026-09-14, thinks the hive with almost no entrance activity has probably lost its queen. Halvard and the user are considering merging that colony with the user's other hive next month (October 2026). This is reported by the user, not confirmed by testing.",
+      "responses": [
+        "No, nothing has been booked.",
+        "No.",
+        "No.",
+        "No, nothing has been booked.",
+        "No, nothing has been booked."
+      ]
+    },
+    {
+      "query_id": "q-will-1",
+      "query": "When do the user's lessons at Sabrewood Fencing Club start, and what does each one cost?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [8db9008a] [score: 0.94, 2026-11-14] The user has booked ten fencing lessons with the user's instructor, Oskar Halme, at Sabrewood Fencing Club, starting on 4 March 2027 at 45 pounds per lesson.\n- [639003bd] [score: 0.63, 2026-11-14] The user's boss has promised the user the head of wine job if the user passes the Level 3 sommelier certificate in October 2026. This promotion is the user's main reason for sitting the exam. (Reported by the user.)\n- [02e65c57] [score: 0.62, 2026-11-14] The user has been called for jury service from March 23 to March 27, 2026. This overlaps with cousin Marisol's visit (arriving March 20 for one week), so the user will be at jury duty during part of her stay.\n- [da462cad] [score: 0.61, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.\n- [80541032] [score: 0.61, 2026-11-14] The user's weekly Lindy Hop dance practice, run by the user's colleague Ilse Marchand, takes place at Kingsmill Rooms in Norwich.\n- [f5292393] [score: 0.61, 2026-11-14] The user's tattoo session with the user's tattoo artist, Noor Haddad, at Inkwell Parlour in Brighton is scheduled for 14 April 2027 at 9:30 am.\n- [c66d80ff] [score: 0.60, 2026-11-14] The graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 22 May 2027.",
+      "responses": [
+        "4 March 2027, at 45 pounds per lesson.",
+        "4 March 2027, 45 pounds per lesson.",
+        "4 March 2027, 45 pounds per lesson.",
+        "4 March 2027, 45 pounds per lesson.",
+        "4 March 2027, 45 pounds per lesson."
+      ]
+    },
+    {
+      "query_id": "q-reported-1",
+      "query": "Who says the user's great-grandfather left Cork for Halifax?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [ce920315] [score: 0.90, 2026-11-14] The user's genealogist, Femi Adeyemi, told the user on 3 February 2027 that, in Femi's view, the user's great-grandfather emigrated from Cork to Halifax as a teenager.\n- [7e9234a1] [score: 0.62, 2026-11-14] Correction: the user's weekly Lindy Hop dance practice, run by the user's colleague Ilse Marchand, takes place at the Old Granary in Norwich, replacing the earlier place, Kingsmill Rooms.\n- [80541032] [score: 0.61, 2026-11-14] The user's weekly Lindy Hop dance practice, run by the user's colleague Ilse Marchand, takes place at Kingsmill Rooms in Norwich.\n- [c66d80ff] [score: 0.59, 2026-11-14] The graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 22 May 2027.\n- [da462cad] [score: 0.58, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.\n- [f6a9b5aa] [score: 0.56, 2026-11-14] Correction: the graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 29 May 2027, replacing the earlier date of 22 May 2027.\n- [66126d81] [score: 0.56, 2026-11-14] Bee inspector Halvard Lunde thinks the user's low-activity hive (one of two hives) has probably lost its queen. Halvard suggested the colony might be merged with the other hive next month (October 2026).",
+      "responses": [
+        "Femi Adeyemi",
+        "Femi Adeyemi",
+        "Femi Adeyemi",
+        "Femi Adeyemi",
+        "Femi Adeyemi"
+      ]
+    },
+    {
+      "query_id": "q-might-2",
+      "query": "Has the user bought into Moira Kilbride's racehorse syndicate?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [ebb13493] [score: 0.89, 2026-11-14] The user is considering buying a ten percent share in a racehorse syndicate run by the trainer Moira Kilbride in Newmarket and has not committed any money.\n- [da462cad] [score: 0.63, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.\n- [c66d80ff] [score: 0.60, 2026-11-14] The graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 22 May 2027.\n- [f5292393] [score: 0.59, 2026-11-14] The user's tattoo session with the user's tattoo artist, Noor Haddad, at Inkwell Parlour in Brighton is scheduled for 14 April 2027 at 9:30 am.\n- [f6a9b5aa] [score: 0.59, 2026-11-14] Correction: the graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 29 May 2027, replacing the earlier date of 22 May 2027.\n- [7e9234a1] [score: 0.59, 2026-11-14] Correction: the user's weekly Lindy Hop dance practice, run by the user's colleague Ilse Marchand, takes place at the Old Granary in Norwich, replacing the earlier place, Kingsmill Rooms.\n- [ce920315] [score: 0.58, 2026-11-14] The user's genealogist, Femi Adeyemi, told the user on 3 February 2027 that, in Femi's view, the user's great-grandfather emigrated from Cork to Halifax as a teenager.",
+      "responses": [
+        "No.",
+        "No.",
+        "No, the user is only considering it and has not committed any money.",
+        "No.",
+        "No."
+      ]
+    },
+    {
+      "query_id": "q-corrected-1b",
+      "query": "When is Ruth Ainsworth's graduation now?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [c66d80ff] [score: 0.99, 2026-11-14] The graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 22 May 2027.\n- [f6a9b5aa] [score: 0.94, 2026-11-14] Correction: the graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 29 May 2027, replacing the earlier date of 22 May 2027.\n- [639003bd] [score: 0.58, 2026-11-14] The user's boss has promised the user the head of wine job if the user passes the Level 3 sommelier certificate in October 2026. This promotion is the user's main reason for sitting the exam. (Reported by the user.)\n- [8db9008a] [score: 0.56, 2026-11-14] The user has booked ten fencing lessons with the user's instructor, Oskar Halme, at Sabrewood Fencing Club, starting on 4 March 2027 at 45 pounds per lesson.\n- [02e65c57] [score: 0.55, 2026-11-14] The user has been called for jury service from March 23 to March 27, 2026. This overlaps with cousin Marisol's visit (arriving March 20 for one week), so the user will be at jury duty during part of her stay.\n- [f5292393] [score: 0.54, 2026-11-14] The user's tattoo session with the user's tattoo artist, Noor Haddad, at Inkwell Parlour in Brighton is scheduled for 14 April 2027 at 9:30 am.\n- [da462cad] [score: 0.52, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.",
+      "responses": [
+        "29 May 2027",
+        "29 May 2027",
+        "29 May 2027",
+        "29 May 2027",
+        "29 May 2027"
+      ]
+    },
+    {
+      "query_id": "q-will-2",
+      "query": "What time is the user booked in with Noor Haddad, and on which day?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [f5292393] [score: 0.82, 2026-11-14] The user's tattoo session with the user's tattoo artist, Noor Haddad, at Inkwell Parlour in Brighton is scheduled for 14 April 2027 at 9:30 am.\n- [02e65c57] [score: 0.67, 2026-11-14] The user has been called for jury service from March 23 to March 27, 2026. This overlaps with cousin Marisol's visit (arriving March 20 for one week), so the user will be at jury duty during part of her stay.\n- [da462cad] [score: 0.66, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.\n- [c66d80ff] [score: 0.65, 2026-11-14] The graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 22 May 2027.\n- [639003bd] [score: 0.64, 2026-11-14] The user's boss has promised the user the head of wine job if the user passes the Level 3 sommelier certificate in October 2026. This promotion is the user's main reason for sitting the exam. (Reported by the user.)\n- [f6a9b5aa] [score: 0.64, 2026-11-14] Correction: the graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 29 May 2027, replacing the earlier date of 22 May 2027.\n- [8db9008a] [score: 0.62, 2026-11-14] The user has booked ten fencing lessons with the user's instructor, Oskar Halme, at Sabrewood Fencing Club, starting on 4 March 2027 at 45 pounds per lesson.",
+      "responses": [
+        "9:30 am on 14 April 2027.",
+        "9:30 am on 14 April 2027.",
+        "9:30 am on 14 April 2027.",
+        "9:30 am on 14 April 2027.",
+        "9:30 am on 14 April 2027."
+      ]
+    },
+    {
+      "query_id": "q-reported-2",
+      "query": "What is making the noise in the camper van, and how sure is the mechanic?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [15835134] [score: 0.85, 2026-11-14] The user reported that the user's mechanic, Rasmus Ekdahl, heard the rattle in the user's camper van on 8 January 2027 and thinks it is probably a loose exhaust heat shield.\n- [639003bd] [score: 0.59, 2026-11-14] The user's boss has promised the user the head of wine job if the user passes the Level 3 sommelier certificate in October 2026. This promotion is the user's main reason for sitting the exam. (Reported by the user.)\n- [66126d81] [score: 0.58, 2026-11-14] Bee inspector Halvard Lunde thinks the user's low-activity hive (one of two hives) has probably lost its queen. Halvard suggested the colony might be merged with the other hive next month (October 2026).\n- [5b752600] [score: 0.54, 2026-11-14] Bee inspector Halvard Lunde, who inspected the user's hive on 2026-09-14, thinks the hive with almost no entrance activity has probably lost its queen. Halvard and the user are considering merging that colony with the user's other hive next month (October 2026). This is reported by the user, not confirmed by testing.\n- [868f2599] [score: 0.54, 2026-11-14] The user's friend Corrado Bellini, an amateur mycologist, says the mushrooms the user picked in Hatherley Woods on 9 October 2027 are edible field mushrooms; the user is not convinced.\n- [7e9234a1] [score: 0.54, 2026-11-14] Correction: the user's weekly Lindy Hop dance practice, run by the user's colleague Ilse Marchand, takes place at the Old Granary in Norwich, replacing the earlier place, Kingsmill Rooms.\n- [ce920315] [score: 0.52, 2026-11-14] The user's genealogist, Femi Adeyemi, told the user on 3 February 2027 that, in Femi's view, the user's great-grandfather emigrated from Cork to Halifax as a teenager.",
+      "responses": [
+        "A loose exhaust heat shield. The mechanic, Rasmus Ekdahl, says it's probably that, so he isn't certain.",
+        "A loose exhaust heat shield, which mechanic Rasmus Ekdahl thinks is probably the cause.",
+        "A loose exhaust heat shield, which the mechanic, Rasmus Ekdahl, thinks is probably the cause.",
+        "A loose exhaust heat shield, which the mechanic, Rasmus Ekdahl, thinks is probably the cause.",
+        "A loose exhaust heat shield, which mechanic Rasmus Ekdahl thinks is probably the cause (not certain)."
+      ]
+    },
+    {
+      "query_id": "q-corrected-2b",
+      "query": "Where does Ilse Marchand's Lindy Hop group meet now?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [80541032] [score: 0.92, 2026-11-14] The user's weekly Lindy Hop dance practice, run by the user's colleague Ilse Marchand, takes place at Kingsmill Rooms in Norwich.\n- [7e9234a1] [score: 0.89, 2026-11-14] Correction: the user's weekly Lindy Hop dance practice, run by the user's colleague Ilse Marchand, takes place at the Old Granary in Norwich, replacing the earlier place, Kingsmill Rooms.\n- [ebb13493] [score: 0.60, 2026-11-14] The user is considering buying a ten percent share in a racehorse syndicate run by the trainer Moira Kilbride in Newmarket and has not committed any money.\n- [868f2599] [score: 0.59, 2026-11-14] The user's friend Corrado Bellini, an amateur mycologist, says the mushrooms the user picked in Hatherley Woods on 9 October 2027 are edible field mushrooms; the user is not convinced.\n- [66126d81] [score: 0.58, 2026-11-14] Bee inspector Halvard Lunde thinks the user's low-activity hive (one of two hives) has probably lost its queen. Halvard suggested the colony might be merged with the other hive next month (October 2026).\n- [f5292393] [score: 0.58, 2026-11-14] The user's tattoo session with the user's tattoo artist, Noor Haddad, at Inkwell Parlour in Brighton is scheduled for 14 April 2027 at 9:30 am.\n- [8db9008a] [score: 0.58, 2026-11-14] The user has booked ten fencing lessons with the user's instructor, Oskar Halme, at Sabrewood Fencing Club, starting on 4 March 2027 at 45 pounds per lesson.",
+      "responses": [
+        "Old Granary in Norwich",
+        "The Old Granary in Norwich",
+        "The Old Granary in Norwich",
+        "The Old Granary in Norwich.",
+        "The Old Granary in Norwich."
+      ]
+    },
+    {
+      "query_id": "q-might-3",
+      "query": "Is the user selling the stamps, and what would it take?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [b218d1f2] [score: 0.86, 2026-11-14] The user has not decided whether to sell the user's stamp collection and will sell it only if the auction house Pemberton and Lisle values it above 6,000 pounds.\n- [639003bd] [score: 0.66, 2026-11-14] The user's boss has promised the user the head of wine job if the user passes the Level 3 sommelier certificate in October 2026. This promotion is the user's main reason for sitting the exam. (Reported by the user.)\n- [03440bf5] [score: 0.62, 2026-11-14] The user has decided to stand for a seat on Ashcombe Parish Council in the parish election on 10 June 2027 and has filed the nomination papers.\n- [02e65c57] [score: 0.61, 2026-11-14] The user has been called for jury service from March 23 to March 27, 2026. This overlaps with cousin Marisol's visit (arriving March 20 for one week), so the user will be at jury duty during part of her stay.\n- [ebb13493] [score: 0.61, 2026-11-14] The user is considering buying a ten percent share in a racehorse syndicate run by the trainer Moira Kilbride in Newmarket and has not committed any money.\n- [da462cad] [score: 0.61, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.\n- [f5292393] [score: 0.61, 2026-11-14] The user's tattoo session with the user's tattoo artist, Noor Haddad, at Inkwell Parlour in Brighton is scheduled for 14 April 2027 at 9:30 am.",
+      "responses": [
+        "Undecided. Only if Pemberton and Lisle values the collection above £6,000.",
+        "Undecided; only if Pemberton and Lisle values the collection above £6,000.",
+        "Undecided. Only if Pemberton and Lisle values it above 6,000 pounds.",
+        "Undecided; only if Pemberton and Lisle values it above 6,000 pounds.",
+        "Undecided. Only if Pemberton and Lisle values the collection above £6,000."
+      ]
+    },
+    {
+      "query_id": "q-will-3",
+      "query": "Is the user running for the parish council, and when is the vote?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [03440bf5] [score: 0.89, 2026-11-14] The user has decided to stand for a seat on Ashcombe Parish Council in the parish election on 10 June 2027 and has filed the nomination papers.\n- [639003bd] [score: 0.76, 2026-11-14] The user's boss has promised the user the head of wine job if the user passes the Level 3 sommelier certificate in October 2026. This promotion is the user's main reason for sitting the exam. (Reported by the user.)\n- [02e65c57] [score: 0.73, 2026-11-14] The user has been called for jury service from March 23 to March 27, 2026. This overlaps with cousin Marisol's visit (arriving March 20 for one week), so the user will be at jury duty during part of her stay.\n- [da462cad] [score: 0.67, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.\n- [f5292393] [score: 0.66, 2026-11-14] The user's tattoo session with the user's tattoo artist, Noor Haddad, at Inkwell Parlour in Brighton is scheduled for 14 April 2027 at 9:30 am.\n- [b218d1f2] [score: 0.65, 2026-11-14] The user has not decided whether to sell the user's stamp collection and will sell it only if the auction house Pemberton and Lisle values it above 6,000 pounds.\n- [66126d81] [score: 0.65, 2026-11-14] Bee inspector Halvard Lunde thinks the user's low-activity hive (one of two hives) has probably lost its queen. Halvard suggested the colony might be merged with the other hive next month (October 2026).",
+      "responses": [
+        "Yes, the user is running for Ashcombe Parish Council; the vote is on 10 June 2027.",
+        "Yes, the user is running for Ashcombe Parish Council, with the election on 10 June 2027.",
+        "Yes, the user is standing for Ashcombe Parish Council, with the election on 10 June 2027.",
+        "Yes, the user is standing for Ashcombe Parish Council, with the election on 10 June 2027.",
+        "Yes, the user is standing for Ashcombe Parish Council, with the election on 10 June 2027."
+      ]
+    },
+    {
+      "query_id": "q-reported-3",
+      "query": "Who thinks the Hatherley Woods mushrooms are safe to eat, and does the user agree?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [868f2599] [score: 0.93, 2026-11-14] The user's friend Corrado Bellini, an amateur mycologist, says the mushrooms the user picked in Hatherley Woods on 9 October 2027 are edible field mushrooms; the user is not convinced.\n- [639003bd] [score: 0.60, 2026-11-14] The user's boss has promised the user the head of wine job if the user passes the Level 3 sommelier certificate in October 2026. This promotion is the user's main reason for sitting the exam. (Reported by the user.)\n- [da462cad] [score: 0.58, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.\n- [5b752600] [score: 0.57, 2026-11-14] Bee inspector Halvard Lunde, who inspected the user's hive on 2026-09-14, thinks the hive with almost no entrance activity has probably lost its queen. Halvard and the user are considering merging that colony with the user's other hive next month (October 2026). This is reported by the user, not confirmed by testing.\n- [66126d81] [score: 0.56, 2026-11-14] Bee inspector Halvard Lunde thinks the user's low-activity hive (one of two hives) has probably lost its queen. Halvard suggested the colony might be merged with the other hive next month (October 2026).\n- [ce920315] [score: 0.56, 2026-11-14] The user's genealogist, Femi Adeyemi, told the user on 3 February 2027 that, in Femi's view, the user's great-grandfather emigrated from Cork to Halifax as a teenager.\n- [7e9234a1] [score: 0.56, 2026-11-14] Correction: the user's weekly Lindy Hop dance practice, run by the user's colleague Ilse Marchand, takes place at the Old Granary in Norwich, replacing the earlier place, Kingsmill Rooms.",
+      "responses": [
+        "Corrado Bellini; the user is not convinced.",
+        "Corrado Bellini; the user does not agree.",
+        "Corrado Bellini; the user does not agree.",
+        "Corrado Bellini; the user doesn't agree.",
+        "Corrado Bellini; no."
+      ]
+    },
+    {
+      "query_id": "q-screen-1",
+      "query": "Who thinks the quiet hive lost its queen, and is merging that colony settled?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [66126d81] [score: 0.88, 2026-11-14] Bee inspector Halvard Lunde thinks the user's low-activity hive (one of two hives) has probably lost its queen. Halvard suggested the colony might be merged with the other hive next month (October 2026).\n- [5b752600] [score: 0.81, 2026-11-14] Bee inspector Halvard Lunde, who inspected the user's hive on 2026-09-14, thinks the hive with almost no entrance activity has probably lost its queen. Halvard and the user are considering merging that colony with the user's other hive next month (October 2026). This is reported by the user, not confirmed by testing.\n- [da462cad] [score: 0.54, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.\n- [868f2599] [score: 0.53, 2026-11-14] The user's friend Corrado Bellini, an amateur mycologist, says the mushrooms the user picked in Hatherley Woods on 9 October 2027 are edible field mushrooms; the user is not convinced.\n- [ce920315] [score: 0.53, 2026-11-14] The user's genealogist, Femi Adeyemi, told the user on 3 February 2027 that, in Femi's view, the user's great-grandfather emigrated from Cork to Halifax as a teenager.\n- [15835134] [score: 0.52, 2026-11-14] The user reported that the user's mechanic, Rasmus Ekdahl, heard the rattle in the user's camper van on 8 January 2027 and thinks it is probably a loose exhaust heat shield.\n- [7e9234a1] [score: 0.52, 2026-11-14] Correction: the user's weekly Lindy Hop dance practice, run by the user's colleague Ilse Marchand, takes place at the Old Granary in Norwich, replacing the earlier place, Kingsmill Rooms.",
+      "responses": [
+        "Halvard Lunde; merging is not settled (only being considered).",
+        "Halvard Lunde; no, merging is still only being considered.",
+        "Halvard Lunde; merging is not settled (only being considered).",
+        "Halvard Lunde; merging is not settled, only being considered.",
+        "Halvard Lunde; no, merging is only being considered."
+      ]
+    },
+    {
+      "query_id": "q-screen-2",
+      "query": "Whose idea is it to combine the low-activity hive with the other one?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [66126d81] [score: 0.85, 2026-11-14] Bee inspector Halvard Lunde thinks the user's low-activity hive (one of two hives) has probably lost its queen. Halvard suggested the colony might be merged with the other hive next month (October 2026).\n- [5b752600] [score: 0.73, 2026-11-14] Bee inspector Halvard Lunde, who inspected the user's hive on 2026-09-14, thinks the hive with almost no entrance activity has probably lost its queen. Halvard and the user are considering merging that colony with the user's other hive next month (October 2026). This is reported by the user, not confirmed by testing.\n- [80541032] [score: 0.62, 2026-11-14] The user's weekly Lindy Hop dance practice, run by the user's colleague Ilse Marchand, takes place at Kingsmill Rooms in Norwich.\n- [868f2599] [score: 0.58, 2026-11-14] The user's friend Corrado Bellini, an amateur mycologist, says the mushrooms the user picked in Hatherley Woods on 9 October 2027 are edible field mushrooms; the user is not convinced.\n- [7e9234a1] [score: 0.57, 2026-11-14] Correction: the user's weekly Lindy Hop dance practice, run by the user's colleague Ilse Marchand, takes place at the Old Granary in Norwich, replacing the earlier place, Kingsmill Rooms.\n- [da462cad] [score: 0.56, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.\n- [15835134] [score: 0.53, 2026-11-14] The user reported that the user's mechanic, Rasmus Ekdahl, heard the rattle in the user's camper van on 8 January 2027 and thinks it is probably a loose exhaust heat shield.",
+      "responses": [
+        "Halvard Lunde",
+        "Halvard Lunde's",
+        "Halvard Lunde's",
+        "Halvard Lunde",
+        "Bee inspector Halvard Lunde's."
+      ]
+    },
+    {
+      "query_id": "q-screen-3",
+      "query": "Does the user already have the head of wine job?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [639003bd] [score: 0.91, 2026-11-14] The user's boss has promised the user the head of wine job if the user passes the Level 3 sommelier certificate in October 2026. This promotion is the user's main reason for sitting the exam. (Reported by the user.)\n- [868f2599] [score: 0.68, 2026-11-14] The user's friend Corrado Bellini, an amateur mycologist, says the mushrooms the user picked in Hatherley Woods on 9 October 2027 are edible field mushrooms; the user is not convinced.\n- [03440bf5] [score: 0.64, 2026-11-14] The user has decided to stand for a seat on Ashcombe Parish Council in the parish election on 10 June 2027 and has filed the nomination papers.\n- [da462cad] [score: 0.63, 2026-11-14] The user might go hot-air ballooning over the Cotswolds with the user's friend Corinne Mbeki in July 2027; nothing has been booked.\n- [66126d81] [score: 0.62, 2026-11-14] Bee inspector Halvard Lunde thinks the user's low-activity hive (one of two hives) has probably lost its queen. Halvard suggested the colony might be merged with the other hive next month (October 2026).\n- [5b752600] [score: 0.62, 2026-11-14] Bee inspector Halvard Lunde, who inspected the user's hive on 2026-09-14, thinks the hive with almost no entrance activity has probably lost its queen. Halvard and the user are considering merging that colony with the user's other hive next month (October 2026). This is reported by the user, not confirmed by testing.\n- [02e65c57] [score: 0.61, 2026-11-14] The user has been called for jury service from March 23 to March 27, 2026. This overlaps with cousin Marisol's visit (arriving March 20 for one week), so the user will be at jury duty during part of her stay.",
+      "responses": [
+        "unknown",
+        "No.",
+        "unknown",
+        "unknown",
+        "unknown"
+      ]
+    },
+    {
+      "query_id": "q-screen-4",
+      "query": "When is the user on jury service, and when does Marisol arrive?",
+      "delivered": 7,
+      "recall_text": "Related memories:\n- [02e65c57] [score: 0.94, 2026-11-14] The user has been called for jury service from March 23 to March 27, 2026. This overlaps with cousin Marisol's visit (arriving March 20 for one week), so the user will be at jury duty during part of her stay.\n- [c66d80ff] [score: 0.64, 2026-11-14] The graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 22 May 2027.\n- [f5292393] [score: 0.63, 2026-11-14] The user's tattoo session with the user's tattoo artist, Noor Haddad, at Inkwell Parlour in Brighton is scheduled for 14 April 2027 at 9:30 am.\n- [639003bd] [score: 0.62, 2026-11-14] The user's boss has promised the user the head of wine job if the user passes the Level 3 sommelier certificate in October 2026. This promotion is the user's main reason for sitting the exam. (Reported by the user.)\n- [8db9008a] [score: 0.59, 2026-11-14] The user has booked ten fencing lessons with the user's instructor, Oskar Halme, at Sabrewood Fencing Club, starting on 4 March 2027 at 45 pounds per lesson.\n- [f6a9b5aa] [score: 0.59, 2026-11-14] Correction: the graduation ceremony of the user's niece, Ruth Ainsworth, at the University of Bath is on 29 May 2027, replacing the earlier date of 22 May 2027.\n- [03440bf5] [score: 0.59, 2026-11-14] The user has decided to stand for a seat on Ashcombe Parish Council in the parish election on 10 June 2027 and has filed the nomination papers.",
+      "responses": [
+        "Jury service: March 23–27, 2026. Marisol arrives: March 20.",
+        "Jury service: March 23–27, 2026. Marisol arrives: March 20.",
+        "Jury service: March 23–27, 2026. Marisol arrives: March 20.",
+        "Jury service: March 23 to March 27, 2026. Marisol arrives: March 20, 2026.",
+        "Jury service: March 23 to 27, 2026. Marisol arrives: March 20."
+      ]
+    }
+  ]
+}

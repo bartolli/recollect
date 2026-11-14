@@ -1,0 +1,438 @@
+{
+  "arm_name": "qualification-haiku55",
+  "run_index": 0,
+  "model": "anthropic:claude-haiku-5-5",
+  "prompt_version": "1.2.1",
+  "top_k": 5,
+  "ingested": 17,
+  "ingest_failures": 0,
+  "queries": [
+    {
+      "query_id": "q-might-1",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "might-1",
+        "reported-3",
+        "corrected-1a",
+        "screen-3",
+        "screen-2",
+        "corrected-1b",
+        "screen-1",
+        "will-2",
+        "might-2",
+        "will-3",
+        "corrected-2b",
+        "screen-4",
+        "might-3",
+        "will-1",
+        "reported-2"
+      ],
+      "relevant_corpus_ids": [
+        "might-1"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 89.37995898304507
+    },
+    {
+      "query_id": "q-will-1",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "will-1",
+        "screen-3",
+        "screen-4",
+        "might-1",
+        "corrected-2a",
+        "will-2",
+        "corrected-1a",
+        "corrected-2b",
+        "corrected-1b",
+        "might-2",
+        "might-3",
+        "will-3",
+        "reported-3",
+        "screen-2",
+        "screen-1",
+        "reported-1",
+        "reported-2"
+      ],
+      "relevant_corpus_ids": [
+        "will-1"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 79.39312502276152
+    },
+    {
+      "query_id": "q-reported-1",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "reported-1",
+        "corrected-2b",
+        "corrected-2a",
+        "corrected-1a",
+        "might-1",
+        "reported-3",
+        "corrected-1b",
+        "screen-2",
+        "might-2",
+        "screen-4",
+        "screen-3",
+        "might-3",
+        "screen-1",
+        "will-3",
+        "will-1"
+      ],
+      "relevant_corpus_ids": [
+        "reported-1"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 47.514666977804154
+    },
+    {
+      "query_id": "q-might-2",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "might-2",
+        "might-1",
+        "corrected-1a",
+        "will-2",
+        "corrected-1b",
+        "corrected-2b",
+        "reported-1",
+        "will-1",
+        "corrected-2a",
+        "might-3",
+        "screen-2",
+        "screen-1",
+        "reported-3",
+        "screen-3",
+        "screen-4",
+        "will-3",
+        "reported-2"
+      ],
+      "relevant_corpus_ids": [
+        "might-2"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 46.26750003080815
+    },
+    {
+      "query_id": "q-corrected-1b",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "corrected-1a",
+        "corrected-1b",
+        "screen-3",
+        "will-1",
+        "screen-4",
+        "will-2",
+        "might-1",
+        "screen-1",
+        "screen-2",
+        "corrected-2b",
+        "will-3",
+        "reported-3",
+        "might-3",
+        "reported-1",
+        "reported-2"
+      ],
+      "relevant_corpus_ids": [
+        "corrected-1b"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 38.081000035163015
+    },
+    {
+      "query_id": "q-will-2",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "will-2",
+        "screen-4",
+        "might-1",
+        "corrected-1a",
+        "screen-3",
+        "corrected-1b",
+        "will-1",
+        "will-3",
+        "corrected-2b",
+        "might-3",
+        "corrected-2a",
+        "screen-1",
+        "screen-2",
+        "reported-3",
+        "reported-2"
+      ],
+      "relevant_corpus_ids": [
+        "will-2"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 38.14854199299589
+    },
+    {
+      "query_id": "q-reported-2",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "reported-2",
+        "screen-3",
+        "screen-2",
+        "screen-1",
+        "reported-3",
+        "corrected-2b",
+        "reported-1",
+        "screen-4",
+        "corrected-2a",
+        "might-1",
+        "might-3",
+        "will-3"
+      ],
+      "relevant_corpus_ids": [
+        "reported-2"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 29.283582989592105
+    },
+    {
+      "query_id": "q-corrected-2b",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "corrected-2a",
+        "corrected-2b",
+        "might-2",
+        "reported-3",
+        "screen-2",
+        "will-2",
+        "will-1",
+        "might-1",
+        "screen-1",
+        "corrected-1b",
+        "screen-4",
+        "screen-3",
+        "might-3",
+        "will-3",
+        "reported-2"
+      ],
+      "relevant_corpus_ids": [
+        "corrected-2b"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 32.66395902028307
+    },
+    {
+      "query_id": "q-might-3",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "might-3",
+        "screen-3",
+        "will-3",
+        "screen-4",
+        "might-2",
+        "might-1",
+        "will-2",
+        "screen-2",
+        "reported-3",
+        "screen-1",
+        "corrected-2b",
+        "reported-2"
+      ],
+      "relevant_corpus_ids": [
+        "might-3"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 32.10737503832206
+    },
+    {
+      "query_id": "q-will-3",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "will-3",
+        "screen-3",
+        "screen-4",
+        "might-1",
+        "reported-3",
+        "will-2",
+        "might-3",
+        "screen-2",
+        "screen-1",
+        "corrected-1b",
+        "corrected-2b"
+      ],
+      "relevant_corpus_ids": [
+        "will-3"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 27.961666986811906
+    },
+    {
+      "query_id": "q-reported-3",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "reported-3",
+        "screen-3",
+        "might-1",
+        "screen-1",
+        "screen-2",
+        "reported-1",
+        "corrected-2b",
+        "corrected-2a",
+        "screen-4",
+        "will-3",
+        "reported-2",
+        "will-2",
+        "might-3",
+        "corrected-1a",
+        "will-1",
+        "corrected-1b"
+      ],
+      "relevant_corpus_ids": [
+        "reported-3"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 28.414874977897853
+    },
+    {
+      "query_id": "q-screen-1",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "screen-2",
+        "screen-1",
+        "might-1",
+        "reported-3",
+        "reported-1",
+        "reported-2",
+        "corrected-2b",
+        "screen-3",
+        "corrected-2a",
+        "might-2",
+        "corrected-1b",
+        "will-3",
+        "screen-4",
+        "might-3",
+        "corrected-1a",
+        "will-1"
+      ],
+      "relevant_corpus_ids": [
+        "screen-1"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 28.80475000711158
+    },
+    {
+      "query_id": "q-screen-2",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "screen-2",
+        "screen-1",
+        "corrected-2a",
+        "reported-3",
+        "corrected-2b",
+        "might-1",
+        "reported-2",
+        "might-3",
+        "screen-3",
+        "might-2",
+        "will-3",
+        "will-2",
+        "screen-4"
+      ],
+      "relevant_corpus_ids": [
+        "screen-2"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 24.715540988836437
+    },
+    {
+      "query_id": "q-screen-3",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "screen-3",
+        "reported-3",
+        "will-3",
+        "might-1",
+        "screen-2",
+        "screen-1",
+        "screen-4",
+        "reported-1",
+        "corrected-2b",
+        "will-2",
+        "might-3",
+        "corrected-1a",
+        "will-1",
+        "corrected-1b"
+      ],
+      "relevant_corpus_ids": [
+        "screen-3"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 27.149625006131828
+    },
+    {
+      "query_id": "q-screen-4",
+      "success": true,
+      "error": "",
+      "ranked_corpus_ids": [
+        "screen-4",
+        "corrected-1a",
+        "will-2",
+        "screen-3",
+        "will-1",
+        "corrected-1b",
+        "will-3",
+        "screen-1",
+        "screen-2",
+        "might-1",
+        "reported-3",
+        "might-3",
+        "reported-2",
+        "corrected-2b"
+      ],
+      "relevant_corpus_ids": [
+        "screen-4"
+      ],
+      "expected_category": null,
+      "is_distractor": false,
+      "persona_fact_count": 0,
+      "latency_ms": 25.837125023826957
+    }
+  ]
+}

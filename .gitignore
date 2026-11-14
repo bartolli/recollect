@@ -85,3 +85,4 @@ out/**
 !out/**/situational_summary.json
 !out/authoring-guidance-haiku45/**
 !out/authoring-guidance-haiku55/**
+!out/qualification-haiku55/**
