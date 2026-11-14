@@ -1,0 +1,251 @@
+{
+  "arm_name": "task-gate0-d0-age0-tokens-off",
+  "runs": 3,
+  "facts_surfaced": 2280,
+  "facts_used": 45,
+  "thoughts_surfaced": 840,
+  "thoughts_used": 113,
+  "correct_with_total": 94,
+  "unattributed_correct": 5,
+  "would_promote": [
+    "c2: Soraya scheduled_for childcare obligations until 8pm",
+    "chain-a-6: CityMed urgent care is_associated_with 5th Avenue",
+    "chain-a-6: CityMed urgent care scheduled_for 10pm closing",
+    "chain-b-6: Elm Street store is_associated_with free delivery",
+    "chain-b-6: Elm Street store is_associated_with free assembly",
+    "chain-c-5: Oak Street Hardware scheduled_for noon closing on Saturdays",
+    "chain-c-6: Oak Street is_associated_with metered parking until 6pm weekdays, free after 6pm no limit",
+    "i1: Pham works_at Stripe",
+    "i1: Pham works_at payments platform",
+    "i2: Aoife studies medieval Irish poetry",
+    "i2: Aoife studies Trinity College",
+    "n1: farmers market is_associated_with old rail depot, Cedar Avenue",
+    "n2: street sweeping is_associated_with Maple Avenue",
+    "n2: street sweeping recurs_on first Tuesday of each month",
+    "p1: Margot prefers tea",
+    "r1: Hugo is_partner_of Camille",
+    "r1: Hugo is_related_to two young children",
+    "s1: engineering team scheduled_for Monday 9:00 AM",
+    "s3: community garden recurs_on Saturday mornings during summer"
+  ],
+  "used_by_question": {
+    "t3q02": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t3q03": [
+      "trace:5",
+      "trace:6",
+      "trace:5",
+      "trace:6",
+      "trace:5",
+      "trace:6"
+    ],
+    "t3q04": [
+      "trace:5",
+      "trace:5",
+      "trace:5"
+    ],
+    "t3q05": [
+      "trace:6",
+      "trace:6"
+    ],
+    "t3q06": [
+      "trace:2",
+      "trace:2",
+      "trace:2"
+    ],
+    "t1q01": [
+      "fact:5",
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "fact:5",
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "fact:5",
+      "fact:6",
+      "trace:1",
+      "trace:2"
+    ],
+    "t1q02": [
+      "fact:9",
+      "fact:10",
+      "fact:11",
+      "fact:9",
+      "fact:10",
+      "fact:11",
+      "fact:9",
+      "fact:10",
+      "fact:11"
+    ],
+    "t1q03": [
+      "fact:2",
+      "fact:3",
+      "trace:1",
+      "fact:2",
+      "fact:3",
+      "trace:1",
+      "fact:2",
+      "fact:3",
+      "trace:1"
+    ],
+    "t1q04": [
+      "fact:12",
+      "trace:1",
+      "fact:12",
+      "trace:1",
+      "fact:12",
+      "trace:1"
+    ],
+    "t1q05": [
+      "trace:2",
+      "trace:2",
+      "trace:2"
+    ],
+    "t1q06": [
+      "fact:13",
+      "trace:1",
+      "trace:2",
+      "fact:13",
+      "trace:1",
+      "trace:2",
+      "fact:13",
+      "trace:1",
+      "trace:2"
+    ],
+    "t2q01": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q02": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q03": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q04": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q05": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q06": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq01": [
+      "fact:5",
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:5",
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:5",
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "trace:3"
+    ],
+    "aq02": [
+      "fact:7",
+      "trace:1",
+      "trace:2",
+      "fact:7",
+      "trace:1",
+      "trace:2",
+      "fact:7",
+      "trace:1",
+      "trace:2"
+    ],
+    "aq03": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq04": [
+      "trace:1",
+      "trace:2",
+      "trace:1",
+      "trace:2",
+      "trace:1",
+      "trace:2"
+    ],
+    "aq05": [
+      "fact:3",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:3",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:3",
+      "trace:1",
+      "trace:2",
+      "trace:3"
+    ],
+    "aq06": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq07": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq08": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq09": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq10": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq11": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq12": [
+      "fact:8",
+      "trace:1",
+      "trace:2",
+      "fact:8",
+      "trace:1",
+      "trace:2",
+      "fact:8",
+      "trace:1",
+      "trace:2"
+    ],
+    "t3q10": [
+      "fact:19",
+      "fact:19",
+      "fact:19"
+    ]
+  }
+}

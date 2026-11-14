@@ -1,0 +1,231 @@
+{
+  "arm_name": "task-gate0-d2-age0-tokens-off",
+  "runs": 3,
+  "facts_surfaced": 2880,
+  "facts_used": 48,
+  "thoughts_surfaced": 840,
+  "thoughts_used": 102,
+  "correct_with_total": 86,
+  "unattributed_correct": 5,
+  "would_promote": [
+    "chain-a-6: CityMed urgent care is_associated_with 5th Avenue",
+    "chain-a-6: CityMed urgent care is_associated_with Main Street",
+    "chain-a-6: CityMed urgent care scheduled_for 10pm closing",
+    "chain-b-6: Elm Street store is_associated_with free delivery and assembly",
+    "i1: Pham works_at Stripe",
+    "i1: Pham holds_role staff engineer",
+    "i2: Aoife studies medieval Irish poetry",
+    "n2: street sweeping scheduled_for first Tuesday of every month",
+    "p1: Margot prefers tea",
+    "r1: Hugo is_partner_of Camille",
+    "r1: Hugo is_related_to two young children",
+    "s1: engineering team scheduled_for Monday 9am standup",
+    "s3: community garden recurs_on Saturday mornings during summer"
+  ],
+  "used_by_question": {
+    "t3q02": [
+      "trace:2",
+      "trace:2",
+      "trace:2"
+    ],
+    "t3q04": [
+      "trace:3",
+      "trace:3",
+      "trace:3"
+    ],
+    "t1q01": [
+      "fact:1",
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "fact:1",
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "fact:1",
+      "fact:6",
+      "trace:1",
+      "trace:2"
+    ],
+    "t1q02": [
+      "fact:8",
+      "fact:9",
+      "fact:10",
+      "fact:8",
+      "fact:9",
+      "fact:10",
+      "fact:8",
+      "fact:9",
+      "fact:10"
+    ],
+    "t1q03": [
+      "fact:3",
+      "fact:4",
+      "trace:1",
+      "fact:3",
+      "fact:4",
+      "trace:1",
+      "fact:3",
+      "fact:4",
+      "trace:1"
+    ],
+    "t1q04": [
+      "fact:23",
+      "trace:1",
+      "fact:23",
+      "trace:1",
+      "fact:23",
+      "trace:1"
+    ],
+    "t1q05": [
+      "fact:12",
+      "trace:2",
+      "fact:12",
+      "trace:2",
+      "fact:12",
+      "trace:2"
+    ],
+    "t1q06": [
+      "fact:2",
+      "trace:1",
+      "trace:2",
+      "fact:2",
+      "trace:1",
+      "trace:2",
+      "fact:2",
+      "trace:1",
+      "trace:2"
+    ],
+    "t2q01": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q02": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q03": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q04": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q05": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "t2q06": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq01": [
+      "fact:1",
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:1",
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:1",
+      "fact:6",
+      "trace:1",
+      "trace:2",
+      "trace:3"
+    ],
+    "aq02": [
+      "fact:24",
+      "trace:1",
+      "trace:2",
+      "fact:24",
+      "trace:1",
+      "trace:2",
+      "fact:24",
+      "trace:1",
+      "trace:2"
+    ],
+    "aq03": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq04": [
+      "trace:1",
+      "trace:2",
+      "trace:1",
+      "trace:2",
+      "trace:1",
+      "trace:2"
+    ],
+    "aq05": [
+      "fact:4",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:4",
+      "trace:1",
+      "trace:2",
+      "trace:3",
+      "fact:4",
+      "trace:1",
+      "trace:2",
+      "trace:3"
+    ],
+    "aq06": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq07": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq08": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq09": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq10": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq11": [
+      "trace:1",
+      "trace:1",
+      "trace:1"
+    ],
+    "aq12": [
+      "fact:13",
+      "trace:1",
+      "trace:2",
+      "fact:13",
+      "trace:1",
+      "trace:2",
+      "fact:13",
+      "trace:1",
+      "trace:2"
+    ],
+    "t3q10": [
+      "fact:11",
+      "fact:11",
+      "fact:11"
+    ]
+  }
+}
