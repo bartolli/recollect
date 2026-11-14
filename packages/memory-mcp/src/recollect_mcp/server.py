@@ -279,7 +279,9 @@ REMEMBER -- Store an experience in memory.
   Write complete, contextually-anchored statements that include relational
   identifiers. Use "Alex's mother Sarah" not just "Sarah" when names could
   refer to different people. What you write is what the system indexes --
-  ambiguous input produces ambiguous recall.
+  ambiguous input produces ambiguous recall. One memory holds one fact or
+  one situation that is useful on its own, with the context needed to find
+  it. Split unrelated topics into separate memories.
 
 RECALL -- Retrieve relevant memories for a query.
   Returns persona facts as IMPORTANT CONTEXT followed by related memories.
@@ -338,6 +340,10 @@ async def remember(
     Write complete, contextually-anchored statements. Include relational
     identifiers like "Alex's mother Sarah" rather than bare names when
     the same name could refer to different people.
+
+    One memory holds one fact or one situation that is useful on its own,
+    with the context needed to find it. Split unrelated topics into
+    separate memories.
 
     If you haven't called reflect this session, do so before using this tool.
 
