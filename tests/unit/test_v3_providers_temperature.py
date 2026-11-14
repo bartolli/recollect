@@ -101,7 +101,9 @@ async def test_the_rejection_is_remembered_for_the_provider(
 
 
 async def test_concurrent_calls_each_retry_their_own_rejection(
-    provider: PydanticAIProvider, _rejection: _Rejection
+    provider: PydanticAIProvider,
+    _rejection: _Rejection,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     # The yield puts every request in flight, temperature sent, before the
     # first rejection is handled.
@@ -120,6 +122,8 @@ async def test_concurrent_calls_each_retry_their_own_rejection(
 
     carried = sorted("temperature" in sent for sent in _sent(agent))
     assert carried == [False] * 3 + [True] * 3
+    logged = [r for r in caplog.records if "rejects temperature" in r.message]
+    assert len(logged) == 1
 
 
 async def test_a_model_that_accepts_temperature_keeps_it(

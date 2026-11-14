@@ -109,10 +109,13 @@ class PydanticAIProvider:
             # set the flag while this one is in flight with temperature.
             if omitted or not _rejects_temperature(exc):
                 raise
-            logger.exception(
-                "Model %s rejects temperature; omitting it for this provider",
-                self._model,
-            )
+            # One record per provider: requests in flight together all meet
+            # the same rejection.
+            if not self._omit_temperature:
+                logger.exception(
+                    "Model %s rejects temperature; omitting it for this provider",
+                    self._model,
+                )
             # Remembered for the provider's lifetime: the rejection is a
             # property of the model, not of one request.
             self._omit_temperature = True
