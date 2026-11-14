@@ -20,8 +20,8 @@ from urllib.parse import urlparse, urlunparse
 import asyncpg
 from pydantic import BaseModel, Field
 from recollect.config import config as sdk_config
-from recollect.core import CognitiveMemory, _cosine_similarity, _estimate_tokens
-from recollect.models import MemoryTrace, Thought
+from recollect.core import CognitiveMemory, _cosine_similarity, _drop_forgotten
+from recollect.models import MemoryTrace, Thought, ThoughtWindow
 from recollect.storage_context import StorageContext, create_storage_context
 
 from probe_cli.corpus import TierLabel, load_task_questions, load_task_seed_traces
@@ -431,17 +431,6 @@ def question_window(
     )
 
 
-def _trace_thought(trace: MemoryTrace, relevance: float) -> Thought:
-    content = trace.content or str(trace.pattern)
-    return Thought(
-        trace=trace,
-        relevance=relevance,
-        token_count=_estimate_tokens(content),
-        reconstructed=trace.content is None,
-        reconstruction=content,
-    )
-
-
 def _window_key(thoughts: list[Thought]) -> list[tuple[str, str]]:
     return [(t.trace.id, f"{t.relevance:.3f}") for t in thoughts]
 
@@ -509,13 +498,17 @@ class _ScreenMemory(CognitiveMemory):
         _CAPTURE.get().fusions.append(FusionInputs(**bound.arguments))
         return CognitiveMemory._compute_fused_scores(*args, **kwargs)
 
-    @staticmethod
-    def _assemble_with_trace_guarantee(
-        thoughts: list[Thought], max_total: int, min_traces: int
-    ) -> list[Thought]:
-        _CAPTURE.get().assemblies.append(list(thoughts))
-        return CognitiveMemory._assemble_with_trace_guarantee(
-            thoughts, max_total, min_traces
+    def _assemble_window(
+        self,
+        candidates: list[tuple[MemoryTrace, float]],
+        fact_thoughts: list[Thought],
+        *,
+        token_budget: int,
+        render: Callable[[list[Thought]], str] | None,
+    ) -> ThoughtWindow:
+        _CAPTURE.get().assemblies.append(list(fact_thoughts))
+        return super()._assemble_window(
+            candidates, fact_thoughts, token_budget=token_budget, render=render
         )
 
     async def _merge_candidates(
@@ -572,11 +565,11 @@ class _ScreenMemory(CognitiveMemory):
                 f"{label}: captured {counts} fusions, assemblies, merges; "
                 "expected one each"
             )
-        facts = [
-            t for t in capture.assemblies[0] if t.trace.pattern.get("persona_fact")
-        ]
         return CallCapture(
-            capture.fusions[0], facts, window, capture.activation_only[0]
+            capture.fusions[0],
+            capture.assemblies[0],
+            window,
+            capture.activation_only[0],
         )
 
     async def capture(self, question: TaskQuestion, *, user_id: str) -> QuestionCapture:
@@ -599,22 +592,19 @@ class _ScreenMemory(CognitiveMemory):
         weight: float | None,
         token_budget: int = _TOKEN_BUDGET,
     ) -> _Replay:
-        """think_about's steps after fusion, without its boost writes."""
+        """think_about's steps after fusion, without its credit writes."""
         fused, concepts = fuse_cell(
             capture.inputs,
             form=form,
             weight=weight,
             activation_only=capture.activation_only,
         )
-        gated = await self._gate_retired_candidates(fused)
-        selected = self._select_within_budget(gated, token_budget)
-        thoughts = [_trace_thought(t, s) for t, s in selected] + capture.facts
-        window = CognitiveMemory._assemble_with_trace_guarantee(
-            thoughts,
-            int(self._config.get("retrieval.max_retrievals")),
-            int(self._config.get("retrieval.min_trace_slots")),
+        gated = _drop_forgotten(fused)
+        # The base assembly: the capture hook has no capture to record into here.
+        assembled = super()._assemble_window(
+            gated, capture.facts, token_budget=token_budget, render=None
         )
-        return _Replay(gated=gated, window=window, concepts=concepts)
+        return _Replay(gated=gated, window=assembled.thoughts, concepts=concepts)
 
 
 async def _maintenance(base_url: str, *statements: str) -> None:

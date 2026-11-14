@@ -60,14 +60,6 @@ def _fact(
     )
 
 
-def _thought(content: str, relevance: float, *, pinned: bool) -> Thought:
-    return Thought(
-        trace=MemoryTrace(content=content),
-        relevance=relevance,
-        pinned=pinned,
-    )
-
-
 class TestThoughtPinnedField:
     def test_default_is_false(self) -> None:
         assert Thought(trace=MemoryTrace(content="test")).pinned is False
@@ -133,64 +125,6 @@ class TestHybridStrategy:
         # facts[1]: 0.9 * (0.7 + 0.3*0.4) = 0.738 == threshold
         assert thoughts[1].pinned is True
         assert thoughts[0].pinned is False  # no score -> relevance 0
-
-
-class TestAssembleWithTraceGuarantee:
-    """Minimum trace guarantee prevents facts from crowding out traces."""
-
-    def test_traces_guaranteed_when_facts_dominate(self) -> None:
-        """With 5 facts and 2 traces, min_traces=2 keeps both traces."""
-        facts = [_thought(f"fact{i}", 0.9 - i * 0.05, pinned=True) for i in range(5)]
-        traces = [_thought(f"trace{i}", 0.7 - i * 0.1, pinned=False) for i in range(2)]
-        result = CognitiveMemory._assemble_with_trace_guarantee(
-            facts + traces,
-            max_total=7,
-            min_traces=2,
-        )
-        unpinned = [t for t in result if not t.pinned]
-        assert len(unpinned) >= 2
-
-    def test_facts_fill_when_few_traces(self) -> None:
-        """With only 1 trace, facts fill remaining slots."""
-        facts = [_thought(f"fact{i}", 0.9 - i * 0.05, pinned=True) for i in range(6)]
-        traces = [_thought("trace0", 0.8, pinned=False)]
-        result = CognitiveMemory._assemble_with_trace_guarantee(
-            facts + traces,
-            max_total=7,
-            min_traces=2,
-        )
-        assert len(result) == 7
-        assert len([t for t in result if not t.pinned]) == 1
-
-    def test_high_relevance_trace_survives(self) -> None:
-        """A high-relevance trace beats low-relevance facts for remaining slots."""
-        facts = [_thought(f"fact{i}", 0.5, pinned=True) for i in range(6)]
-        traces = [
-            _thought("strong_trace", 0.95, pinned=False),
-            _thought("weak_trace", 0.3, pinned=False),
-            _thought("mid_trace", 0.6, pinned=False),
-        ]
-        result = CognitiveMemory._assemble_with_trace_guarantee(
-            facts + traces,
-            max_total=7,
-            min_traces=2,
-        )
-        trace_contents = [t.trace.content for t in result if not t.pinned]
-        assert "strong_trace" in trace_contents
-        assert "mid_trace" in trace_contents
-
-    def test_result_sorted_by_relevance(self) -> None:
-        """Final result is sorted by relevance, not pin status."""
-        thoughts = [
-            _thought("fact", 0.5, pinned=True),
-            _thought("trace", 0.9, pinned=False),
-        ]
-        result = CognitiveMemory._assemble_with_trace_guarantee(
-            thoughts,
-            max_total=7,
-            min_traces=2,
-        )
-        assert result[0].relevance >= result[1].relevance
 
 
 class TestFactToThoughtContent:

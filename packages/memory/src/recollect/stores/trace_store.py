@@ -275,27 +275,6 @@ class PgTraceStore:
             logger.exception("Failed to apply decay factor")
             raise StorageError(f"Failed to apply decay factor: {exc}") from exc
 
-    async def mark_activated(self, trace_id: str) -> None:
-        """Increment activation counter and update timestamp."""
-        try:
-            pool = await self._pool_mgr.get_pool()
-            async with pool.acquire() as conn:
-                await conn.execute(
-                    """
-                    UPDATE memory_traces
-                    SET activation_count = activation_count + 1,
-                        last_activation = $1
-                    WHERE id = $2
-                    """,
-                    now_utc(),
-                    trace_id,
-                )
-        except StorageError:
-            raise
-        except asyncpg.PostgresError as exc:
-            logger.exception("Failed to mark trace activated")
-            raise StorageError(f"Failed to mark trace activated: {exc}") from exc
-
     async def mark_retrieved(self, trace_id: str) -> None:
         """Increment retrieval counter and update timestamp."""
         try:

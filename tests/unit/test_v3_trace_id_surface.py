@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from recollect.models import ForgetResult, MemoryTrace, Session, Thought
+from recollect.models import ForgetResult, MemoryTrace, Session, Thought, ThoughtWindow
 from recollect_mcp.server import AppContext, forget, pin, recall, remember
 
 FULL = "3f2a9c1e-7b4d-4e6a-9c1f-2d8b5a7e4c10"
@@ -39,9 +39,13 @@ def memory(trace: MemoryTrace) -> AsyncMock:
     )
     m.experience.return_value = trace
     m.surface_relevant_facts.return_value = []
-    m.think_about.return_value = [
-        Thought(trace=trace, relevance=0.8, token_count=9, reconstruction=trace.content)
-    ]
+    m.think_about_window.return_value = ThoughtWindow(
+        thoughts=[
+            Thought(
+                trace=trace, relevance=0.8, token_count=9, reconstruction=trace.content
+            )
+        ]
+    )
     m.facts.return_value = []
     m.forget.return_value = ForgetResult(trace_id=FULL)
     m.pin.return_value = []
@@ -98,17 +102,19 @@ async def test_full_id_still_resolves(memory: AsyncMock) -> None:
 
 async def test_persona_fact_line_carries_no_trace_id(memory: AsyncMock) -> None:
     """A fact thought rides a synthetic trace: its id names no stored row."""
-    memory.think_about.return_value = [
-        Thought(
-            trace=MemoryTrace(
-                content="[IMPORTANT CONTEXT] Nadia prefers Sunday climbing",
-                pattern={"persona_fact": True, "category": "preference"},
-            ),
-            relevance=0.9,
-            token_count=8,
-            reconstruction="[IMPORTANT CONTEXT] Nadia prefers Sunday climbing",
-        )
-    ]
+    memory.think_about_window.return_value = ThoughtWindow(
+        thoughts=[
+            Thought(
+                trace=MemoryTrace(
+                    content="[IMPORTANT CONTEXT] Nadia prefers Sunday climbing",
+                    pattern={"persona_fact": True, "category": "preference"},
+                ),
+                relevance=0.9,
+                token_count=8,
+                reconstruction="[IMPORTANT CONTEXT] Nadia prefers Sunday climbing",
+            )
+        ]
+    )
     result = await recall("climbing?", _ctx(memory))
     assert "- [score: 0.90" in result
     assert not _RECALL_LINE_ID.search(result)

@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from datetime import timedelta
 from typing import Any, cast
 
@@ -57,10 +57,10 @@ from recollect.models import (
     RecallToken,
     Session,
     Thought,
+    ThoughtWindow,
     TraceConcept,
     TraceEntity,
     _clamp_strength,
-    activation_boost_factor,
     apply_time_decay,
     displacement_decay_factor,
     recency_anchor,
@@ -85,6 +85,77 @@ def _cosine_similarity(a: list[float], b: list[float]) -> float:
 def _estimate_tokens(text: str) -> int:
     """Estimate token count from text (chars / 4)."""
     return max(1, len(text) // 4)
+
+
+def _drop_forgotten(
+    candidates: list[tuple[MemoryTrace, float]],
+) -> list[tuple[MemoryTrace, float]]:
+    # Explicit retraction outranks relevance: a forgotten trace never reaches
+    # assembly, so no recall can surface or revive it.
+    return [(t, s) for t, s in candidates if t.status != "forgotten"]
+
+
+def _trace_thought(trace: MemoryTrace, relevance: float) -> Thought:
+    content = trace.content or str(trace.pattern)
+    return Thought(
+        trace=trace,
+        relevance=relevance,
+        token_count=_estimate_tokens(content),
+        reconstructed=trace.content is None,
+        reconstruction=content,
+    )
+
+
+def _by_relevance(thoughts: list[Thought]) -> list[Thought]:
+    # Stable: ties keep input order, which fixes the window at equal relevance.
+    return sorted(thoughts, key=lambda t: -t.relevance)
+
+
+def _window_cost(
+    window: list[Thought], render: Callable[[list[Thought]], str] | None
+) -> int:
+    if render is None:
+        return sum(t.token_count for t in window)
+    return _estimate_tokens(render(window))
+
+
+def _accept_from(
+    accepted: list[Thought],
+    tier: list[Thought],
+    *,
+    quota: int,
+    fits: Callable[[list[Thought]], bool],
+) -> tuple[list[Thought], list[Thought]]:
+    # Skip-and-continue: an item that does not fit never ends selection.
+    window = list(accepted)
+    skipped: list[Thought] = []
+    for item in tier:
+        if len(window) - len(accepted) >= quota:
+            break
+        if any(item is a for a in window):
+            continue
+        if fits([*window, item]):
+            window.append(item)
+        else:
+            skipped.append(item)
+    return window, skipped
+
+
+def _select_window(
+    tiers: list[tuple[list[Thought], int]],
+    *,
+    max_total: int,
+    fits: Callable[[list[Thought]], bool],
+) -> ThoughtWindow:
+    window: list[Thought] = []
+    skipped: list[Thought] = []
+    for tier, quota in tiers:
+        room = min(quota, max_total - len(window))
+        window, tier_skipped = _accept_from(window, tier, quota=room, fits=fits)
+        skipped.extend(tier_skipped)
+    # By identity: an item recurs across tiers and Thought is unhashable.
+    withheld = {id(t) for t in skipped} - {id(t) for t in window}
+    return ThoughtWindow(thoughts=_by_relevance(window), withheld=len(withheld))
 
 
 def _compute_decay_rate(
@@ -532,14 +603,39 @@ class CognitiveMemory:
         token_budget: int = 2000,
         session_id: str | None = None,
         user_id: str | None = None,
+        render: Callable[[list[Thought]], str] | None = None,
     ) -> list[Thought]:
+        """The thoughts of `think_about_window`; its steps and errors apply."""
+        window = await self.think_about_window(
+            query,
+            token_budget=token_budget,
+            session_id=session_id,
+            user_id=user_id,
+            render=render,
+        )
+        return window.thoughts
+
+    async def think_about_window(
+        self,
+        query: str,
+        *,
+        token_budget: int = 2000,
+        session_id: str | None = None,
+        user_id: str | None = None,
+        render: Callable[[list[Thought]], str] | None = None,
+    ) -> ThoughtWindow:
         """Retrieve relevant memories within a token budget.
 
         1. Generate query embedding
         2. Check working memory and long-term storage
         3. Spread activation from top candidates
-        4. Merge, rank, select within budget
-        5. Apply retrieval/activation boosts
+        4. Merge and rank; drop forgotten candidates
+        5. Assemble traces and persona facts into the window within budget
+        6. Credit the delivered traces: revival, retrieval boost
+
+        render: the complete response text for a candidate window; when
+        given, the token budget applies to its estimate. Otherwise the
+        budget applies to the sum of the thoughts' token counts.
         """
         if not query or not query.strip():
             raise ValueError("Query must be a non-empty string")
@@ -603,12 +699,7 @@ class CognitiveMemory:
                 (t, s) for t, s in all_candidates if t.session_id == session_id
             ]
 
-        all_candidates = await self._gate_retired_candidates(all_candidates)
-
-        selected = self._select_within_budget(all_candidates, token_budget)
-
-        thoughts = await self._boost_and_build_thoughts(selected)
-        await self._boost_unselected(all_candidates, thoughts)
+        all_candidates = _drop_forgotten(all_candidates)
 
         persona_facts, semantic_scores = await self._find_relevant_persona_facts(
             query,
@@ -618,64 +709,101 @@ class CognitiveMemory:
         persona_facts = self._apply_recall_floor(
             persona_facts, semantic_scores, token_activated
         )
-        if persona_facts:
-            fact_thoughts = self._persona_facts_to_thoughts(
-                persona_facts,
-                semantic_scores,
-            )
-            thoughts = thoughts + fact_thoughts
+        fact_thoughts = self._persona_facts_to_thoughts(persona_facts, semantic_scores)
 
-        max_total = int(self._config.get("retrieval.max_retrievals", 7))
-        min_traces = int(self._config.get("retrieval.min_trace_slots", 2))
-        thoughts = self._assemble_with_trace_guarantee(
-            thoughts,
-            max_total,
-            min_traces,
+        window = self._assemble_window(
+            all_candidates, fact_thoughts, token_budget=token_budget, render=render
         )
+        thoughts = await self._credit_delivered(window.thoughts)
 
         logger.debug(
-            "think_about: %d thoughts (budget=%d)",
+            "think_about: %d thoughts, %d withheld (budget=%d)",
             len(thoughts),
+            window.withheld,
             token_budget,
         )
-        return thoughts
+        return ThoughtWindow(thoughts=thoughts, withheld=window.withheld)
 
-    @staticmethod
-    def _assemble_with_trace_guarantee(
-        thoughts: list[Thought],
-        max_total: int,
-        min_traces: int,
-    ) -> list[Thought]:
-        """Assemble final thoughts guaranteeing minimum trace slots.
+    def _assemble_window(
+        self,
+        candidates: list[tuple[MemoryTrace, float]],
+        fact_thoughts: list[Thought],
+        *,
+        token_budget: int,
+        render: Callable[[list[Thought]], str] | None,
+    ) -> ThoughtWindow:
+        """The returned window, built without a storage write.
 
-        Pinned facts get priority but cannot consume more than
-        (max_total - min_traces) slots. The reserved slots hold actual
-        memory traces -- persona-fact thoughts are facts regardless of
-        pin flag, so they never satisfy the trace guarantee.
-        Remaining slots filled by relevance regardless of kind.
+        Pinned facts first, at most max_retrievals - min_trace_slots; then
+        traces until min_trace_slots are held -- a fact never satisfies the
+        trace guarantee; then everything else by relevance. An item enters
+        only when the complete window with it fits token_budget; one that
+        does not is skipped, never truncated.
         """
-        pinned = sorted(
-            [t for t in thoughts if t.pinned],
-            key=lambda t: -t.relevance,
+        max_total = int(self._config.get("retrieval.max_retrievals", 7))
+        min_traces = int(self._config.get("retrieval.min_trace_slots", 2))
+        traces = [_trace_thought(trace, score) for trace, score in candidates]
+        pinned = _by_relevance([t for t in fact_thoughts if t.pinned])
+        tiers = [
+            (pinned, max(0, max_total - min_traces)),
+            (_by_relevance(traces), min_traces),
+            (_by_relevance(traces + fact_thoughts), max_total),
+        ]
+
+        def fits(window: list[Thought]) -> bool:
+            # Costed in delivery order: render may depend on it.
+            return _window_cost(_by_relevance(window), render) <= token_budget
+
+        return _select_window(tiers, max_total=max_total, fits=fits)
+
+    async def _credit_delivered(self, window: list[Thought]) -> list[Thought]:
+        """Revival and retrieval credit for the delivered traces only.
+
+        A persona-fact thought rides a synthetic trace and earns nothing.
+        """
+        floor = float(self._config.get("retrieval.reactivation_floor", 0.3))
+        credited: list[Thought] = []
+        for thought in window:
+            if thought.trace.pattern.get("persona_fact"):
+                credited.append(thought)
+            else:
+                credited.append(await self._credit_trace(thought, floor=floor))
+        return credited
+
+    async def _credit_trace(self, thought: Thought, *, floor: float) -> Thought:
+        # The floor is a SIMILARITY gate on the fused score; selection_threshold
+        # is a STRENGTH gate. Delivered below the floor, an archived trace stays
+        # archived and still earns retrieval credit.
+        trace = thought.trace
+        if trace.status == "archived" and thought.relevance >= floor:
+            trace = await self._reactivate(trace)
+        in_wm = self._buffer.find(lambda t, _id=trace.id: t.id == _id) is not None
+        await self._storage.traces.apply_strength_factor(
+            trace.id, retrieval_boost_factor(from_working_memory=in_wm)
         )
-        traces_only = sorted(
-            [
-                t
-                for t in thoughts
-                if not t.pinned and not t.trace.pattern.get("persona_fact")
-            ],
-            key=lambda t: -t.relevance,
+        await self._storage.traces.mark_retrieved(trace.id)
+        if trace is thought.trace:
+            return thought
+        return thought.model_copy(update={"trace": trace})
+
+    async def _reactivate(self, trace: MemoryTrace) -> MemoryTrace:
+        revived = await self._storage.traces.reactivate_trace(
+            trace.id,
+            min_strength=trace.significance,
+            activated_at=now_utc(),
         )
-        max_pinned = max(0, max_total - min_traces)
-        selected = pinned[:max_pinned] + traces_only[:min_traces]
-        chosen = {id(t) for t in selected}
-        remaining = sorted(
-            [t for t in thoughts if id(t) not in chosen],
-            key=lambda t: -t.relevance,
+        if not revived:
+            return trace
+        logger.debug("Reactivated trace: %s", trace.id[:8])
+        # In-turn display copy mirrors the SQL reset; the DB row is
+        # authoritative (atomic-factors posture).
+        return trace.model_copy(
+            update={
+                "status": "active",
+                "consolidated": False,
+                "strength": max(trace.strength, trace.significance),
+            }
         )
-        selected += remaining[: max_total - len(selected)]
-        selected.sort(key=lambda t: -t.relevance)
-        return selected
 
     async def consolidate(self, threshold: float | None = None) -> ConsolidationResult:
         """Consolidate or forget pending traces based on strength.
@@ -795,41 +923,6 @@ class CognitiveMemory:
             # none is erased text surviving as a name.
             await self._storage.entities.delete_unmentioned_entities()
         return deleted
-
-    async def _gate_retired_candidates(
-        self, candidates: list[tuple[MemoryTrace, float]]
-    ) -> list[tuple[MemoryTrace, float]]:
-        # Lifecycle gate on the merged list -- the ONE status-aware site;
-        # retrieval paths stay status-agnostic. Forgotten candidates are
-        # dropped regardless of score: explicit retraction must neither
-        # resurface nor revive (a high-relevance recall would otherwise
-        # undo the forget). Archived candidates above the floor revive
-        # (fade-and-return). The floor is a SIMILARITY gate on the fused
-        # score; selection_threshold is a STRENGTH gate.
-        floor = float(self._config.get("retrieval.reactivation_floor", 0.3))
-        out: list[tuple[MemoryTrace, float]] = []
-        for trace, score in candidates:
-            if trace.status == "forgotten":
-                continue
-            if trace.status == "archived" and score >= floor:
-                revived = await self._storage.traces.reactivate_trace(
-                    trace.id,
-                    min_strength=trace.significance,
-                    activated_at=now_utc(),
-                )
-                if revived:
-                    # In-turn display copy mirrors the SQL reset; the DB
-                    # row is authoritative (atomic-factors posture).
-                    trace = trace.model_copy(
-                        update={
-                            "status": "active",
-                            "consolidated": False,
-                            "strength": max(trace.strength, trace.significance),
-                        }
-                    )
-                    logger.debug("Reactivated trace: %s", trace.id[:8])
-            out.append((trace, score))
-        return out
 
     async def _retire_trace_with_buffer_evict(
         self, trace_id: str, *, forgotten: bool = False
@@ -2343,65 +2436,6 @@ class CognitiveMemory:
             result.append((trace, score))
         result.sort(key=lambda x: x[1], reverse=True)
         return result
-
-    def _select_within_budget(
-        self,
-        candidates: list[tuple[MemoryTrace, float]],
-        token_budget: int,
-    ) -> list[tuple[MemoryTrace, float]]:
-        """Select top candidates that fit within token budget."""
-        selected: list[tuple[MemoryTrace, float]] = []
-        tokens_used = 0
-        max_retrievals = int(self._config.get("retrieval.max_retrievals", 7))
-
-        for trace, score in candidates:
-            if len(selected) >= max_retrievals:
-                break
-            tokens = _estimate_tokens(trace.content or "")
-            if tokens_used + tokens > token_budget:
-                break
-            selected.append((trace, score))
-            tokens_used += tokens
-
-        return selected
-
-    async def _boost_and_build_thoughts(
-        self, selected: list[tuple[MemoryTrace, float]]
-    ) -> list[Thought]:
-        """Apply retrieval boost to selected traces and build Thoughts."""
-        thoughts: list[Thought] = []
-        for trace, relevance in selected:
-            in_wm = self._buffer.find(lambda t, _id=trace.id: t.id == _id) is not None
-            await self._storage.traces.apply_strength_factor(
-                trace.id, retrieval_boost_factor(from_working_memory=in_wm)
-            )
-            await self._storage.traces.mark_retrieved(trace.id)
-
-            content = trace.content or str(trace.pattern)
-            thoughts.append(
-                Thought(
-                    trace=trace,
-                    relevance=relevance,
-                    token_count=_estimate_tokens(content),
-                    reconstructed=trace.content is None,
-                    reconstruction=content,
-                )
-            )
-        return thoughts
-
-    async def _boost_unselected(
-        self,
-        all_candidates: list[tuple[MemoryTrace, float]],
-        thoughts: list[Thought],
-    ) -> None:
-        """Apply small activation boost to candidates not selected."""
-        selected_ids = {t.trace.id for t in thoughts}
-        for trace, _ in all_candidates:
-            if trace.id not in selected_ids:
-                await self._storage.traces.apply_strength_factor(
-                    trace.id, activation_boost_factor()
-                )
-                await self._storage.traces.mark_activated(trace.id)
 
     async def _match_query_entities(
         self, query: str, *, user_id: str | None = None

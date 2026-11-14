@@ -14,6 +14,7 @@ from recollect.models import (
     MemoryTrace,
     PersonaFact,
     Thought,
+    ThoughtWindow,
 )
 from recollect.storage_context import StorageContext, create_storage_context
 
@@ -35,6 +36,7 @@ __all__ = [
     "PersonaFact",
     "StorageContext",
     "Thought",
+    "ThoughtWindow",
     "__version__",
     "create_storage_context",
 ]

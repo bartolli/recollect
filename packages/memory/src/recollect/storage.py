@@ -62,10 +62,6 @@ class PostgresStorage:
         """Decay write: clamped factor + last_decayed_at stamp, one statement."""
         await self._ctx.traces.apply_decay_factor(trace_id, factor, decayed_at)
 
-    async def mark_activated(self, trace_id: str) -> None:
-        """Increment activation counter and update timestamp."""
-        await self._ctx.traces.mark_activated(trace_id)
-
     async def mark_retrieved(self, trace_id: str) -> None:
         """Increment retrieval counter and update timestamp."""
         await self._ctx.traces.mark_retrieved(trace_id)

@@ -17,9 +17,10 @@ from typing import Any
 
 import humanize
 from mcp.server.mcpserver import Context, MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.mcpserver.resources import FunctionResource
 from recollect.config import config
-from recollect.core import CognitiveMemory
+from recollect.core import CognitiveMemory, _estimate_tokens
 from recollect.datetime_utils import now_utc
 from recollect.exceptions import (
     ExtractionError,
@@ -35,6 +36,7 @@ from recollect.models import (
     MemoryTrace,
     PersonaFact,
     Thought,
+    ThoughtWindow,
 )
 from recollect.worker import ConsolidationWorker
 
@@ -49,6 +51,28 @@ _STDIO_CONNECTION = "stdio"
 _SESSION_HEADER = "mcp-session-id"
 _SHORT_ID_LEN = 8
 _ID_INPUT = re.compile(r"[0-9A-Za-z_-]{8,}")
+
+_NO_MATCH = "No relevant memories found."
+_BUDGET_EXHAUSTED = (
+    "Memories matched, but none fits token_budget. Raise token_budget and recall again."
+)
+_SAFETY_PENDING = (
+    "Safety context is pending and does not fit token_budget. "
+    "Raise token_budget and recall again."
+)
+# Fixed text: an exception message is unbounded and stays in the server log.
+_STORAGE_FAILED = "Recall failed: storage error. Details are in the server log."
+_RECALL_FAILED = "Recall failed: memory error. Details are in the server log."
+_MIN_RECALL_BUDGET = max(
+    _estimate_tokens(n)
+    for n in (
+        _NO_MATCH,
+        _BUDGET_EXHAUSTED,
+        _SAFETY_PENDING,
+        _STORAGE_FAILED,
+        _RECALL_FAILED,
+    )
+)
 
 
 @dataclass
@@ -392,8 +416,14 @@ async def recall(
 
     Args:
         query: What to recall. Be specific.
-        token_budget: Maximum tokens in the response (default 2000).
+        token_budget: Maximum tokens in the response, at least 23 (default 2000).
     """
+    # Rejected before the one-shot is claimed, as ToolError: its text reaches
+    # the client, and a rejected call must not consume the safety net.
+    if not query.strip():
+        raise ToolError("query must be a non-empty string")
+    if token_budget < _MIN_RECALL_BUDGET:
+        raise ToolError(f"token_budget must be at least {_MIN_RECALL_BUDGET}")
     app = _get_ctx(ctx)
     # Persona facts surface through the recall-floored think_about output;
     # the full promoted+pinned graph is reflect's job. On the first
@@ -407,23 +437,51 @@ async def recall(
         # restored on failure below so a failed delivery re-arms the one-shot.
         app.primed.add(key)
     try:
-        thoughts = await app.memory.think_about(
+        safety_facts: Sequence[PersonaFact] = (
+            await _safety_net_facts(app) if surface_safety else ()
+        )
+        if _safety_net_overflows(safety_facts, token_budget):
+            # Re-armed, no retrieval: the next recall that holds the net prints it.
+            _rearm_safety_net(app, key)
+            return _SAFETY_PENDING
+        # The budget bounds the printed text, safety net included.
+        window = await app.memory.think_about_window(
             query,
             token_budget=token_budget,
             user_id=app.user_id or None,
+            render=lambda w: _format_thoughts(w, safety_facts=safety_facts),
         )
-        safety_facts = await _safety_net_facts(app) if surface_safety else ()
-        return _format_thoughts(thoughts, safety_facts=safety_facts)
-    except StorageError as exc:
-        if key is not None and surface_safety:
-            app.primed.discard(key)
+        return _window_text(window, safety_facts)
+    except StorageError:
+        if surface_safety:
+            _rearm_safety_net(app, key)
         logger.exception("Storage error in recall")
-        return f"Recall failed: {exc}"
-    except MemorySDKError as exc:
-        if key is not None and surface_safety:
-            app.primed.discard(key)
+        return _STORAGE_FAILED
+    except MemorySDKError:
+        if surface_safety:
+            _rearm_safety_net(app, key)
         logger.exception("Unexpected SDK error in recall")
-        return f"Recall failed: {exc}"
+        return _RECALL_FAILED
+
+
+def _rearm_safety_net(app: AppContext, key: str | None) -> None:
+    if key is not None:
+        app.primed.discard(key)
+
+
+def _safety_net_overflows(
+    safety_facts: Sequence[PersonaFact], token_budget: int
+) -> bool:
+    if not safety_facts:
+        return False
+    net = _format_thoughts([], safety_facts=safety_facts)
+    return _estimate_tokens(net) > token_budget
+
+
+def _window_text(window: ThoughtWindow, safety_facts: Sequence[PersonaFact]) -> str:
+    if window.thoughts or safety_facts:
+        return _format_thoughts(window.thoughts, safety_facts=safety_facts)
+    return _BUDGET_EXHAUSTED if window.withheld else _NO_MATCH
 
 
 @mcp.tool()
@@ -651,7 +709,7 @@ def _format_thoughts(
         parts.append("Related memories:")
         parts.extend(f"- {mem}" for mem in regular)
 
-    return "\n".join(parts) if parts else "No relevant memories found."
+    return "\n".join(parts) if parts else _NO_MATCH
 
 
 def _format_facts(facts: list[PersonaFact]) -> str:

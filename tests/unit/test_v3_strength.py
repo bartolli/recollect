@@ -10,7 +10,6 @@ import pytest
 from recollect.datetime_utils import now_utc
 from recollect.models import (
     MemoryTrace,
-    apply_activation_boost,
     apply_displacement_decay,
     apply_retrieval_boost,
     apply_time_decay,
@@ -20,18 +19,6 @@ from recollect.models import (
 @pytest.fixture
 def trace() -> MemoryTrace:
     return MemoryTrace(content="test", pattern={"concepts": ["test"]})
-
-
-class TestActivationBoost:
-    def test_applies_1_percent_boost(self, trace: MemoryTrace) -> None:
-        # Default initial strength is 0.3
-        boosted = apply_activation_boost(trace)
-        assert boosted.strength == pytest.approx(0.3 * 1.01, rel=1e-6)
-
-    def test_clamped_at_max(self) -> None:
-        trace = MemoryTrace(content="t", pattern={}, strength=0.999)
-        boosted = apply_activation_boost(trace)
-        assert boosted.strength <= 1.0
 
 
 class TestRetrievalBoost:

@@ -5,7 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from recollect.models import MemoryTrace, PersonaFact, Session, Thought
+from recollect.models import MemoryTrace, PersonaFact, Session, Thought, ThoughtWindow
 from recollect_mcp.server import AppContext, recall, reflect
 
 
@@ -123,14 +123,16 @@ async def test_recall_without_reflect_no_primer_dump(
     is the recall-floored think_about output. The one-shot primed marker still
     flips (story-2's safety-net seam).
     """
-    mock_memory.think_about.return_value = [
-        Thought(
-            trace=MemoryTrace(content="dinner recipe"),
-            relevance=0.8,
-            token_count=10,
-            reconstruction="dinner recipe",
-        )
-    ]
+    mock_memory.think_about_window.return_value = ThoughtWindow(
+        thoughts=[
+            Thought(
+                trace=MemoryTrace(content="dinner recipe"),
+                relevance=0.8,
+                token_count=10,
+                reconstruction="dinner recipe",
+            )
+        ]
+    )
     result = await recall("dinner ideas", ctx)
     assert "KNOWN FACTS AND RELATIONSHIPS" not in result
     assert "dinner recipe" in result
@@ -143,14 +145,16 @@ async def test_recall_after_reflect_no_primer(
     mock_memory: AsyncMock,
 ) -> None:
     """Recall after reflect should NOT prepend primer."""
-    mock_memory.think_about.return_value = [
-        Thought(
-            trace=MemoryTrace(content="dinner recipe"),
-            relevance=0.8,
-            token_count=10,
-            reconstruction="dinner recipe",
-        )
-    ]
+    mock_memory.think_about_window.return_value = ThoughtWindow(
+        thoughts=[
+            Thought(
+                trace=MemoryTrace(content="dinner recipe"),
+                relevance=0.8,
+                token_count=10,
+                reconstruction="dinner recipe",
+            )
+        ]
+    )
     await reflect(ctx)
     result = await recall("dinner ideas", ctx)
     # Result should have the recall content but NOT start with primer

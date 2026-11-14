@@ -65,6 +65,13 @@ class Thought(BaseModel):
     pinned: bool = False
 
 
+class ThoughtWindow(BaseModel):
+    thoughts: list[Thought] = Field(default_factory=list)
+    # Items that had a slot by rank and were left out because the
+    # complete response with them exceeded the token budget.
+    withheld: int = Field(default=0, ge=0)
+
+
 class Association(BaseModel):
     """A connection between two memory traces."""
 
@@ -298,10 +305,6 @@ def _clamp_strength(value: float) -> float:
     return max(0.0, min(max_strength, value))
 
 
-def activation_boost_factor() -> float:
-    return 1.0 + float(config.get("retrieval.activation_boost", 0.01))
-
-
 def retrieval_boost_factor(*, from_working_memory: bool = False) -> float:
     if from_working_memory:
         return 1.0 + float(config.get("retrieval.wm_retrieval_boost", 0.2))
@@ -310,13 +313,6 @@ def retrieval_boost_factor(*, from_working_memory: bool = False) -> float:
 
 def displacement_decay_factor() -> float:
     return float(config.get("forgetting.displacement_decay", 0.8))
-
-
-def apply_activation_boost(trace: MemoryTrace) -> MemoryTrace:
-    """Apply small boost for spreading activation (x1.01 default)."""
-    return trace.model_copy(
-        update={"strength": _clamp_strength(trace.strength * activation_boost_factor())}
-    )
 
 
 def apply_retrieval_boost(

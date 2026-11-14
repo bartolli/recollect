@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from recollect.exceptions import StorageError
-from recollect.models import MemoryTrace, PersonaFact, Thought
+from recollect.models import MemoryTrace, PersonaFact, Thought, ThoughtWindow
 from recollect_mcp.server import AppContext, recall
 
 
@@ -28,14 +28,16 @@ def _ctx(memory: AsyncMock, user_id: str = "alex") -> MagicMock:
 @pytest.fixture
 def memory() -> AsyncMock:
     m = AsyncMock()
-    m.think_about.return_value = [
-        Thought(
-            trace=MemoryTrace(content="weekend plans"),
-            relevance=0.7,
-            token_count=8,
-            reconstruction="weekend plans",
-        )
-    ]
+    m.think_about_window.return_value = ThoughtWindow(
+        thoughts=[
+            Thought(
+                trace=MemoryTrace(content="weekend plans"),
+                relevance=0.7,
+                token_count=8,
+                reconstruction="weekend plans",
+            )
+        ]
+    )
     m.facts.return_value = []
     return m
 
@@ -89,20 +91,22 @@ async def test_safety_net_dedups_gate_surfaced_fact(memory: AsyncMock) -> None:
             category="health",
         )
     ]
-    memory.think_about.return_value = [
-        Thought(
-            trace=MemoryTrace(
-                content="[IMPORTANT CONTEXT] Angel is_allergic_to penicillin",
-                pattern={"persona_fact": True, "category": "health"},
-            ),
-            relevance=0.95,
-            token_count=12,
-            reconstruction=(
-                "[IMPORTANT CONTEXT] Angel is_allergic_to penicillin"
-                " -- Angel is allergic to penicillin"
-            ),
-        )
-    ]
+    memory.think_about_window.return_value = ThoughtWindow(
+        thoughts=[
+            Thought(
+                trace=MemoryTrace(
+                    content="[IMPORTANT CONTEXT] Angel is_allergic_to penicillin",
+                    pattern={"persona_fact": True, "category": "health"},
+                ),
+                relevance=0.95,
+                token_count=12,
+                reconstruction=(
+                    "[IMPORTANT CONTEXT] Angel is_allergic_to penicillin"
+                    " -- Angel is allergic to penicillin"
+                ),
+            )
+        ]
+    )
     result = await recall("any drug allergies?", _ctx(memory))
     assert result.count("Angel is_allergic_to penicillin") == 1
 
@@ -120,12 +124,12 @@ async def test_failed_first_recall_rearms_safety_net(memory: AsyncMock) -> None:
         )
     ]
     ctx = _ctx(memory)
-    memory.think_about.side_effect = StorageError("db down")
+    memory.think_about_window.side_effect = StorageError("db down")
     result = await recall("first attempt", ctx)
     assert "Recall failed" in result
     assert not ctx.request_context.lifespan_context.primed
 
-    memory.think_about.side_effect = None
+    memory.think_about_window.side_effect = None
     result = await recall("second attempt", ctx)
     assert "IMPORTANT CONTEXT:" in result
     assert "window seat" in result  # net re-armed, delivered on retry

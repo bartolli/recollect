@@ -106,6 +106,26 @@ class TestReactivationMatrix:
         assert stored is not None
         assert stored.status == "active"
 
+    async def test_undelivered_archived_candidate_stays_archived(
+        self, mem: CognitiveMemory
+    ) -> None:
+        # Over the budget it is not delivered, so the read leaves it as
+        # stored; the unbound read proves it was a candidate above the floor.
+        query = "when is the tax filing deadline"
+        trace = await _archived_trace(
+            mem, "the tax filing deadline moved to May. " * 60, strength=0.05
+        )
+        assert await mem.think_about(query, token_budget=100) == []
+        stored = await mem.storage.traces.get_trace(trace.id)
+        assert stored is not None
+        assert stored.status == "archived"
+        assert stored.strength == pytest.approx(0.05)
+        assert stored.retrieval_count == 0
+        await mem.think_about(query, token_budget=2000)
+        revived = await mem.storage.traces.get_trace(trace.id)
+        assert revived is not None
+        assert revived.status == "active"
+
     async def test_raised_strength_gate_hides_deep_decayed(
         self, mem: CognitiveMemory, monkeypatch: pytest.MonkeyPatch
     ) -> None:

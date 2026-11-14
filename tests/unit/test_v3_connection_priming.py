@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from recollect.config import config
-from recollect.models import MemoryTrace, PersonaFact, Thought
+from recollect.models import MemoryTrace, PersonaFact, Thought, ThoughtWindow
 from recollect_mcp import server
 from recollect_mcp.server import AppContext, recall, reflect
 
@@ -28,14 +28,16 @@ def _ctx(app: AppContext, headers: dict[str, str] | None) -> MagicMock:
 @pytest.fixture
 def app() -> AppContext:
     memory = AsyncMock()
-    memory.think_about.return_value = [
-        Thought(
-            trace=MemoryTrace(content="weekend plans"),
-            relevance=0.7,
-            token_count=8,
-            reconstruction="weekend plans",
-        )
-    ]
+    memory.think_about_window.return_value = ThoughtWindow(
+        thoughts=[
+            Thought(
+                trace=MemoryTrace(content="weekend plans"),
+                relevance=0.7,
+                token_count=8,
+                reconstruction="weekend plans",
+            )
+        ]
+    )
     memory.facts.return_value = [
         PersonaFact(
             subject="Angel",

@@ -18,6 +18,7 @@ from recollect.models import (
     PersonaFact,
     Session,
     Thought,
+    ThoughtWindow,
 )
 from recollect_mcp.server import (
     AppContext,
@@ -37,14 +38,16 @@ def mock_memory() -> AsyncMock:
     memory = AsyncMock()
     memory.experience.return_value = MemoryTrace(content="test")
     memory.surface_relevant_facts.return_value = []
-    memory.think_about.return_value = [
-        Thought(
-            trace=MemoryTrace(content="recalled"),
-            relevance=0.9,
-            token_count=10,
-            reconstruction="recalled",
-        )
-    ]
+    memory.think_about_window.return_value = ThoughtWindow(
+        thoughts=[
+            Thought(
+                trace=MemoryTrace(content="recalled"),
+                relevance=0.9,
+                token_count=10,
+                reconstruction="recalled",
+            )
+        ]
+    )
     memory.forget.return_value = ForgetResult(trace_id="trace-123")
     # Every id resolves to itself: these tests exercise the tool bodies,
     # not short-id resolution.
@@ -161,7 +164,7 @@ async def test_recall_custom_budget(
     mock_memory: AsyncMock,
 ) -> None:
     await recall("query", ctx, token_budget=500)
-    assert mock_memory.think_about.call_args.kwargs["token_budget"] == 500
+    assert mock_memory.think_about_window.call_args.kwargs["token_budget"] == 500
 
 
 async def test_recall_unprimed_does_not_leak_promoted_facts(
@@ -201,17 +204,19 @@ async def test_recall_surfaces_gated_persona_fact_as_important_context(
     The gated channel (recall floor + situational grounding, applied inside
     think_about) is where relevant persona facts surface.
     """
-    mock_memory.think_about.return_value = [
-        Thought(
-            trace=MemoryTrace(
-                content="Angel is allergic to penicillin",
-                pattern={"persona_fact": True},
-            ),
-            relevance=0.95,
-            token_count=10,
-            reconstruction="Angel is allergic to penicillin",
-        )
-    ]
+    mock_memory.think_about_window.return_value = ThoughtWindow(
+        thoughts=[
+            Thought(
+                trace=MemoryTrace(
+                    content="Angel is allergic to penicillin",
+                    pattern={"persona_fact": True},
+                ),
+                relevance=0.95,
+                token_count=10,
+                reconstruction="Angel is allergic to penicillin",
+            )
+        ]
+    )
     result = await recall("any drug allergies?", ctx)
     assert "IMPORTANT CONTEXT:" in result
     assert "penicillin" in result
@@ -312,10 +317,11 @@ async def test_recall_storage_error(
     ctx: MagicMock,
     mock_memory: AsyncMock,
 ) -> None:
-    mock_memory.think_about.side_effect = StorageError("db down")
+    mock_memory.think_about_window.side_effect = StorageError("db down")
     result = await recall("query", ctx)
-    assert "db down" in result
-    assert isinstance(result, str)
+    # A fixed notice: the exception text is unbounded and stays in the log.
+    assert result.startswith("Recall failed: storage error")
+    assert "db down" not in result
 
 
 async def test_pin_not_found(

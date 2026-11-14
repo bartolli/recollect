@@ -77,7 +77,7 @@ async def test_retrieval_boosts_strength(mem: CognitiveMemory) -> None:
     updated = next((t for t in traces if t.id == trace.id), None)
     assert updated is not None
     assert isinstance(updated, MemoryTrace)
-    # Retrieval or activation boost should increase strength
+    # Retrieval boost should increase strength
     assert updated.strength >= original_strength
 
 
