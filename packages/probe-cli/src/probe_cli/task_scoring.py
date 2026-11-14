@@ -4,6 +4,10 @@ Correct = any alias present in the normalized response at word boundaries.
 Abstain questions invert: an abstention marker is the correct answer, any
 concrete value is a fabrication. An abstention on an answerable question
 scores wrong via the alias check alone -- markers carry no alias vocabulary.
+
+A screen, not an adjudication: a response that quotes the value while
+asserting another answer, or an abstention that quotes it, scores correct.
+A verdict used as an acceptance gate is read against its question.
 """
 
 from __future__ import annotations

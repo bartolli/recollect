@@ -1,0 +1,1506 @@
+{
+  "arm_name": "task-gate0-d2",
+  "template_db": "probe_gate0_d2_keep",
+  "user_id": "probe-task-gate0-d2-sweep",
+  "density_tier": 2,
+  "answer_model": "anthropic:claude-haiku-4-5-20251001",
+  "rule": "top-relative",
+  "parameter": 0.2,
+  "header": "Lower-ranked matches (scored well below the top match):",
+  "repeats": 5,
+  "validity": {
+    "matched": 40,
+    "checks": 40,
+    "archived_candidates": 0,
+    "mismatches": []
+  },
+  "noise_floor": 1,
+  "questions": [
+    {
+      "question_id": "t3q01",
+      "tier_label": "t3",
+      "answer_type": "date",
+      "window": [
+        "1. chain-a-0 0.844 strong",
+        "2. chain-a-5 0.798 strong",
+        "3. chain-a-3 0.770 strong",
+        "4. chain-a-1 0.729 strong",
+        "5. chain-a-2 0.698 strong",
+        "6. chain-a-4 0.696 strong",
+        "7. ~31e4c63b 0.609"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "March 30th (auto-injector expiration date)",
+          "March 30th (auto-injector expiration date)",
+          "March 30th (auto-injector expiration date)",
+          "March 30th (auto-injector expiration date)",
+          "March 30th (auto-injector expiration date)"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "March 30th",
+          "March 30th",
+          "March 30th (auto-injector expiration date)",
+          "March 30th (auto-injector expiration date)",
+          "March 30th (auto-injector expiration date)"
+        ]
+      }
+    },
+    {
+      "question_id": "t3q02",
+      "tier_label": "any",
+      "answer_type": "name",
+      "window": [
+        "1. chain-a-0 0.779 strong",
+        "2. chain-a-6 0.759 strong",
+        "3. chain-a-5 0.720 strong",
+        "4. chain-a-3 0.720 strong",
+        "5. chain-a-1 0.690 strong",
+        "6. hay-132 0.669 strong",
+        "7. chain-a-4 0.635 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "CityMed urgent care on 5th Avenue",
+          "CityMed urgent care on 5th Avenue",
+          "CityMed urgent care on 5th Avenue",
+          "CityMed urgent care on 5th Avenue",
+          "CityMed urgent care on 5th Avenue"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "CityMed urgent care on 5th Avenue",
+          "CityMed urgent care on 5th Avenue",
+          "CityMed urgent care on 5th Avenue",
+          "CityMed urgent care on 5th Avenue",
+          "CityMed urgent care on 5th Avenue"
+        ]
+      }
+    },
+    {
+      "question_id": "t3q03",
+      "tier_label": "t3",
+      "answer_type": "name",
+      "window": [
+        "1. chain-c-4 0.702 strong",
+        "2. chain-b-0 0.687 strong",
+        "3. chain-c-3 0.668 strong",
+        "4. hay-050 0.643 strong",
+        "5. hay-107 0.641 strong",
+        "6. chain-c-5 0.624 strong",
+        "7. hay-023 0.623 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 0,
+        "responses": [
+          "unknown\n\nThe provided memories don't contain information about what gift is being considered for Mom's 70th birthday or which stores have deals on it. While there are mentions of store credit and a coupon code, there's no context connecting these to Mom's birthday gift shopping.",
+          "unknown\n\nThe related memories don't contain information about specific birthday gift deals or comparisons between stores for Mom's birthday gift.",
+          "unknown.\n\nThe provided memories don't contain information about what gift is being considered for Mom's birthday or which stores have deals on it. While there are mentions of store credit at a hardware store and a coupon code for home goods, there's no comparison of birthday gift deals.",
+          "unknown",
+          "unknown\n\nThe provided memories discuss Mom's 70th birthday coming up in June and mention a deal on a refurbished monitor, but there is no information comparing deals across stores specifically for Mom's birthday gift."
+        ]
+      },
+      "labelled": {
+        "correct": 0,
+        "responses": [
+          "unknown.\n\nThe provided memories don't contain information about specific birthday gift deals or comparisons between stores for Mom's 70th birthday gift.",
+          "unknown",
+          "unknown.\n\nThe provided memories don't contain information about Mom's birthday gift options or deals at specific stores. While there are memories about store credit and a coupon code, there's no context about what gift is being considered or which stores have deals on it.",
+          "unknown\n\nThe provided memories mention a refurbished monitor deal and a home goods coupon, but do not specify which store has the best deal on a birthday gift for Mom, nor do they indicate what type of gift would be appropriate for her 70th birthday celebration.",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "question_id": "t3q04",
+      "tier_label": "t3",
+      "answer_type": "quantity",
+      "window": [
+        "1. chain-b-0 0.671 strong",
+        "2. chain-b-2 0.665 strong",
+        "3. chain-b-6 0.637 strong",
+        "4. chain-e-5 0.624 strong",
+        "5. hay-058 0.622 strong",
+        "6. hay-115 0.617 strong",
+        "7. hay-105 0.606 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "$75",
+          "Over seventy-five dollars.",
+          "$75",
+          "$75",
+          "$75"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "$75",
+          "$75",
+          "seventy-five dollars",
+          "$75",
+          "$75"
+        ]
+      }
+    },
+    {
+      "question_id": "t3q05",
+      "tier_label": "t3",
+      "answer_type": "time",
+      "window": [
+        "1. chain-c-0 0.765 strong",
+        "2. hay-134 0.717 strong",
+        "3. hay-138 0.706 strong",
+        "4. hay-111 0.699 strong",
+        "5. hay-115 0.698 strong",
+        "6. chain-c-2 0.688 strong",
+        "7. c2 0.688 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 0,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      },
+      "labelled": {
+        "correct": 0,
+        "responses": [
+          "unknown.",
+          "unknown.",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "question_id": "t3q06",
+      "tier_label": "t3",
+      "answer_type": "time",
+      "window": [
+        "1. hay-098 0.743 strong",
+        "2. hay-103 0.730 strong",
+        "3. hay-101 0.721 strong",
+        "4. hay-111 0.720 strong",
+        "5. hay-138 0.709 strong",
+        "6. hay-122 0.700 strong",
+        "7. hay-134 0.699 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 0,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      },
+      "labelled": {
+        "correct": 0,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "question_id": "t1q01",
+      "tier_label": "t1",
+      "answer_type": "item",
+      "window": [
+        "1. chain-a-3 0.650 strong",
+        "2. chain-a-1 0.614 strong",
+        "3. hay-125 0.602 strong",
+        "4. hay-095 0.599 strong",
+        "5. hay-096 0.599 strong",
+        "6. p3 0.596 strong",
+        "7. chain-a-2 0.588 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Pat has a severe peanut allergy (hospitalized from accidental peanut oil ingestion). Avoid peanut oil and peanut products.",
+          "Peanut oil - Pat has a severe peanut allergy.",
+          "Avoid peanut oil - Pat has a severe peanut allergy.",
+          "Pat has a peanut allergy (severe enough to cause hospitalization). Avoid peanut oil and peanut products.",
+          "Avoid peanut oil. Pat has a severe peanut allergy (hospitalized from accidental ingestion)."
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Avoid peanut oil. Pat has a severe peanut allergy (hospitalized last year).",
+          "Avoid peanut oil. Pat has a peanut allergy and was hospitalized after ingesting it.",
+          "Avoid peanut oil due to Pat's severe peanut allergy.",
+          "Peanut oil. Pat has a severe peanut allergy and was hospitalized after accidental ingestion.",
+          "Peanut oil - Pat has a severe peanut allergy."
+        ]
+      }
+    },
+    {
+      "question_id": "t1q02",
+      "tier_label": "t1",
+      "answer_type": "name",
+      "window": [
+        "1. hay-054 0.647 strong",
+        "2. hay-064 0.645 strong",
+        "3. hay-138 0.641 strong",
+        "4. hay-104 0.639 strong",
+        "5. hay-060 0.626 strong",
+        "6. hay-056 0.625 strong",
+        "7. hay-055 0.622 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 0,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      },
+      "labelled": {
+        "correct": 0,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "question_id": "t1q03",
+      "tier_label": "t1",
+      "answer_type": "name",
+      "window": [
+        "1. d2 0.658 strong",
+        "2. d3 0.648 strong",
+        "3. hay-141 0.640 strong",
+        "4. d4 0.635 strong",
+        "5. c1 0.633 strong",
+        "6. hay-089 0.629 strong",
+        "7. hay-080 0.621 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Taro",
+          "Taro (celiac disease).",
+          "Taro (celiac disease)",
+          "Taro (celiac disease)",
+          "Taro (celiac disease - gluten avoidance)"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Taro (celiac disease requires gluten-free bread)",
+          "Taro",
+          "Taro (celiac disease).",
+          "Taro",
+          "Taro (celiac disease - avoids gluten)"
+        ]
+      }
+    },
+    {
+      "question_id": "t1q04",
+      "tier_label": "t1",
+      "answer_type": "name",
+      "window": [
+        "1. c1 0.714 strong",
+        "2. hay-053 0.682 strong",
+        "3. hay-010 0.670 strong",
+        "4. chain-b-4 0.657 strong",
+        "5. hay-125 0.652 strong",
+        "6. hay-060 0.649 strong",
+        "7. hay-063 0.645 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Lior's wheelchair accessibility requirements.",
+          "Lior's accessibility needs.",
+          "Lior's accessibility requirements.",
+          "Lior's wheelchair accessibility needs.",
+          "Lior's accessibility needs."
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Lior's accessibility requirements.",
+          "Lior's accessibility requirements (wheelchair-accessible venues).",
+          "Lior's wheelchair accessibility requirements.",
+          "Lior's wheelchair-accessibility requirements.",
+          "Lior's wheelchair accessibility requirements."
+        ]
+      }
+    },
+    {
+      "question_id": "t1q05",
+      "tier_label": "t1",
+      "answer_type": "time",
+      "window": [
+        "1. chain-a-2 0.675 strong",
+        "2. c2 0.670 strong",
+        "3. s1 0.660 strong",
+        "4. hay-117 0.649 strong",
+        "5. hay-139 0.639 strong",
+        "6. chain-e-4 0.629 strong",
+        "7. hay-096 0.626 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 2,
+        "responses": [
+          "unknown",
+          "unknown",
+          "Until 8pm",
+          "unknown",
+          "Unknown\n\n(The context shows Soraya cannot attend past 8pm due to childcare, but there's no information about when the team dinner is scheduled or whether Soraya is attending it. Additionally, other attendees' time constraints are not provided.)"
+        ]
+      },
+      "labelled": {
+        "correct": 1,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "8pm"
+        ]
+      }
+    },
+    {
+      "question_id": "t1q06",
+      "tier_label": "any",
+      "answer_type": "item",
+      "window": [
+        "1. d3 0.863 strong",
+        "2. ~5d03060c 0.777",
+        "3. chain-c-1 0.681 strong",
+        "4. hay-141 0.677 strong",
+        "5. hay-089 0.673 strong",
+        "6. hay-095 0.648 weak",
+        "7. chain-c-2 0.645 weak"
+      ],
+      "weak": 2,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Halal certification",
+          "Halal certification.",
+          "Halal certification",
+          "Halal certification.",
+          "Halal certification"
+        ]
+      },
+      "labelled": {
+        "correct": 2,
+        "responses": [
+          "Halal certification.",
+          "unknown",
+          "unknown",
+          "unknown",
+          "Halal certification."
+        ]
+      }
+    },
+    {
+      "question_id": "t2q01",
+      "tier_label": "t2",
+      "answer_type": "name",
+      "window": [
+        "1. g1 0.865 strong",
+        "2. hay-048 0.576 weak",
+        "3. d4 0.557 weak",
+        "4. chain-c-1 0.555 weak",
+        "5. chain-e-0 0.544 weak",
+        "6. hay-119 0.543 weak",
+        "7. hay-032 0.541 weak"
+      ],
+      "weak": 6,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "PBS",
+          "PBS",
+          "PBS.",
+          "PBS",
+          "PBS"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "PBS",
+          "PBS",
+          "PBS",
+          "PBS",
+          "PBS"
+        ]
+      }
+    },
+    {
+      "question_id": "t2q02",
+      "tier_label": "t2",
+      "answer_type": "name",
+      "window": [
+        "1. g2 0.791 strong",
+        "2. chain-a-0 0.683 strong",
+        "3. chain-c-4 0.656 strong",
+        "4. chain-c-3 0.615 strong",
+        "5. hay-132 0.601 strong",
+        "6. chain-b-6 0.601 strong",
+        "7. chain-a-5 0.600 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Pine Street",
+          "Pine Street",
+          "Pine Street",
+          "Pine Street",
+          "Pine Street"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Pine Street",
+          "Pine Street",
+          "Pine Street",
+          "Pine Street",
+          "Pine Street"
+        ]
+      }
+    },
+    {
+      "question_id": "t2q03",
+      "tier_label": "t2",
+      "answer_type": "name",
+      "window": [
+        "1. g4 0.818 strong",
+        "2. chain-d-2 0.722 strong",
+        "3. chain-d-1 0.709 strong",
+        "4. chain-d-4 0.688 strong",
+        "5. chain-d-3 0.673 strong",
+        "6. hay-141 0.631 strong",
+        "7. chain-d-6 0.620 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Brookhaven Park.",
+          "Brookhaven Park",
+          "Brookhaven Park",
+          "Brookhaven Park",
+          "Brookhaven Park."
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Brookhaven Park",
+          "Brookhaven Park",
+          "Brookhaven Park",
+          "Brookhaven Park",
+          "Brookhaven Park"
+        ]
+      }
+    },
+    {
+      "question_id": "t2q04",
+      "tier_label": "t2",
+      "answer_type": "date",
+      "window": [
+        "1. s3 0.941 strong",
+        "2. chain-b-3 0.894 strong",
+        "3. chain-b-4 0.894 strong",
+        "4. chain-b-5 0.877 strong",
+        "5. hay-142 0.859 strong",
+        "6. chain-b-1 0.704 weak",
+        "7. hay-076 0.674 weak"
+      ],
+      "weak": 2,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Saturday mornings",
+          "Saturday mornings",
+          "Saturday mornings",
+          "Saturday mornings",
+          "Saturday mornings"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Saturday mornings.",
+          "Saturday mornings.",
+          "Saturday mornings.",
+          "Saturday mornings.",
+          "Saturday mornings"
+        ]
+      }
+    },
+    {
+      "question_id": "t2q05",
+      "tier_label": "t2",
+      "answer_type": "name",
+      "window": [
+        "1. n1 0.835 strong",
+        "2. hay-070 0.736 strong",
+        "3. hay-076 0.650 strong",
+        "4. hay-141 0.613 weak",
+        "5. g4 0.610 weak",
+        "6. chain-d-6 0.606 weak",
+        "7. s3 0.599 weak"
+      ],
+      "weak": 4,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Old rail depot on Cedar Avenue",
+          "old rail depot on Cedar Avenue",
+          "Old rail depot on Cedar Avenue",
+          "Old rail depot on Cedar Avenue",
+          "Old rail depot on Cedar Avenue"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Old rail depot on Cedar Avenue.",
+          "Old rail depot on Cedar Avenue",
+          "Old rail depot on Cedar Avenue",
+          "Old rail depot on Cedar Avenue",
+          "Old rail depot on Cedar Avenue"
+        ]
+      }
+    },
+    {
+      "question_id": "t2q06",
+      "tier_label": "t2",
+      "answer_type": "date",
+      "window": [
+        "1. n2 0.943 strong",
+        "2. chain-a-6 0.622 weak",
+        "3. hay-132 0.610 weak",
+        "4. chain-c-6 0.604 weak",
+        "5. chain-b-5 0.594 weak",
+        "6. n1 0.593 weak",
+        "7. chain-e-4 0.592 weak"
+      ],
+      "weak": 6,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "First Tuesday of every month.",
+          "First Tuesday of every month.",
+          "First Tuesday of every month.",
+          "First Tuesday of every month.",
+          "First Tuesday of every month."
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "First Tuesday of every month.",
+          "First Tuesday of every month.",
+          "First Tuesday of every month.",
+          "First Tuesday of every month.",
+          "First Tuesday of every month."
+        ]
+      }
+    },
+    {
+      "question_id": "aq01",
+      "tier_label": "any",
+      "answer_type": "item",
+      "window": [
+        "1. h1 1.000 strong",
+        "2. ~ecf65be9 0.802",
+        "3. ~e1aa6838 0.764",
+        "4. h3 0.713 weak",
+        "5. d4 0.684 weak",
+        "6. d2 0.644 weak",
+        "7. hay-033 0.631 weak"
+      ],
+      "weak": 4,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Peanut",
+          "Peanut",
+          "peanut",
+          "Peanut",
+          "Peanut"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Peanut",
+          "Peanut",
+          "Peanut",
+          "peanut",
+          "Peanut"
+        ]
+      }
+    },
+    {
+      "question_id": "aq02",
+      "tier_label": "any",
+      "answer_type": "item",
+      "window": [
+        "1. h2 1.000 strong",
+        "2. ~19b01f02 0.840",
+        "3. chain-a-4 0.711 weak",
+        "4. hay-127 0.697 weak",
+        "5. h4 0.690 weak",
+        "6. hay-128 0.679 weak",
+        "7. h1 0.678 weak"
+      ],
+      "weak": 5,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Hypertension",
+          "Hypertension",
+          "Hypertension.",
+          "Hypertension",
+          "Hypertension"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Hypertension.",
+          "Hypertension",
+          "Hypertension",
+          "Hypertension.",
+          "Hypertension."
+        ]
+      }
+    },
+    {
+      "question_id": "aq03",
+      "tier_label": "any",
+      "answer_type": "item",
+      "window": [
+        "1. h4 0.985 strong",
+        "2. h1 0.651 weak",
+        "3. chain-a-3 0.649 weak",
+        "4. h3 0.646 weak",
+        "5. chain-a-4 0.640 weak",
+        "6. h2 0.635 weak",
+        "7. d4 0.631 weak"
+      ],
+      "weak": 6,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Type 2 diabetes",
+          "Type 2 diabetes.",
+          "Type 2 diabetes.",
+          "Type 2 diabetes",
+          "Type 2 diabetes"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Type 2 diabetes.",
+          "Type 2 diabetes.",
+          "Type 2 diabetes",
+          "Type 2 diabetes",
+          "Type 2 diabetes"
+        ]
+      }
+    },
+    {
+      "question_id": "aq04",
+      "tier_label": "any",
+      "answer_type": "date",
+      "window": [
+        "1. d1 1.000 strong",
+        "2. ~afa7bde3 0.906",
+        "3. d4 0.675 weak",
+        "4. hay-129 0.637 weak",
+        "5. hay-107 0.636 weak",
+        "6. hay-115 0.635 weak",
+        "7. hay-113 0.633 weak"
+      ],
+      "weak": 5,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "2019",
+          "Since 2019.",
+          "2019",
+          "2019",
+          "2019"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Since 2019.",
+          "2019",
+          "Since 2019",
+          "2019",
+          "Since 2019."
+        ]
+      }
+    },
+    {
+      "question_id": "aq05",
+      "tier_label": "any",
+      "answer_type": "item",
+      "window": [
+        "1. d2 1.000 strong",
+        "2. ~75b29549 0.915",
+        "3. ~e111611c 0.813",
+        "4. d4 0.750 weak",
+        "5. hay-080 0.671 weak",
+        "6. ~0fc3ecec 0.670",
+        "7. h1 0.651 weak"
+      ],
+      "weak": 3,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Celiac disease",
+          "Celiac disease.",
+          "Celiac disease",
+          "Celiac disease",
+          "Celiac disease."
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Celiac disease",
+          "Celiac disease",
+          "Celiac disease",
+          "Celiac disease",
+          "Celiac disease."
+        ]
+      }
+    },
+    {
+      "question_id": "aq06",
+      "tier_label": "any",
+      "answer_type": "name",
+      "window": [
+        "1. i1 0.925 strong",
+        "2. chain-a-4 0.679 weak",
+        "3. i3 0.662 weak",
+        "4. chain-a-1 0.624 weak",
+        "5. hay-048 0.594 weak",
+        "6. chain-a-3 0.587 weak",
+        "7. chain-a-2 0.587 weak"
+      ],
+      "weak": 6,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Stripe",
+          "Stripe, as a staff engineer on the payments platform.",
+          "Stripe",
+          "Stripe, as a staff engineer on the payments platform.",
+          "Stripe"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Stripe",
+          "Stripe, as a staff engineer on the payments platform.",
+          "Stripe",
+          "Stripe",
+          "Stripe, as a staff engineer on the payments platform."
+        ]
+      }
+    },
+    {
+      "question_id": "aq07",
+      "tier_label": "any",
+      "answer_type": "item",
+      "window": [
+        "1. i2 0.958 strong",
+        "2. hay-119 0.633 weak",
+        "3. h2 0.628 weak",
+        "4. hay-101 0.617 weak",
+        "5. hay-092 0.613 weak",
+        "6. hay-135 0.605 weak",
+        "7. hay-081 0.601 weak"
+      ],
+      "weak": 6,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Medieval Irish poetry at Trinity College.",
+          "Medieval Irish poetry at Trinity College.",
+          "Medieval Irish poetry at Trinity College.",
+          "Medieval Irish poetry at Trinity College.",
+          "Medieval Irish poetry at Trinity College."
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Medieval Irish poetry at Trinity College.",
+          "Medieval Irish poetry at Trinity College.",
+          "Medieval Irish poetry at Trinity College.",
+          "Medieval Irish poetry at Trinity College.",
+          "Medieval Irish poetry at Trinity College."
+        ]
+      }
+    },
+    {
+      "question_id": "aq08",
+      "tier_label": "any",
+      "answer_type": "name",
+      "window": [
+        "1. r1 0.953 strong",
+        "2. hay-123 0.607 weak",
+        "3. hay-107 0.602 weak",
+        "4. hay-137 0.587 weak",
+        "5. hay-128 0.586 weak",
+        "6. hay-096 0.581 weak",
+        "7. hay-060 0.580 weak"
+      ],
+      "weak": 6,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Camille",
+          "Camille",
+          "Camille",
+          "Camille",
+          "Camille"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Camille",
+          "Camille",
+          "Camille",
+          "Camille",
+          "Camille"
+        ]
+      }
+    },
+    {
+      "question_id": "aq09",
+      "tier_label": "any",
+      "answer_type": "item",
+      "window": [
+        "1. p1 0.994 strong",
+        "2. p3 0.694 weak",
+        "3. hay-127 0.642 weak",
+        "4. hay-117 0.637 weak",
+        "5. h3 0.615 weak",
+        "6. d4 0.612 weak",
+        "7. hay-085 0.605 weak"
+      ],
+      "weak": 6,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Tea",
+          "Tea",
+          "Tea",
+          "Tea",
+          "tea"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Tea",
+          "Tea",
+          "Tea",
+          "Tea",
+          "Tea."
+        ]
+      }
+    },
+    {
+      "question_id": "aq10",
+      "tier_label": "any",
+      "answer_type": "time",
+      "window": [
+        "1. s1 0.940 strong",
+        "2. chain-e-0 0.659 weak",
+        "3. i1 0.641 weak",
+        "4. chain-d-6 0.616 weak",
+        "5. hay-004 0.609 weak",
+        "6. hay-008 0.603 weak",
+        "7. chain-c-0 0.602 weak"
+      ],
+      "weak": 6,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Monday at 9am.",
+          "Every Monday at 9am.",
+          "Monday at 9am",
+          "Every Monday at 9am.",
+          "Monday at 9am"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Monday at 9am",
+          "Every Monday at 9am.",
+          "Monday at 9am",
+          "Every Monday at 9am.",
+          "Monday at 9am"
+        ]
+      }
+    },
+    {
+      "question_id": "aq11",
+      "tier_label": "any",
+      "answer_type": "name",
+      "window": [
+        "1. s2 0.914 strong",
+        "2. chain-e-0 0.623 weak",
+        "3. hay-056 0.605 weak",
+        "4. chain-e-6 0.576 weak",
+        "5. hay-059 0.563 weak",
+        "6. hay-060 0.561 weak",
+        "7. hay-005 0.561 weak"
+      ],
+      "weak": 6,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Reykjavik",
+          "Reykjavik",
+          "Reykjavik",
+          "Reykjavik",
+          "Reykjavik"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Reykjavik",
+          "Reykjavik",
+          "Reykjavik",
+          "Reykjavik",
+          "Reykjavik"
+        ]
+      }
+    },
+    {
+      "question_id": "aq12",
+      "tier_label": "any",
+      "answer_type": "quantity",
+      "window": [
+        "1. c3 0.960 strong",
+        "2. ~9e92fcc8 0.827",
+        "3. hay-010 0.650 weak",
+        "4. c1 0.638 weak",
+        "5. chain-e-0 0.570 weak",
+        "6. chain-e-1 0.551 weak",
+        "7. chain-e-6 0.547 weak"
+      ],
+      "weak": 5,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "12 people",
+          "12 people",
+          "12 people",
+          "12 people",
+          "12 people."
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "12 people",
+          "12 people",
+          "12 people",
+          "12 people",
+          "12 people"
+        ]
+      }
+    },
+    {
+      "question_id": "abq01",
+      "tier_label": "none",
+      "answer_type": "abstain",
+      "window": [
+        "1. i3 0.731 strong",
+        "2. h1 0.727 strong",
+        "3. chain-d-0 0.676 strong",
+        "4. c2 0.671 strong",
+        "5. hay-138 0.647 strong",
+        "6. hay-134 0.641 strong",
+        "7. chain-d-4 0.638 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown.",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "question_id": "abq02",
+      "tier_label": "none",
+      "answer_type": "abstain",
+      "window": [
+        "1. s2 0.890 strong",
+        "2. hay-139 0.616 weak",
+        "3. c1 0.607 weak",
+        "4. hay-060 0.597 weak",
+        "5. chain-e-0 0.590 weak",
+        "6. hay-053 0.582 weak",
+        "7. hay-141 0.576 weak"
+      ],
+      "weak": 6,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "question_id": "abq03",
+      "tier_label": "none",
+      "answer_type": "abstain",
+      "window": [
+        "1. r1 0.803 strong",
+        "2. hay-126 0.615 strong",
+        "3. hay-107 0.597 weak",
+        "4. hay-115 0.596 weak",
+        "5. hay-137 0.580 weak",
+        "6. hay-109 0.574 weak",
+        "7. chain-e-1 0.571 weak"
+      ],
+      "weak": 5,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "question_id": "abq04",
+      "tier_label": "none",
+      "answer_type": "abstain",
+      "window": [
+        "1. chain-c-1 0.815 strong",
+        "2. chain-c-2 0.692 strong",
+        "3. hay-098 0.684 strong",
+        "4. hay-122 0.680 strong",
+        "5. hay-115 0.650 strong",
+        "6. hay-107 0.639 strong",
+        "7. hay-101 0.638 strong"
+      ],
+      "weak": 0,
+      "required_weak": [],
+      "identical": true,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown.",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "question_id": "abq05",
+      "tier_label": "none",
+      "answer_type": "abstain",
+      "window": [
+        "1. chain-a-4 0.998 strong",
+        "2. chain-a-3 0.842 strong",
+        "3. chain-a-0 0.787 weak",
+        "4. chain-a-1 0.677 weak",
+        "5. chain-a-5 0.656 weak",
+        "6. h1 0.627 weak",
+        "7. h2 0.622 weak"
+      ],
+      "weak": 5,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "question_id": "abq06",
+      "tier_label": "none",
+      "answer_type": "abstain",
+      "window": [
+        "1. p4 0.966 strong",
+        "2. hay-119 0.588 weak",
+        "3. chain-e-1 0.585 weak",
+        "4. hay-096 0.584 weak",
+        "5. hay-137 0.583 weak",
+        "6. chain-e-0 0.579 weak",
+        "7. hay-082 0.566 weak"
+      ],
+      "weak": 6,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown.",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown",
+          "unknown"
+        ]
+      }
+    },
+    {
+      "question_id": "t3q07",
+      "tier_label": "t3",
+      "answer_type": "time",
+      "window": [
+        "1. chain-d-1 0.955 strong",
+        "2. chain-d-0 0.867 strong",
+        "3. g4 0.738 weak",
+        "4. chain-d-6 0.658 weak",
+        "5. chain-d-4 0.640 weak",
+        "6. hay-138 0.636 weak",
+        "7. hay-003 0.621 weak"
+      ],
+      "weak": 5,
+      "required_weak": [
+        "chain-d-4"
+      ],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "By Wednesday at 5pm.",
+          "By Wednesday at 5pm.",
+          "By Wednesday 5pm",
+          "By Wednesday at 5pm (before the next weekly glaze batch on Wednesday evening).",
+          "By Wednesday 5pm (to catch that week's glaze batch firing)."
+        ]
+      },
+      "labelled": {
+        "correct": 3,
+        "responses": [
+          "By Wednesday 5pm before the last Saturday of September.",
+          "Wednesday at 5pm",
+          "By Wednesday at 5pm (one week before the showcase).",
+          "Unknown. The context indicates Nadia's bowls need final firing before the showcase (last Saturday of September), and that Clayworks loads glaze batches on Wednesdays with later pieces waiting a full week, but does not specify the exact deadline for Nadia to drop off her bowls.",
+          "Wednesday before the last Saturday of September (to make the weekly glaze batch firing deadline)."
+        ]
+      }
+    },
+    {
+      "question_id": "t3q08",
+      "tier_label": "t3",
+      "answer_type": "quantity",
+      "window": [
+        "1. chain-d-1 0.822 strong",
+        "2. chain-d-0 0.799 strong",
+        "3. g4 0.694 strong",
+        "4. chain-d-6 0.631 strong",
+        "5. chain-d-5 0.580 weak",
+        "6. hay-077 0.572 weak",
+        "7. hay-107 0.570 weak"
+      ],
+      "weak": 3,
+      "required_weak": [
+        "chain-d-5"
+      ],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "$18",
+          "$54\n\n(three bowls × $18 glaze firing fee = $54)",
+          "$18",
+          "$18",
+          "$18"
+        ]
+      },
+      "labelled": {
+        "correct": 4,
+        "responses": [
+          "unknown\n\nThe provided context mentions a glaze firing fee of $18 at Clayworks, but doesn't confirm whether Nadia uses that service or specify the total cost for preparing all three bowls for the showcase.",
+          "$18 per bowl (for glaze firing)",
+          "$18 per bowl (minimum $54 for three bowls)",
+          "unknown",
+          "$54\n\n(Three bowls × $18 per glaze firing = $54)"
+        ]
+      }
+    },
+    {
+      "question_id": "t3q09",
+      "tier_label": "t2",
+      "answer_type": "date",
+      "window": [
+        "1. chain-e-0 1.000 strong",
+        "2. chain-e-1 1.000 strong",
+        "3. chain-e-5 0.866 strong",
+        "4. chain-e-2 0.864 strong",
+        "5. chain-e-3 0.831 strong",
+        "6. s2 0.662 weak",
+        "7. hay-138 0.655 weak"
+      ],
+      "weak": 2,
+      "required_weak": [],
+      "identical": false,
+      "current": {
+        "correct": 0,
+        "responses": [
+          "December 7",
+          "December 1",
+          "December 7.\n\n(The winter concert is December 14, and the repair takes about two weeks, so counting back two weeks from December 14 gives approximately December 7.)",
+          "December 1 (approximately two weeks before December 14 concert, accounting for the two-week repair time quoted by Marchetti and Sons)",
+          "December 1st or earlier (two weeks before December 14 concert, accounting for Marchetti and Sons' quoted two-week repair time)."
+        ]
+      },
+      "labelled": {
+        "correct": 1,
+        "responses": [
+          "By December 7 (approximately one week before the December 14 concert, accounting for the two-week repair time quoted by Marchetti and Sons).",
+          "December 1st",
+          "Unknown.\n\nThe memories indicate the winter concert is December 14 and repairs take about two weeks, but the exact date Dario dropped off the cello (needed to calculate when two weeks of work would be completed) is not provided.",
+          "unknown\n\nThe memories indicate the winter concert is December 14 and the repair takes about two weeks, but there is no explicit statement of when Dario must collect the cello or when the repair work would be completed.",
+          "December 14 minus two weeks = approximately November 30.\n\nHowever, based on the memories provided, the exact deadline is not explicitly stated. The repair takes \"about two weeks,\" and the concert is December 14, so Dario would need to collect it by approximately **November 30**."
+        ]
+      }
+    },
+    {
+      "question_id": "t3q10",
+      "tier_label": "t2",
+      "answer_type": "quantity",
+      "window": [
+        "1. chain-e-1 0.936 strong",
+        "2. chain-e-0 0.801 strong",
+        "3. chain-e-2 0.637 weak",
+        "4. chain-e-5 0.595 weak",
+        "5. chain-e-3 0.560 weak",
+        "6. p4 0.555 weak",
+        "7. chain-e-6 0.551 weak"
+      ],
+      "weak": 5,
+      "required_weak": [
+        "chain-e-5"
+      ],
+      "identical": false,
+      "current": {
+        "correct": 5,
+        "responses": [
+          "Twenty-five dollars.",
+          "Twenty-five dollars.",
+          "Twenty-five dollars.",
+          "Twenty-five dollars.",
+          "Twenty-five dollars"
+        ]
+      },
+      "labelled": {
+        "correct": 5,
+        "responses": [
+          "Twenty-five dollars.",
+          "Twenty-five dollars.",
+          "Twenty-five dollars.",
+          "Twenty-five dollars.",
+          "Twenty-five dollars."
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,1584 @@
+{
+  "scope": [
+    "out/task-gate0-d0-age0/task_run_00[0-2].json response_with",
+    "out/task-gate0-d2-age0/task_run_00[0-2].json response_with",
+    "out/answers-weak-label-gate0-d2/weak_label_answers.json current and labelled responses"
+  ],
+  "method": "Each response is judged by reading it against its question and the fixture answers: correct when the answer it asserts is the expected one. score_answer (alias anywhere in the response) is the screen column. 463 of 640 responses are an exact alias, exactly \"unknown\", or a bare wrong value and keep the screen verdict; the 177 others (97 distinct question-response pairs) are listed here with a reviewed verdict.",
+  "reviewed_differs_from_screen": 10,
+  "totals": {
+    "task-gate0-d0-age0 run 000": {
+      "answerable": 34,
+      "screen_correct": 31,
+      "reviewed_correct": 30,
+      "none_tier": 6,
+      "none_tier_abstained": 6
+    },
+    "task-gate0-d0-age0 run 001": {
+      "answerable": 34,
+      "screen_correct": 31,
+      "reviewed_correct": 31,
+      "none_tier": 6,
+      "none_tier_abstained": 6
+    },
+    "task-gate0-d0-age0 run 002": {
+      "answerable": 34,
+      "screen_correct": 31,
+      "reviewed_correct": 30,
+      "none_tier": 6,
+      "none_tier_abstained": 6
+    },
+    "task-gate0-d2-age0 run 000": {
+      "answerable": 34,
+      "screen_correct": 31,
+      "reviewed_correct": 29,
+      "none_tier": 6,
+      "none_tier_abstained": 6
+    },
+    "task-gate0-d2-age0 run 001": {
+      "answerable": 34,
+      "screen_correct": 29,
+      "reviewed_correct": 29,
+      "none_tier": 6,
+      "none_tier_abstained": 6
+    },
+    "task-gate0-d2-age0 run 002": {
+      "answerable": 34,
+      "screen_correct": 29,
+      "reviewed_correct": 29,
+      "none_tier": 6,
+      "none_tier_abstained": 6
+    },
+    "answers-weak-label-gate0-d2 current": {
+      "answerable": 170,
+      "screen_correct": 142,
+      "reviewed_correct": 140,
+      "none_tier": 30,
+      "none_tier_abstained": 30
+    },
+    "answers-weak-label-gate0-d2 labelled": {
+      "answerable": 170,
+      "screen_correct": 136,
+      "reviewed_correct": 132,
+      "none_tier": 30,
+      "none_tier_abstained": 30
+    }
+  },
+  "pairs": [
+    {
+      "question_id": "aq04",
+      "expected": [
+        "2019"
+      ],
+      "response": "Since 2019",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "aq04",
+      "expected": [
+        "2019"
+      ],
+      "response": "Since 2019.",
+      "count": 3,
+      "sources": [
+        "weak-label-current",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "aq06",
+      "expected": [
+        "Stripe"
+      ],
+      "response": "Stripe as a staff engineer on the payments platform",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "aq06",
+      "expected": [
+        "Stripe"
+      ],
+      "response": "Stripe, as a staff engineer on the payments platform.",
+      "count": 5,
+      "sources": [
+        "task-gate0-d0-age0",
+        "weak-label-current",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "aq07",
+      "expected": [
+        "medieval Irish poetry",
+        "Irish poetry"
+      ],
+      "response": "Medieval Irish poetry at Trinity College",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "aq07",
+      "expected": [
+        "medieval Irish poetry",
+        "Irish poetry"
+      ],
+      "response": "Medieval Irish poetry at Trinity College.",
+      "count": 15,
+      "sources": [
+        "task-gate0-d0-age0",
+        "task-gate0-d2-age0",
+        "weak-label-current",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Avoid peanut oil (Pat's severe allergy), dairy (Niko), animal products (Sasha), gluten (Taro). Verify halal for Beatriz.",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Avoid peanut oil - Pat has a severe peanut allergy.",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Avoid peanut oil due to Pat's severe peanut allergy.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Avoid peanut oil products (Pat was hospitalized from peanut oil), dairy (Niko), gluten (Taro), animal products (Sasha), and peanuts (Mei requires EpiPen).",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Avoid peanut oil. Pat has a peanut allergy and was hospitalized after ingesting it.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Avoid peanut oil. Pat has a severe peanut allergy (hospitalized from accidental ingestion).",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Avoid peanut oil. Pat has a severe peanut allergy (hospitalized last year).",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Avoid peanut products (Mei allergic, Pat hospitalized from peanut oil), dairy (Niko, Taro avoids gluten), animal products (Sasha).",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Avoid peanuts/peanut oil (Pat, Mei), gluten (Taro), animal products (Sasha), dairy (Niko).",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Avoid peanuts/peanut oil (Pat, Mei); dairy (Niko); gluten (Taro); animal products (Sasha). Ensure caffeine-free options (Brian).",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Pat has a peanut allergy (severe enough to cause hospitalization). Avoid peanut oil and peanut products.",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Pat has a severe peanut allergy (hospitalized from accidental peanut oil ingestion). Avoid peanut oil and peanut products.",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Pat requires peanut oil avoidance (hospitalization history), Mei requires peanut avoidance (allergic), Taro requires gluten avoidance (celiac disease), Sasha requires animal product avoidance, Niko requires dairy avoidance.",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Peanut oil - Pat has a severe peanut allergy.",
+      "count": 2,
+      "sources": [
+        "weak-label-current",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q01",
+      "expected": [
+        "peanuts",
+        "peanut",
+        "anything with peanuts",
+        "peanut products"
+      ],
+      "response": "Peanut oil. Pat has a severe peanut allergy and was hospitalized after accidental ingestion.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q02",
+      "expected": [
+        "Lila"
+      ],
+      "response": "Lila (allergic to cold air, chronic asthma)",
+      "count": 3,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q02",
+      "expected": [
+        "Lila"
+      ],
+      "response": "Lila (chronic asthma exacerbated by cold air)",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q03",
+      "expected": [
+        "Taro"
+      ],
+      "response": "Taro (celiac disease - avoids gluten)",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q03",
+      "expected": [
+        "Taro"
+      ],
+      "response": "Taro (celiac disease - gluten avoidance)",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q03",
+      "expected": [
+        "Taro"
+      ],
+      "response": "Taro (celiac disease requires gluten-free bread)",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q03",
+      "expected": [
+        "Taro"
+      ],
+      "response": "Taro (celiac disease)",
+      "count": 2,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q03",
+      "expected": [
+        "Taro"
+      ],
+      "response": "Taro (celiac disease).",
+      "count": 2,
+      "sources": [
+        "weak-label-current",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q03",
+      "expected": [
+        "Taro"
+      ],
+      "response": "Taro (celiac disease/gluten avoidance)",
+      "count": 2,
+      "sources": [
+        "task-gate0-d0-age0",
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q04",
+      "expected": [
+        "Lior",
+        "wheelchair accessibility",
+        "wheelchair access"
+      ],
+      "response": "Lior's (wheelchair-accessible venues requirement)",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q04",
+      "expected": [
+        "Lior",
+        "wheelchair accessibility",
+        "wheelchair access"
+      ],
+      "response": "Lior's accessibility needs.",
+      "count": 2,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q04",
+      "expected": [
+        "Lior",
+        "wheelchair accessibility",
+        "wheelchair access"
+      ],
+      "response": "Lior's accessibility requirements (wheelchair-accessible venues).",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q04",
+      "expected": [
+        "Lior",
+        "wheelchair accessibility",
+        "wheelchair access"
+      ],
+      "response": "Lior's accessibility requirements.",
+      "count": 2,
+      "sources": [
+        "weak-label-current",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q04",
+      "expected": [
+        "Lior",
+        "wheelchair accessibility",
+        "wheelchair access"
+      ],
+      "response": "Lior's needs (wheelchair-accessible venues requirement)",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q04",
+      "expected": [
+        "Lior",
+        "wheelchair accessibility",
+        "wheelchair access"
+      ],
+      "response": "Lior's needs (wheelchair-accessible venues)",
+      "count": 2,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q04",
+      "expected": [
+        "Lior",
+        "wheelchair accessibility",
+        "wheelchair access"
+      ],
+      "response": "Lior's wheelchair accessibility needs.",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q04",
+      "expected": [
+        "Lior",
+        "wheelchair accessibility",
+        "wheelchair access"
+      ],
+      "response": "Lior's wheelchair accessibility requirement.",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q04",
+      "expected": [
+        "Lior",
+        "wheelchair accessibility",
+        "wheelchair access"
+      ],
+      "response": "Lior's wheelchair accessibility requirements.",
+      "count": 3,
+      "sources": [
+        "weak-label-current",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q04",
+      "expected": [
+        "Lior",
+        "wheelchair accessibility",
+        "wheelchair access"
+      ],
+      "response": "Lior's wheelchair-accessibility requirement decides which buildings can be used.",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q04",
+      "expected": [
+        "Lior",
+        "wheelchair accessibility",
+        "wheelchair access"
+      ],
+      "response": "Lior's wheelchair-accessibility requirements.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t1q05",
+      "expected": [
+        "8pm",
+        "8 pm",
+        "20:00",
+        "until 8pm",
+        "before 8pm"
+      ],
+      "response": "Unknown\n\n(The context shows Soraya cannot attend past 8pm due to childcare, but there's no information about when the team dinner is scheduled or whether Soraya is attending it. Additionally, other attendees' time constraints are not provided.)",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": false,
+      "reason": "asserts unknown; 8pm appears only as one attendee's constraint in the explanation"
+    },
+    {
+      "question_id": "t1q05",
+      "expected": [
+        "8pm",
+        "8 pm",
+        "20:00",
+        "until 8pm",
+        "before 8pm"
+      ],
+      "response": "unknown\n\n(The provided context does not specify when team dinners are scheduled or their duration. While Soraya cannot attend events past 8pm due to childcare obligations, this doesn't answer how late a dinner can run if everyone is to stay to the end, as other attendees' constraints aren't documented.)",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": false,
+      "reason": "asserts unknown; 8pm appears only as one attendee's constraint in the explanation"
+    },
+    {
+      "question_id": "t1q05",
+      "expected": [
+        "8pm",
+        "8 pm",
+        "20:00",
+        "until 8pm",
+        "before 8pm"
+      ],
+      "response": "unknown\n\nThe context doesn't specify when the team dinner is scheduled or provide enough information about all attendees' time constraints to determine how late it can run.",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t1q05",
+      "expected": [
+        "8pm",
+        "8 pm",
+        "20:00",
+        "until 8pm",
+        "before 8pm"
+      ],
+      "response": "unknown\n\nThe context mentions Soraya requires leaving events by 8pm for childcare, but there's no information about other attendees' time constraints for the team dinner, so I cannot determine a time that works for everyone.",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": false,
+      "reason": "asserts unknown; 8pm appears only as one attendee's constraint in the explanation"
+    },
+    {
+      "question_id": "t2q04",
+      "expected": [
+        "Saturday",
+        "Saturdays",
+        "Saturday mornings"
+      ],
+      "response": "Every Saturday morning",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t2q04",
+      "expected": [
+        "Saturday",
+        "Saturdays",
+        "Saturday mornings"
+      ],
+      "response": "Every Saturday morning during summer.",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t2q05",
+      "expected": [
+        "the old rail depot on Cedar Avenue",
+        "the old rail depot",
+        "Cedar Avenue"
+      ],
+      "response": "Old rail depot on Cedar Avenue",
+      "count": 8,
+      "sources": [
+        "weak-label-current",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t2q05",
+      "expected": [
+        "the old rail depot on Cedar Avenue",
+        "the old rail depot",
+        "Cedar Avenue"
+      ],
+      "response": "Old rail depot on Cedar Avenue.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t2q05",
+      "expected": [
+        "the old rail depot on Cedar Avenue",
+        "the old rail depot",
+        "Cedar Avenue"
+      ],
+      "response": "old rail depot on Cedar Avenue",
+      "count": 7,
+      "sources": [
+        "task-gate0-d0-age0",
+        "task-gate0-d2-age0",
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t2q06",
+      "expected": [
+        "the first Tuesday of every month",
+        "first Tuesday of the month",
+        "first Tuesday"
+      ],
+      "response": "First Tuesday of every month",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t2q06",
+      "expected": [
+        "the first Tuesday of every month",
+        "first Tuesday of the month",
+        "first Tuesday"
+      ],
+      "response": "First Tuesday of every month.",
+      "count": 13,
+      "sources": [
+        "task-gate0-d2-age0",
+        "weak-label-current",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t2q06",
+      "expected": [
+        "the first Tuesday of every month",
+        "first Tuesday of the month",
+        "first Tuesday"
+      ],
+      "response": "first Tuesday of every month",
+      "count": 2,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q01",
+      "expected": [
+        "March 30",
+        "March 30th",
+        "the 30th of March",
+        "3/30"
+      ],
+      "response": "March 30th (Mei's EpiPen expiration date)",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q01",
+      "expected": [
+        "March 30",
+        "March 30th",
+        "the 30th of March",
+        "3/30"
+      ],
+      "response": "March 30th (auto-injector expiration date)",
+      "count": 8,
+      "sources": [
+        "weak-label-current",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q01",
+      "expected": [
+        "March 30",
+        "March 30th",
+        "the 30th of March",
+        "3/30"
+      ],
+      "response": "unknown\n\n(The context does not specify which Friday is being discussed or provide a date to double-check. Additionally, there's a critical safety concern: Mei is allergic to peanuts and requires an EpiPen, and the Thai place uses peanut oil - this venue would be unsafe for Mei regardless of the date.)",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q02",
+      "expected": [
+        "CityMed",
+        "CityMed urgent care",
+        "CityMed on 5th Avenue"
+      ],
+      "response": "CityMed urgent care on 5th Avenue",
+      "count": 16,
+      "sources": [
+        "task-gate0-d0-age0",
+        "task-gate0-d2-age0",
+        "weak-label-current",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q03",
+      "expected": [
+        "the garden center on Elm Street",
+        "Elm Street garden center",
+        "Elm Street"
+      ],
+      "response": "Garden center on Elm Street (40% off raised beds)",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q03",
+      "expected": [
+        "the garden center on Elm Street",
+        "Elm Street garden center",
+        "Elm Street"
+      ],
+      "response": "Garden center on Elm Street (cedar raised beds 40% off clearance).",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q03",
+      "expected": [
+        "the garden center on Elm Street",
+        "Elm Street garden center",
+        "Elm Street"
+      ],
+      "response": "garden center on Elm Street",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q03",
+      "expected": [
+        "the garden center on Elm Street",
+        "Elm Street garden center",
+        "Elm Street"
+      ],
+      "response": "unknown\n\nThe provided memories discuss Mom's 70th birthday coming up in June and mention a deal on a refurbished monitor, but there is no information comparing deals across stores specifically for Mom's birthday gift.",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q03",
+      "expected": [
+        "the garden center on Elm Street",
+        "Elm Street garden center",
+        "Elm Street"
+      ],
+      "response": "unknown\n\nThe provided memories don't contain information about what gift is being considered for Mom's 70th birthday or which stores have deals on it. While there are mentions of store credit and a coupon code, there's no context connecting these to Mom's birthday gift shopping.",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q03",
+      "expected": [
+        "the garden center on Elm Street",
+        "Elm Street garden center",
+        "Elm Street"
+      ],
+      "response": "unknown\n\nThe provided memories mention a refurbished monitor deal and a home goods coupon, but do not specify which store has the best deal on a birthday gift for Mom, nor do they indicate what type of gift would be appropriate for her 70th birthday celebration.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q03",
+      "expected": [
+        "the garden center on Elm Street",
+        "Elm Street garden center",
+        "Elm Street"
+      ],
+      "response": "unknown\n\nThe related memories don't contain information about specific birthday gift deals or comparisons between stores for Mom's birthday gift.",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q03",
+      "expected": [
+        "the garden center on Elm Street",
+        "Elm Street garden center",
+        "Elm Street"
+      ],
+      "response": "unknown.\n\nThe provided memories don't contain information about Mom's birthday gift options or deals at specific stores. While there are memories about store credit and a coupon code, there's no context about what gift is being considered or which stores have deals on it.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q03",
+      "expected": [
+        "the garden center on Elm Street",
+        "Elm Street garden center",
+        "Elm Street"
+      ],
+      "response": "unknown.\n\nThe provided memories don't contain information about specific birthday gift deals or comparisons between stores for Mom's 70th birthday gift.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q03",
+      "expected": [
+        "the garden center on Elm Street",
+        "Elm Street garden center",
+        "Elm Street"
+      ],
+      "response": "unknown.\n\nThe provided memories don't contain information about what gift is being considered for Mom's birthday or which stores have deals on it. While there are mentions of store credit at a hardware store and a coupon code for home goods, there's no comparison of birthday gift deals.",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q04",
+      "expected": [
+        "seventy-five dollars",
+        "$75",
+        "75 dollars",
+        "over 75 dollars"
+      ],
+      "response": "Over $75",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q04",
+      "expected": [
+        "seventy-five dollars",
+        "$75",
+        "75 dollars",
+        "over 75 dollars"
+      ],
+      "response": "Over seventy-five dollars.",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q06",
+      "expected": [
+        "6pm",
+        "6 pm",
+        "after 6pm",
+        "18:00"
+      ],
+      "response": "After 6pm on Oak Street.",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "Before Wednesday 5pm (one week before the last Saturday of September)",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "By Wednesday 5pm",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "By Wednesday 5pm (the week before the showcase).",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "By Wednesday 5pm (to catch that week's glaze batch firing).",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "By Wednesday 5pm before the last Saturday of September.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "By Wednesday 5pm before the showcase Friday.",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "By Wednesday at 5pm (before the next glaze batch loads).",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "By Wednesday at 5pm (before the next weekly glaze batch on Wednesday evening).",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "By Wednesday at 5pm (one week before the showcase).",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "By Wednesday before the last Saturday of September (to meet the weekly glaze batch deadline on Wednesday at 5pm).",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true,
+      "reason": "states the Wednesday at 5pm deadline in the parenthetical"
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "By Wednesday before the showcase (to meet the weekly glaze batch deadline on Wednesday at 5pm, allowing time for final firing before the last Saturday of September).",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": true,
+      "reason": "states the Wednesday at 5pm deadline in the parenthetical"
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "Unknown. The context indicates Nadia's bowls need final firing before the showcase (last Saturday of September), and that Clayworks loads glaze batches on Wednesdays with later pieces waiting a full week, but does not specify the exact deadline for Nadia to drop off her bowls.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q07",
+      "expected": [
+        "Wednesday at 5pm",
+        "Wednesday 5pm",
+        "5pm on Wednesday",
+        "by Wednesday at 5pm"
+      ],
+      "response": "Wednesday before the last Saturday of September (to make the weekly glaze batch firing deadline).",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": false,
+      "reviewed": false,
+      "reason": "gives the day without the 5pm deadline; judgment call"
+    },
+    {
+      "question_id": "t3q08",
+      "expected": [
+        "eighteen dollars",
+        "$18",
+        "18 dollars"
+      ],
+      "response": "$18 per bowl (for glaze firing)",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": false,
+      "reason": "asserts a per-bowl rate, which makes the budget $54 for three bowls; judgment call"
+    },
+    {
+      "question_id": "t3q08",
+      "expected": [
+        "eighteen dollars",
+        "$18",
+        "18 dollars"
+      ],
+      "response": "$18 per bowl (minimum $54 for three bowls)",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": false,
+      "reason": "asserts a $54 minimum for three bowls"
+    },
+    {
+      "question_id": "t3q08",
+      "expected": [
+        "eighteen dollars",
+        "$18",
+        "18 dollars"
+      ],
+      "response": "$54\n\n(Three bowls × $18 per glaze firing = $54)",
+      "count": 2,
+      "sources": [
+        "task-gate0-d2-age0",
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": false,
+      "reason": "asserts $54; $18 appears only in the arithmetic"
+    },
+    {
+      "question_id": "t3q08",
+      "expected": [
+        "eighteen dollars",
+        "$18",
+        "18 dollars"
+      ],
+      "response": "$54\n\n(three bowls × $18 glaze firing fee = $54)",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": true,
+      "reviewed": false,
+      "reason": "asserts $54; $18 appears only in the arithmetic"
+    },
+    {
+      "question_id": "t3q08",
+      "expected": [
+        "eighteen dollars",
+        "$18",
+        "18 dollars"
+      ],
+      "response": "unknown\n\nThe provided context mentions a glaze firing fee of $18 at Clayworks, but doesn't confirm whether Nadia uses that service or specify the total cost for preparing all three bowls for the showcase.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": false,
+      "reason": "asserts unknown; $18 appears only in the explanation"
+    },
+    {
+      "question_id": "t3q09",
+      "expected": [
+        "November 30",
+        "Nov 30",
+        "the 30th of November",
+        "11/30"
+      ],
+      "response": "By December 14 minus two weeks = November 30.",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q09",
+      "expected": [
+        "November 30",
+        "Nov 30",
+        "the 30th of November",
+        "11/30"
+      ],
+      "response": "By December 7 (approximately one week before the December 14 concert, accounting for the two-week repair time quoted by Marchetti and Sons).",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q09",
+      "expected": [
+        "November 30",
+        "Nov 30",
+        "the 30th of November",
+        "11/30"
+      ],
+      "response": "December 1 (approximately two weeks before December 14 concert, accounting for the two-week repair time quoted by Marchetti and Sons)",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q09",
+      "expected": [
+        "November 30",
+        "Nov 30",
+        "the 30th of November",
+        "11/30"
+      ],
+      "response": "December 14 minus two weeks = November 30, but Marchetti and Sons closes November 30. Therefore, Dario must collect by November 29.",
+      "count": 1,
+      "sources": [
+        "task-gate0-d0-age0"
+      ],
+      "screen": true,
+      "reviewed": false,
+      "reason": "asserts November 29"
+    },
+    {
+      "question_id": "t3q09",
+      "expected": [
+        "November 30",
+        "Nov 30",
+        "the 30th of November",
+        "11/30"
+      ],
+      "response": "December 14 minus two weeks = November 30.\n\nNovember 30",
+      "count": 1,
+      "sources": [
+        "task-gate0-d2-age0"
+      ],
+      "screen": true,
+      "reviewed": true
+    },
+    {
+      "question_id": "t3q09",
+      "expected": [
+        "November 30",
+        "Nov 30",
+        "the 30th of November",
+        "11/30"
+      ],
+      "response": "December 14 minus two weeks = approximately November 30.\n\nHowever, based on the memories provided, the exact deadline is not explicitly stated. The repair takes \"about two weeks,\" and the concert is December 14, so Dario would need to collect it by approximately **November 30**.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": true,
+      "reviewed": true,
+      "reason": "asserts approximately November 30, hedged"
+    },
+    {
+      "question_id": "t3q09",
+      "expected": [
+        "November 30",
+        "Nov 30",
+        "the 30th of November",
+        "11/30"
+      ],
+      "response": "December 1st or earlier (two weeks before December 14 concert, accounting for Marchetti and Sons' quoted two-week repair time).",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q09",
+      "expected": [
+        "November 30",
+        "Nov 30",
+        "the 30th of November",
+        "11/30"
+      ],
+      "response": "December 7.\n\n(The winter concert is December 14, and the repair takes about two weeks, so counting back two weeks from December 14 gives approximately December 7.)",
+      "count": 1,
+      "sources": [
+        "weak-label-current"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q09",
+      "expected": [
+        "November 30",
+        "Nov 30",
+        "the 30th of November",
+        "11/30"
+      ],
+      "response": "Unknown.\n\nThe memories indicate the winter concert is December 14 and repairs take about two weeks, but the exact date Dario dropped off the cello (needed to calculate when two weeks of work would be completed) is not provided.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": false,
+      "reviewed": false
+    },
+    {
+      "question_id": "t3q09",
+      "expected": [
+        "November 30",
+        "Nov 30",
+        "the 30th of November",
+        "11/30"
+      ],
+      "response": "unknown\n\nThe memories indicate the winter concert is December 14 and the repair takes about two weeks, but there is no explicit statement of when Dario must collect the cello or when the repair work would be completed.",
+      "count": 1,
+      "sources": [
+        "weak-label-labelled"
+      ],
+      "screen": false,
+      "reviewed": false
+    }
+  ]
+}
