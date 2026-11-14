@@ -1,5 +1,28 @@
 # Changelog
 
+## [v0.20.0] - 2026-11-13
+
+### Added
+- entity registry: `entities` holds a per-user identity and type, `entity_names` every surface form, unique per `(name_key, user_id)`; `name_key` is a generated column (whitespace collapsed, trimmed, lowercased); every mention resolves to its entity at write
+- `CognitiveMemory.entities(user_id=None, limit=50)`: `KnownEntity` list, most-mentioned first, with names (oldest first), type, and trace count
+- `CognitiveMemory.merge_entities(source_id, into_id)`: names, mentions, and relation endpoints move to the target and the source is deleted; same-owner pairs only; raises `EntityNotFoundError` or `ValueError`; nothing merges automatically
+- `CognitiveMemory.entity_edges(entity_id, user_id=None, limit=50)`: `EntityEdge` per source, relation, and target, with the greatest weight and the distinct-trace count; assertions of forgotten traces are hidden
+- `KnownEntity` and `EntityEdge` are exported from `recollect`; `EntityNotFoundError` is in `recollect.exceptions`
+- migrations `m007_entity_registry` and `m008_relation_assertions` apply at first connect; `m007` backfills `entity_id` on every mention written before it, so an upgraded database keeps entity associations between new and older traces
+
+### Changed
+- `retrieval.selection_threshold` default: 0 (was 0.1). Semantic search admits a trace at any strength; an archived trace is a candidate, revives when its fused score reaches `retrieval.reactivation_floor`, and is delivered unrevived below it; forgotten traces stay excluded. A value above 0 restores the strength gate
+- entity linking matches through entity identity: surface forms that differ by case or whitespace link to one entity
+- `entity_relations` holds one row per asserting trace, unique on `(source_trace_id, source_entity, relation, target_entity)`; `erase()` removes a trace's assertions, and a forgotten trace's assertions are hidden at read
+- `erase()` deletes a name once no remaining mention uses its key, and an entity once it has no mention
+- a relation asserted before `m008` keeps NULL endpoint ids: `entity_edges` and `merge_entities` do not see it
+- a 0.19.x process must stop before a 0.20.0 process first connects to the same database: its relation upsert names an index `m008` drops, and a mention it writes after `m007` is not backfilled
+- README and config comments describe the fused score as bi-encoder similarity lifted where the concept blend exceeds it; `extraction.embed_relation_tags` stays off
+- version lockstep 0.20.0; `recollect-mcp` requires `recollect>=0.20.0`
+
+### Removed
+- BREAKING: `get_relations` and `get_related_entities` are removed from the relation store, the storage protocol, and `PostgresStorage`
+
 ## [v0.19.0] - 2026-11-12
 
 ### Added

@@ -45,6 +45,9 @@ asyncio.run(main())
 | `pin(trace_id)` | Promote a trace's extracted relations to permanent persona facts. Returns the promoted facts. |
 | `unpin(fact_id)` | Archive a persona fact. It stops surfacing but is retained. |
 | `facts(subject=None, statuses=None, limit=50)` | List persona facts, newest first. `statuses` filters before the limit; `limit=None` reads all. |
+| `entities(user_id=None, limit=50)` | List known entities, most-mentioned first. Each `KnownEntity` carries its id, type, every name it was mentioned by, and its trace count. |
+| `merge_entities(source_id, into_id)` | Merge one entity into another of the same owner: names, mentions and relation ends move, and the source is deleted. Nothing merges automatically. |
+| `entity_edges(entity_id, user_id=None, limit=50)` | Relation edges with the entity at either end, most-asserted first. Assertions of forgotten traces are hidden. |
 | `health_report()` | Lifecycle counts by status and violated invariants. Returns `HealthReport`. |
 | `traces_by_id_prefix(prefix)` / `facts_by_id_prefix(prefix)` | Traces or persona facts whose id starts with `prefix`, any status. The lookup behind short ids. |
 | `start_session(user_id)` | Begin a scoped session. |
