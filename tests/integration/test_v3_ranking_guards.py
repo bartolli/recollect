@@ -78,8 +78,9 @@ class TestNegativeCosineClamp:
     ) -> None:
         # Merge floors search/entity/WM scores at zero, but
         # _fetch_token_traces assigns raw cosine directly: a token-bridged
-        # trace too weak for search_semantic (strength < selection_threshold)
-        # enters the pool with negative score and fails Thought(ge=0).
+        # trace outside the search_semantic top search_limit enters the
+        # pool with negative score and fails Thought(ge=0). search_limit 1
+        # keeps the anti trace out of the search and inside the window.
         provider = FastEmbedProvider()
         q = await provider.generate_embedding(QUERY, task="search_query")
         anchor = MemoryTrace(
@@ -95,6 +96,11 @@ class TestNegativeCosineClamp:
         )
         await mem.storage.traces.store_trace(anchor)
         await mem.storage.traces.store_trace(anti)
+        mem._config._set("retrieval.search_limit", 1)
+        searched = await mem.storage.vectors.search_semantic(
+            q, limit=1, user_id="u1"
+        )
+        assert [t.id for t, _ in searched] == [anchor.id]
         token_id = await mem.storage.recall_tokens.create_token(
             RecallToken(label="launch (project) | planning thread | bridge")
         )
@@ -103,8 +109,8 @@ class TestNegativeCosineClamp:
         )
 
         thoughts = await mem.think_about(QUERY, user_id="u1")
-        for thought in thoughts:
-            assert thought.relevance >= 0.0
+        relevance = {t.trace.id: t.relevance for t in thoughts}
+        assert relevance[anti.id] == 0.0
 
 
 class TestTraceGuarantee:

@@ -39,7 +39,7 @@ class TestLayering:
         user.write_text('[database]\nurl = "postgresql://user/db"\n')
         cfg = MemoryConfig(config_path=user)
         assert cfg.get("retrieval.max_retrievals") == 7
-        assert cfg.get("retrieval.selection_threshold") == 0.1
+        assert cfg.get("retrieval.selection_threshold") == 0.0
 
     def test_resolution_order(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -55,7 +55,7 @@ class TestLayering:
         cfg = MemoryConfig(config_path=user)
         assert cfg.database_url == "postgresql://env/db"  # env > user
         assert cfg.get("retrieval.max_retrievals") == 4  # user > packaged
-        assert cfg.get("retrieval.selection_threshold") == 0.1  # packaged
+        assert cfg.get("retrieval.selection_threshold") == 0.0  # packaged
 
     def test_user_toml_beats_packaged_without_env(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

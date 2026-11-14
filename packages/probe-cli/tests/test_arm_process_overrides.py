@@ -9,10 +9,12 @@ import pytest
 from probe_cli.arm import load_arm
 from recollect.config import config as sdk_config
 
+_KEY = "retrieval.selection_threshold"
+_OVERRIDE = 0.25
 _ARM = (
     '[arm]\nname = "x"\n[corpus]\npath = "x.jsonl"\n'
     "[recollect_overrides]\n"
-    '"retrieval.selection_threshold" = 0\n'
+    f'"{_KEY}" = {_OVERRIDE}\n'
 )
 
 
@@ -28,12 +30,13 @@ def _arm_path(tmp_path: Path) -> Path:
 
 
 def test_loading_an_arm_leaves_the_process_config(tmp_path: Path) -> None:
-    before = sdk_config.get("retrieval.selection_threshold")
+    before = sdk_config.get(_KEY)
+    assert before != _OVERRIDE
     load_arm(_arm_path(tmp_path)).to_memory_config()
-    assert sdk_config.get("retrieval.selection_threshold") == before
+    assert sdk_config.get(_KEY) == before
 
 
 def test_overrides_reach_the_process_config(tmp_path: Path) -> None:
-    assert sdk_config.get("retrieval.selection_threshold") > 0.0
+    assert sdk_config.get(_KEY) != _OVERRIDE
     load_arm(_arm_path(tmp_path)).apply_process_overrides()
-    assert sdk_config.get("retrieval.selection_threshold") == 0.0
+    assert sdk_config.get(_KEY) == _OVERRIDE

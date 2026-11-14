@@ -8,6 +8,7 @@ the next consolidation pass via the recency-anchored grace.
 
 from __future__ import annotations
 
+import copy
 import os
 import uuid
 from datetime import timedelta
@@ -16,6 +17,7 @@ from urllib.parse import urlparse, urlunparse
 
 import asyncpg
 import pytest
+from recollect.config import config as sdk_config
 from recollect.core import CognitiveMemory
 from recollect.datetime_utils import now_utc
 from recollect.models import Association, MemoryTrace
@@ -91,15 +93,60 @@ class TestReactivationMatrix:
         assert stored.status == "active"
         assert stored.consolidated is False
 
-    async def test_deep_decayed_invisible_to_semantic_stays_archived(
+    async def test_deep_decayed_revives_on_relevant_recall(
         self, mem: CognitiveMemory
     ) -> None:
-        # strength 0.05 < selection_threshold 0.1: the bi-encoder cannot
-        # surface it, and no other channel exists here -- accepted v1 limit.
+        # No strength gate at the packaged default: a deep-decayed archived
+        # trace is a semantic candidate and the reactivation floor decides.
         trace = await _archived_trace(
             mem, "the tax filing deadline moved to May", strength=0.05
         )
         await mem.think_about("when is the tax filing deadline")
+        stored = await mem.storage.traces.get_trace(trace.id)
+        assert stored is not None
+        assert stored.status == "active"
+
+    async def test_raised_strength_gate_hides_deep_decayed(
+        self, mem: CognitiveMemory, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # search_semantic reads the process config. Gate raised above the
+        # trace's strength: the bi-encoder cannot surface it, and no other
+        # channel exists here.
+        monkeypatch.setattr(sdk_config, "_config", copy.deepcopy(sdk_config._config))
+        sdk_config._set("retrieval.selection_threshold", 0.1)
+        trace = await _archived_trace(
+            mem, "the tax filing deadline moved to May", strength=0.05
+        )
+        await mem.think_about("when is the tax filing deadline")
+        stored = await mem.storage.traces.get_trace(trace.id)
+        assert stored is not None
+        assert stored.status == "archived"
+
+    async def test_archived_below_floor_is_delivered_unrevived(
+        self, mem: CognitiveMemory
+    ) -> None:
+        # With no strength gate an archived trace is a semantic candidate
+        # at any relevance; under the reactivation floor it surfaces and
+        # the read leaves it archived.
+        query = "when is the tax filing deadline"
+        q = await mem._embeddings.generate_embedding(query, task="search_query")
+        # Pairwise rotation: orthogonal to q with q's norm, so the mix
+        # below has cosine 0.2 to the query.
+        ortho = [0.0] * len(q)
+        ortho[0::2] = [-x for x in q[1::2]]
+        ortho[1::2] = q[0::2]
+        mixed = [0.2 * a + (0.96**0.5) * b for a, b in zip(q, ortho, strict=True)]
+        trace = MemoryTrace(
+            content="an unrelated faded note",
+            embedding=mixed,
+            strength=0.05,
+            status="archived",
+        )
+        await mem.storage.traces.store_trace(trace)
+        thoughts = await mem.think_about(query)
+        delivered = {t.trace.id: t.relevance for t in thoughts}
+        assert trace.id in delivered
+        assert delivered[trace.id] < 0.3
         stored = await mem.storage.traces.get_trace(trace.id)
         assert stored is not None
         assert stored.status == "archived"

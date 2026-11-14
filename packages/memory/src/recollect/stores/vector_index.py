@@ -39,7 +39,7 @@ class PgVectorIndex:
         try:
             pool = await self._pool_mgr.get_pool()
             embedding_str = embedding_to_pgvector(query_embedding)
-            threshold = float(config.get("retrieval.selection_threshold", 0.1))
+            threshold = float(config.get("retrieval.selection_threshold", 0.0))
             # Conditional floor: <=0 disables entirely so the packaged default
             # keeps sub-zero-similarity candidates (adr-retrieval-similarity-floor).
             sim_floor = float(
