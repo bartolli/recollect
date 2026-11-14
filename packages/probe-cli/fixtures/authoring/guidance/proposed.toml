@@ -1,0 +1,85 @@
+# proposed: candidate remember wording. remember_description replaces the served
+# remember tool description in the served docstring shape (4-space body indent, Args
+# section inside the description); instructions are the served server instructions
+# with only the REMEMBER block replaced.
+name = "proposed"
+remember_description = '''
+Store an experience in memory.
+
+    Decontextualize the statement: resolve pronouns, "it", "that" and
+    relative dates from the conversation, so a reader who never saw the
+    conversation knows who and what it is about. Include relational
+    identifiers like "Alex's mother Sarah" rather than bare names when
+    the same name could refer to different people.
+
+    When the conversation establishes the situation a statement belongs
+    to, name that situation in the statement.
+
+    Preserve evidentiality: keep who said it and whether it is stated,
+    reported by someone else, planned or uncertain. Do not write your own
+    inference as something the user said; if an inference is worth
+    storing, say in the text that it is inferred.
+
+    One memory holds one fact or one situation that is useful on its own,
+    with the context needed to find it. Split unrelated topics into
+    separate memories.
+
+    If you haven't called reflect this session, do so before using this tool.
+
+    Args:
+        content: The statement to remember. Only this text is indexed.
+        context: Optional metadata stored with the trace. It is not read by
+            extraction, embedding or situational assessment; put anything
+            that must be found in content.
+    '''
+instructions = '''
+Cognitive memory system for personal AI assistants.
+
+You have 6 tools:
+
+REMEMBER -- Store an experience in memory.
+  Decontextualize the statement: resolve pronouns, "it", "that" and
+  relative dates from the conversation, so a reader who never saw the
+  conversation knows who and what it is about. Use "Alex's mother Sarah"
+  not just "Sarah" when names could refer to different people. When the
+  conversation establishes the situation a statement belongs to, name it.
+  Preserve evidentiality: keep who said it and whether it is stated,
+  reported, planned or uncertain, and never write your own inference as
+  something the user said. What you write is what the system indexes --
+  ambiguous input produces ambiguous recall. One memory holds one fact or
+  one situation that is useful on its own, with the context needed to find
+  it. Split unrelated topics into separate memories.
+
+RECALL -- Retrieve relevant memories for a query.
+  Returns persona facts as IMPORTANT CONTEXT followed by related memories.
+  Be specific in your queries. The more precise the query, the better the
+  results. You do not need to pass user_id or session_id -- the server
+  manages these automatically.
+
+PIN -- Promote a memory to a permanent persona fact.
+  Use this for stable truths about the user: allergies, relationships,
+  preferences. Pinned facts are always surfaced during relevant recall.
+
+UNPIN -- Archive a persona fact that is no longer accurate.
+  The fact stops surfacing in recall and reflect.
+
+FORGET -- Forget an incorrect or irrelevant memory.
+  The memory trace stops surfacing in recall and never auto-revives;
+  the row is retained, not hard-deleted. Derived facts archive with
+  it. Safety-critical (health/dietary/constraint) and pinned facts
+  are retained unless force=true.
+
+REFLECT -- Load persona context before responding to the user.
+  Call this at the start of every session before your first response.
+  Returns known relationships and promoted facts. Without this context,
+  you risk missing safety-critical information like allergies, medical
+  conditions, and relationship constraints. No parameters needed.
+
+RESOURCES:
+  memory://primer -- Read this at the start of every conversation.
+    Contains the user's known relationships and key facts as a compact
+    relational graph. This is your context foundation.
+
+  memory://facts -- All promoted and pinned persona facts.
+
+  memory://health -- System health and statistics.'''
