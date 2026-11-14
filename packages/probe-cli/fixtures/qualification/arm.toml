@@ -1,0 +1,29 @@
+# Qualification comparison: whether trace content, persona facts and entity relations keep each statement's source, certainty and current state.
+#   uv run --env-file .env probe run --arm packages/probe-cli/fixtures/qualification/arm.toml
+# The arm name keys the evidence dir under out/ and the user_id: a rerun needs a new arm name.
+# Corrected pairs are written without a forget.
+
+[arm]
+name = "qualification-haiku55"
+runs = 1
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-5-5"
+max_concepts = 5
+max_relations = 3
+
+[corpus]
+# Schema-required; retrieval path uses [retrieval].traces_corpus_path instead.
+path = "packages/probe-cli/fixtures/qualification/traces.jsonl"
+
+[retrieval]
+enabled = true
+db_url = "${RECOLLECT_PROBE_DB_URL}"
+traces_corpus_path = "packages/probe-cli/fixtures/qualification/traces.jsonl"
+query_corpus_path = "packages/probe-cli/fixtures/qualification/queries.jsonl"
+token_budget = 100000
+top_k = 5
+max_retrievals_buffer = 50
+
+[output]
+dir = "out"

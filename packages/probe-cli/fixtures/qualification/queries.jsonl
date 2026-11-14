@@ -1,0 +1,16 @@
+# One question per trace except the corrected `a` halves, asking about that trace's certainty, source or current value.
+{"id": "q-might-1", "text": "Is the Cotswolds ballooning with Corinne Mbeki confirmed?", "relevant_trace_ids": ["might-1"]}
+{"id": "q-will-1", "text": "When do the user's lessons at Sabrewood Fencing Club start, and what does each one cost?", "relevant_trace_ids": ["will-1"]}
+{"id": "q-reported-1", "text": "Who says the user's great-grandfather left Cork for Halifax?", "relevant_trace_ids": ["reported-1"]}
+{"id": "q-might-2", "text": "Has the user bought into Moira Kilbride's racehorse syndicate?", "relevant_trace_ids": ["might-2"]}
+{"id": "q-corrected-1b", "text": "When is Ruth Ainsworth's graduation now?", "relevant_trace_ids": ["corrected-1b"]}
+{"id": "q-will-2", "text": "What time is the user booked in with Noor Haddad, and on which day?", "relevant_trace_ids": ["will-2"]}
+{"id": "q-reported-2", "text": "What is making the noise in the camper van, and how sure is the mechanic?", "relevant_trace_ids": ["reported-2"]}
+{"id": "q-corrected-2b", "text": "Where does Ilse Marchand's Lindy Hop group meet now?", "relevant_trace_ids": ["corrected-2b"]}
+{"id": "q-might-3", "text": "Is the user selling the stamps, and what would it take?", "relevant_trace_ids": ["might-3"]}
+{"id": "q-will-3", "text": "Is the user running for the parish council, and when is the vote?", "relevant_trace_ids": ["will-3"]}
+{"id": "q-reported-3", "text": "Who thinks the Hatherley Woods mushrooms are safe to eat, and does the user agree?", "relevant_trace_ids": ["reported-3"]}
+{"id": "q-screen-1", "text": "Who thinks the quiet hive lost its queen, and is merging that colony settled?", "relevant_trace_ids": ["screen-1"]}
+{"id": "q-screen-2", "text": "Whose idea is it to combine the low-activity hive with the other one?", "relevant_trace_ids": ["screen-2"]}
+{"id": "q-screen-3", "text": "Does the user already have the head of wine job?", "relevant_trace_ids": ["screen-3"]}
+{"id": "q-screen-4", "text": "When is the user on jury service, and when does Marisol arrive?", "relevant_trace_ids": ["screen-4"]}
