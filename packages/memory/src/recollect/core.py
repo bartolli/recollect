@@ -1668,11 +1668,15 @@ class CognitiveMemory:
         for rel in result.relations:
             if not rel.source or not rel.target:
                 continue
+            # The extractor's context carries the hedge, source and condition;
+            # the triple alone reads as a commitment.
+            triple = f"{rel.source} {rel.relation} {rel.target}"
+            context = rel.context if rel.context.strip() else triple
             entity_rel = EntityRelation(
                 source_entity=rel.source,
                 relation=rel.relation,
                 target_entity=rel.target,
-                context=f"{rel.source} {rel.relation} {rel.target}",
+                context=context,
                 weight=rel.confidence,
                 source_trace_id=trace.id,
             )
