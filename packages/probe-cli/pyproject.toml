@@ -7,6 +7,7 @@ requires-python = ">=3.12.4"
 classifiers = ["Private :: Do Not Upload"]
 dependencies = [
     "recollect",
+    "recollect-mcp",
     "pydantic>=2.0",
 ]
 
@@ -22,3 +23,4 @@ packages = ["src/probe_cli"]
 
 [tool.uv.sources]
 recollect = { workspace = true }
+recollect-mcp = { workspace = true }

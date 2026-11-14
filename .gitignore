@@ -75,6 +75,8 @@ out/**
 !out/**/task_summary.json
 !out/**/task_reachability.json
 !out/**/fusion_screen.json
+!out/**/weak_match_screen.json
+!out/**/weak_label_answers.json
 !out/**/window_witness.json
 !out/**/fact_audit.json
 !out/**/verdict_oracle.json

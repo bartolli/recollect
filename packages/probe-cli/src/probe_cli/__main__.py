@@ -11,6 +11,7 @@ from collections import Counter
 from contextlib import aclosing
 from pathlib import Path
 
+from recollect.exceptions import MemorySDKError
 from recollect.llm.pydantic_ai import PydanticAIProvider
 from recollect.llm.types import CompletionParams
 
@@ -49,6 +50,8 @@ from probe_cli.report import (
     write_summary,
     write_surfacing_run_report,
     write_surfacing_summary,
+    write_weak_label_answers_report,
+    write_weak_match_screen_report,
 )
 from probe_cli.runner import ArmRunner, RetrievalArmRunner
 from probe_cli.situational_metrics import (
@@ -71,6 +74,10 @@ from probe_cli.task_runner import (
     TaskVerifyReport,
     VerdictOracleReport,
 )
+from probe_cli.weak_label_answers import QuestionAnswers, WeakLabelAnswersReport
+from probe_cli.weak_label_answers import compare as compare_weak_labels
+from probe_cli.weak_match_screen import WeakMatchScreenReport
+from probe_cli.weak_match_screen import screen as screen_weak_matches
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +190,66 @@ def main() -> int:
         help="Path to .env file (default: ./.env). Pass empty string to skip.",
     )
     fusion.set_defaults(verbose=False)
+    weak = sub.add_parser(
+        "weak-match-screen",
+        help=(
+            "Score fixed weak-match rules on captured think_about windows from a "
+            "copy of a store (writes the copy only)."
+        ),
+    )
+    weak.add_argument(
+        "--arm", required=True, type=Path, help="Task arm TOML: config and DB URL."
+    )
+    weak.add_argument(
+        "--template-db",
+        required=True,
+        help="Store to copy from; never connected to.",
+    )
+    weak.add_argument(
+        "--out-dir", required=True, type=Path, help="Directory for the artifact."
+    )
+    weak.add_argument("--user-id", help="Store user (default: probe-<arm name>).")
+    weak.add_argument(
+        "--queries",
+        type=Path,
+        help=(
+            "JSONL of {id, query, token_budget?, expected_strong?, expected_weak?} "
+            "in place of the arm's task questions."
+        ),
+    )
+    weak.add_argument(
+        "--env-file",
+        type=Path,
+        default=Path(".env"),
+        help="Path to .env file (default: ./.env). Pass empty string to skip.",
+    )
+    weak.set_defaults(verbose=False)
+    labels = sub.add_parser(
+        "weak-label-answers",
+        help=(
+            "Answer every task question from the current and the weak-labelled "
+            "recall text of one captured window on a store copy (writes the copy only)."
+        ),
+    )
+    labels.add_argument(
+        "--arm", required=True, type=Path, help="Task arm TOML: config, DB URL, model."
+    )
+    labels.add_argument(
+        "--template-db",
+        required=True,
+        help="Store to copy from; never connected to.",
+    )
+    labels.add_argument(
+        "--out-dir", required=True, type=Path, help="Directory for the artifact."
+    )
+    labels.add_argument("--user-id", help="Store user (default: probe-<arm name>).")
+    labels.add_argument(
+        "--env-file",
+        type=Path,
+        default=Path(".env"),
+        help="Path to .env file (default: ./.env). Pass empty string to skip.",
+    )
+    labels.set_defaults(verbose=False)
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -224,6 +291,25 @@ def main() -> int:
     if args.cmd == "fusion-screen":
         return asyncio.run(
             _run_fusion_screen(args.arm, template_db=args.template_db, name=args.name)
+        )
+    if args.cmd == "weak-match-screen":
+        return asyncio.run(
+            _run_weak_match_screen(
+                args.arm,
+                template_db=args.template_db,
+                out_dir=args.out_dir,
+                user_id=args.user_id,
+                queries_path=args.queries,
+            )
+        )
+    if args.cmd == "weak-label-answers":
+        return asyncio.run(
+            _run_weak_label_answers(
+                args.arm,
+                template_db=args.template_db,
+                out_dir=args.out_dir,
+                user_id=args.user_id,
+            )
         )
     return 1
 
@@ -482,6 +568,63 @@ async def _run_fusion_screen(arm_path: Path, *, template_db: str, name: str) -> 
     _print_fusion_screen(report)
     # Exit 1 = a pool whose offline prod replay missed think_about's window.
     return 0 if all(v.matched == v.checks for v in report.validity) else 1
+
+
+async def _run_weak_match_screen(
+    arm_path: Path,
+    *,
+    template_db: str,
+    out_dir: Path,
+    user_id: str | None,
+    queries_path: Path | None,
+) -> int:
+    arm = load_arm(arm_path)
+    if not arm.task.enabled:
+        logger.error("weak-match-screen requires a task arm")
+        return 2
+    arm.apply_process_overrides()
+    try:
+        report = await screen_weak_matches(
+            arm,
+            template=template_db,
+            user_id=user_id or f"probe-{arm.name}",
+            queries_path=queries_path,
+        )
+    except ScreenPreconditionError as exc:
+        logger.error("%s", exc)
+        return 2
+    write_weak_match_screen_report(report, out_dir)
+    _print_weak_match_screen(report)
+    # Exit 1 = a query whose offline replay missed think_about's window.
+    return 0 if report.validity.matched == report.validity.checks else 1
+
+
+async def _run_weak_label_answers(
+    arm_path: Path, *, template_db: str, out_dir: Path, user_id: str | None
+) -> int:
+    arm = load_arm(arm_path)
+    if not arm.task.enabled or not arm.task.answer_model:
+        logger.error("weak-label-answers requires a task arm with an answer_model")
+        return 2
+    # The provider reads extraction timeout, retries and settings from process config.
+    arm.apply_process_overrides()
+    try:
+        report = await compare_weak_labels(
+            arm,
+            template=template_db,
+            user_id=user_id or f"probe-{arm.name}",
+            provider=PydanticAIProvider(model=arm.task.answer_model),
+        )
+    except ScreenPreconditionError as exc:
+        logger.error("%s", exc)
+        return 2
+    except MemorySDKError:
+        logger.exception("weak-label-answers failed; no artifact written")
+        return 1
+    write_weak_label_answers_report(report, out_dir)
+    _print_weak_label_answers(report)
+    # Exit 1 = a question whose offline replay missed think_about's window.
+    return 0 if report.validity.matched == report.validity.checks else 1
 
 
 async def _run_situational_arm(
@@ -883,6 +1026,72 @@ def _print_fusion_screen(report: FusionScreenReport) -> None:
             f"  clamp={cell.slots_at_clamp}  slot1={len(cell.slot1_changed)}"
             f"  stretch={stretch}  dropped={cell.concepts_dropped}  miss: {misses}"
         )
+
+
+def _print_weak_match_screen(report: WeakMatchScreenReport) -> None:
+    v = report.validity
+    print(
+        f"\nStore: {report.template_db}  user={report.user_id}"
+        f"  traces={report.store_traces}  validity={v.matched}/{v.checks}"
+        f"  required_in_window={len(report.required_in_window)}"
+        f"  delivered_mean={report.delivered_mean:.2f}"
+    )
+    print(
+        f"{'rule':15s} {'param':>5s} {'weak':>5s} {'lost tok/dir':>12s}"
+        f" {'none strong':>11s} {'cost cur':>8s} {'cost cut':>8s}"
+    )
+    for cell in report.cells:
+        lost = cell.required_lost
+        param = "-" if cell.parameter is None else f"{cell.parameter:.2f}"
+        print(
+            f"{cell.rule:15s} {param:>5s} {cell.weak_total:5d}"
+            f" {f'{len(lost.token)}/{len(lost.direct)}':>12s}"
+            f" {cell.none_tier_strong_total:11d}"
+            f" {cell.cost_current_mean:8.1f} {cell.cost_cut_mean:8.1f}"
+        )
+
+
+def _print_weak_label_answers(report: WeakLabelAnswersReport) -> None:
+    n = report.repeats
+    v = report.validity
+    print(
+        f"\nStore: {report.template_db}  user={report.user_id}"
+        f"  validity={v.matched}/{v.checks}  repeats={n}"
+        f"  noise_floor={report.noise_floor}"
+    )
+    for q in report.questions:
+        differs = q.current.correct != q.labelled.correct
+        if q.identical or not (differs or q.required_weak):
+            continue
+        print(
+            f"{q.question_id:8s} {q.tier_label:4s} weak={q.weak}"
+            f"  required_weak={','.join(q.required_weak) or '-'}"
+            f"  current {q.current.correct}/{n}  labelled {q.labelled.correct}/{n}"
+        )
+    _print_weak_label_totals(report)
+
+
+def _correct_totals(
+    questions: list[QuestionAnswers], repeats: int
+) -> tuple[int, int, int]:
+    return (
+        sum(q.current.correct for q in questions),
+        sum(q.labelled.correct for q in questions),
+        len(questions) * repeats,
+    )
+
+
+def _print_weak_label_totals(report: WeakLabelAnswersReport) -> None:
+    answerable = [q for q in report.questions if q.answer_type != "abstain"]
+    cur, lab, total = _correct_totals(answerable, report.repeats)
+    print(f"answerable correct: current {cur}/{total}  labelled {lab}/{total}")
+    # A none-tier question is an abstain question: correct means abstained.
+    none_tier = [q for q in report.questions if q.tier_label == "none"]
+    cur, lab, total = _correct_totals(none_tier, report.repeats)
+    print(
+        f"none-tier abstained: current {cur}/{total} (fabricated {total - cur})"
+        f"  labelled {lab}/{total} (fabricated {total - lab})"
+    )
 
 
 def _print_situational_summary(

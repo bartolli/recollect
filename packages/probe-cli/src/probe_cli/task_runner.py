@@ -211,6 +211,19 @@ class TaskVerifyReport(BaseModel):
         return [c for c in self.checks if not c.holds]
 
 
+async def ask(provider: LLMProvider, question: str, context: str) -> str:
+    content = (
+        f"{context}\n\nQuestion: {question}" if context else (f"Question: {question}")
+    )
+    return await provider.complete(
+        [
+            Message(role="system", content=_ANSWER_SYSTEM),
+            Message(role="user", content=content),
+        ],
+        max_tokens=256,
+    )
+
+
 def _format_context(persona_lines: list[str], thoughts: list[Thought]) -> str:
     parts: list[str] = []
     if persona_lines:
@@ -347,18 +360,7 @@ class TaskArmRunner:
         ]
 
     async def _ask(self, question: str, context: str) -> str:
-        content = (
-            f"{context}\n\nQuestion: {question}"
-            if context
-            else (f"Question: {question}")
-        )
-        return await self._answer_provider.complete(
-            [
-                Message(role="system", content=_ANSWER_SYSTEM),
-                Message(role="user", content=content),
-            ],
-            max_tokens=256,
-        )
+        return await ask(self._answer_provider, question, context)
 
     async def _answer_one(
         self,

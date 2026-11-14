@@ -175,8 +175,7 @@ class CellConcepts:
 
 
 @dataclass(frozen=True)
-class QuestionCapture:
-    question: TaskQuestion
+class CallCapture:
     inputs: FusionInputs
     # The fact thoughts assembly saw, cut ones included: their ids are minted
     # per call, so only these objects can match the real window.
@@ -184,6 +183,11 @@ class QuestionCapture:
     window: list[Thought]
     # Base is level * spread_bonus, not a content cosine.
     activation_only: frozenset[str]
+
+
+@dataclass(frozen=True)
+class QuestionCapture(CallCapture):
+    question: TaskQuestion
 
 
 @dataclass(frozen=True)
@@ -542,11 +546,20 @@ class _ScreenMemory(CognitiveMemory):
             user_id=user_id,
         )
 
-    async def capture(self, question: TaskQuestion, *, user_id: str) -> QuestionCapture:
+    async def capture_call(
+        self,
+        query: str,
+        *,
+        label: str,
+        token_budget: int = _TOKEN_BUDGET,
+        user_id: str,
+    ) -> CallCapture:
         capture = _Capture()
         token = _CAPTURE.set(capture)
         try:
-            window = await self.think_about(question.question, user_id=user_id)
+            window = await self.think_about(
+                query, token_budget=token_budget, user_id=user_id
+            )
         finally:
             _CAPTURE.reset(token)
         counts = [
@@ -556,18 +569,35 @@ class _ScreenMemory(CognitiveMemory):
         ]
         if counts != [1, 1, 1]:
             raise ScreenPreconditionError(
-                f"{question.id}: captured {counts} fusions, assemblies, merges; "
+                f"{label}: captured {counts} fusions, assemblies, merges; "
                 "expected one each"
             )
         facts = [
             t for t in capture.assemblies[0] if t.trace.pattern.get("persona_fact")
         ]
+        return CallCapture(
+            capture.fusions[0], facts, window, capture.activation_only[0]
+        )
+
+    async def capture(self, question: TaskQuestion, *, user_id: str) -> QuestionCapture:
+        call = await self.capture_call(
+            question.question, label=question.id, user_id=user_id
+        )
         return QuestionCapture(
-            question, capture.fusions[0], facts, window, capture.activation_only[0]
+            inputs=call.inputs,
+            facts=call.facts,
+            window=call.window,
+            activation_only=call.activation_only,
+            question=question,
         )
 
     async def replay(
-        self, capture: QuestionCapture, *, form: FusionForm, weight: float | None
+        self,
+        capture: CallCapture,
+        *,
+        form: FusionForm,
+        weight: float | None,
+        token_budget: int = _TOKEN_BUDGET,
     ) -> _Replay:
         """think_about's steps after fusion, without its boost writes."""
         fused, concepts = fuse_cell(
@@ -577,7 +607,7 @@ class _ScreenMemory(CognitiveMemory):
             activation_only=capture.activation_only,
         )
         gated = await self._gate_retired_candidates(fused)
-        selected = self._select_within_budget(gated, _TOKEN_BUDGET)
+        selected = self._select_within_budget(gated, token_budget)
         thoughts = [_trace_thought(t, s) for t, s in selected] + capture.facts
         window = CognitiveMemory._assemble_with_trace_guarantee(
             thoughts,
@@ -597,27 +627,27 @@ async def _maintenance(base_url: str, *statements: str) -> None:
         await conn.close()
 
 
-async def _copy_store(plan: _ScreenPlan) -> None:
+async def _copy_store(base_url: str, template: str) -> None:
     await _maintenance(
-        plan.base_url,
+        base_url,
         _DROP_SCREEN,
-        f"CREATE DATABASE {_quoted(SCREEN_DB)} TEMPLATE {_quoted(plan.template)}",
+        f"CREATE DATABASE {_quoted(SCREEN_DB)} TEMPLATE {_quoted(template)}",
     )
 
 
-async def _read_screen_traces(plan: _ScreenPlan) -> dict[str, str]:
-    """Trace id -> content of the plan's user; refuses any database but the copy."""
-    conn = await asyncpg.connect(plan.screen_url)
+async def _read_screen_traces(screen_url: str, user_id: str) -> dict[str, str]:
+    """Trace id -> content of the user; refuses any database but the copy."""
+    conn = await asyncpg.connect(screen_url)
     try:
         name = await conn.fetchval("SELECT current_database()")
         if name != SCREEN_DB:
             raise ScreenPreconditionError(f"connected to {name!r}, not {SCREEN_DB!r}")
         async with conn.transaction(readonly=True):
-            rows = await conn.fetch(_USER_TRACES_SQL, plan.user_id)
+            rows = await conn.fetch(_USER_TRACES_SQL, user_id)
     finally:
         await conn.close()
     if not rows:
-        raise ScreenPreconditionError(f"no traces for user {plan.user_id!r}")
+        raise ScreenPreconditionError(f"no traces for user {user_id!r}")
     return {str(row["id"]): str(row["content"]) for row in rows}
 
 
@@ -694,8 +724,8 @@ def _validity(
 
 
 async def _pool_pass(plan: _ScreenPlan, pool: PoolName) -> _PoolPass:
-    await _copy_store(plan)
-    contents = await _read_screen_traces(plan)
+    await _copy_store(plan.base_url, plan.template)
+    contents = await _read_screen_traces(plan.screen_url, plan.user_id)
     id_map = {key: tid for tid, key in seed_keys(contents, plan.seeds).items()}
     memory, channel = _screen_memory(plan, pool, list(contents))
     try:

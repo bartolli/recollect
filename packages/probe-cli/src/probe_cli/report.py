@@ -28,6 +28,8 @@ from probe_cli.task_runner import (
     TaskVerifyReport,
     VerdictOracleReport,
 )
+from probe_cli.weak_label_answers import WeakLabelAnswersReport
+from probe_cli.weak_match_screen import WeakMatchScreenReport
 
 logger = logging.getLogger(__name__)
 
@@ -214,6 +216,28 @@ def write_fusion_screen_report(
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / "fusion_screen.json"
+    path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_weak_match_screen_report(
+    report: WeakMatchScreenReport, output_dir: Path | str
+) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "weak_match_screen.json"
+    path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_weak_label_answers_report(
+    report: WeakLabelAnswersReport, output_dir: Path | str
+) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "weak_label_answers.json"
     path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
     logger.info("wrote %s", path)
     return path
