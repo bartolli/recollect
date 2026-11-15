@@ -2514,9 +2514,14 @@ class CognitiveMemory:
             )
         except EmbeddingError:
             return []
-        facts, scores = await self._find_relevant_persona_facts(
-            trace.content, query_embedding, user_id=user_id
-        )
+        try:
+            facts, scores = await self._find_relevant_persona_facts(
+                trace.content, query_embedding, user_id=user_id
+            )
+        except StorageError:
+            # The trace is already stored: a failed lookup must not fail the write.
+            logger.exception("Fact surfacing skipped for trace %s", trace.id[:8])
+            return []
         relevant = [
             f
             for f in facts
@@ -2621,9 +2626,14 @@ class CognitiveMemory:
                 self._rank_and_limit_facts(all_facts, max_facts, semantic_scores),
                 semantic_scores,
             )
-        except (StorageError, OSError):
+        # Fail closed: an empty result would read as "no fact matched" and drop
+        # a safety fact from the recall without a trace of the failure.
+        except StorageError:
             logger.exception("Persona fact lookup failed")
-            return [], {}
+            raise
+        except OSError as exc:
+            logger.exception("Persona fact lookup failed")
+            raise StorageError(f"Persona fact lookup failed: {exc}") from exc
 
     @staticmethod
     def _deduplicate_facts(facts: list[PersonaFact]) -> list[PersonaFact]:

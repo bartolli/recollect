@@ -63,6 +63,11 @@ _SAFETY_PENDING = (
 # Fixed text: an exception message is unbounded and stays in the server log.
 _STORAGE_FAILED = "Recall failed: storage error. Details are in the server log."
 _RECALL_FAILED = "Recall failed: memory error. Details are in the server log."
+# The write succeeded: a failure reply would invite a second write of the memory.
+_SURFACING_FAILED = (
+    "Related persona facts could not be loaded: storage error. "
+    "The memory is stored; do not store it again."
+)
 _MIN_RECALL_BUDGET = max(
     _estimate_tokens(n)
     for n in (
@@ -384,9 +389,9 @@ async def remember(
             session_id=session_id,
             user_id=app.user_id or None,
         )
-        surfaced = await app.memory.surface_relevant_facts(
-            trace, user_id=app.user_id or None
-        )
+        surfaced = await _surfaced_facts(app, trace)
+        if surfaced is None:
+            return f"{_format_remember_result(trace)}\n\n{_SURFACING_FAILED}"
         return _format_remember_result(trace, surfaced)
     except ExtractionError as exc:
         logger.exception("Extraction failed for remember")
@@ -610,6 +615,21 @@ async def forget(
             "repeat with force=true to also suppress them."
         )
     return " ".join(parts)
+
+
+async def _surfaced_facts(
+    app: AppContext, trace: MemoryTrace
+) -> list[PersonaFact] | None:
+    """Write-time surfaced facts; None when the lookup failed after the write."""
+    try:
+        return await app.memory.surface_relevant_facts(
+            trace, user_id=app.user_id or None
+        )
+    except StorageError:
+        logger.exception(
+            "Fact surfacing failed after remember stored %s", _short_id(trace.id)
+        )
+        return None
 
 
 def _format_remember_result(
