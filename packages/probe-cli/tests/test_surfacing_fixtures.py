@@ -9,6 +9,7 @@ import pytest
 from probe_cli.arm import load_arm
 from probe_cli.corpus import load_corpus, load_query_corpus
 from probe_cli.surfacing_runner import SurfacingArmRunner
+from recollect.prompts import load_packaged_default
 
 _FIX = Path(__file__).parent.parent / "fixtures"
 
@@ -39,3 +40,32 @@ def test_surfacing_arm_toml_loads(monkeypatch: pytest.MonkeyPatch) -> None:
     assert arm.surfacing.query_corpus_path.endswith("eval_queries.jsonl")
     runner = SurfacingArmRunner.from_arm(arm, MagicMock(model_name="m"))
     assert runner.model == "m"
+
+
+def test_h55_arms_equal_the_surfacing_arm_except_model_prompt_and_template(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("RECOLLECT_PROBE_DB_URL", "postgresql://localhost/probe_eval")
+    base = load_arm(_FIX / "surfacing.toml")
+    candidate_prompt = "qualification/extraction.1.3.0.md"
+    packaged = load_packaged_default("extraction.default.md").version
+    for prompt in ("p121", "p130"):
+        arm = load_arm(_FIX / "surfacing-h55" / f"{prompt}.toml")
+        assert arm.name == f"surfacing-h55-{prompt}"
+        assert arm.extraction.pydantic_ai_model == "anthropic:claude-haiku-5-5"
+        template = arm.extraction.template_path
+        assert template.endswith(candidate_prompt) == (prompt == "p130")
+        assert bool(template) == (prompt == "p130")
+        runner = SurfacingArmRunner.from_arm(arm, MagicMock(model_name="m"))
+        loaded = runner._extractor.template_version
+        assert loaded == ("1.3.0" if prompt == "p130" else packaged)
+        assert arm.extraction.instructions
+        same = {"pydantic_ai_model": "", "template_path": "", "instructions": ""}
+        assert arm.extraction.model_copy(update=same) == (
+            base.extraction.model_copy(update=same)
+        )
+        assert (arm.corpus, arm.surfacing, arm.recollect_overrides) == (
+            base.corpus,
+            base.surfacing,
+            base.recollect_overrides,
+        )

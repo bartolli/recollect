@@ -1,0 +1,16 @@
+[
+  {
+    "label": "hist",
+    "fallback": [],
+    "empty_source": [],
+    "no_relation": [],
+    "empty_context": [],
+    "pin_findings": [
+      {
+        "pinned_under": "screen-2",
+        "source": "screen-1",
+        "line": "[pinned] Halvard Lunde (bee inspector) holds_role bee inspector -- Halvard Lunde, a bee inspector, inspected the user's hive on 2026-09-14 and is advising on whether to merge colonies in October 2026."
+      }
+    ]
+  }
+]

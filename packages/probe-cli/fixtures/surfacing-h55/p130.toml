@@ -1,0 +1,48 @@
+# Surfacing arm on claude-haiku-5-5 at the extraction prompt candidate 1.3.0, read through extraction.template_path.
+# The arm sends production's composition: the template plus the packaged extraction.instructions.
+# Settings equal p121.toml except template_path.
+#   uv run --env-file .env probe run --arm packages/probe-cli/fixtures/surfacing-h55/p130.toml --seeding s1
+# A seeding is selected with --seeding sN: the arm name, the evidence dir under out/ and the user_id take the suffix.
+# One attempt per seeding identifier: a rerun takes the next identifier.
+# No probe_eval reset: the runner suffixes user_id with the run's time.
+# Code: the commit that adds this arm.
+
+[arm]
+name = "surfacing-h55-p130"
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-5-5"
+template_path = "packages/probe-cli/fixtures/qualification/extraction.1.3.0.md"
+max_concepts = 5
+max_relations = 3
+# The packaged extraction.instructions, copied verbatim from config.toml: an arm
+# without this key sends the template alone.
+instructions = """
+Entity types: person, organization, place, food, cuisine, product, event, skill, condition.
+Concepts: abstract lowercase noun phrases that could recur across memories.
+Category must be the most specific match: health (allergies, conditions, phobias), \
+dietary (food restrictions, aversions, diet), constraint (limitations, requirements), \
+identity (career, education, beliefs), relationship (family, friends, social ties), \
+preference (likes, interests, hobbies), schedule (routines, plans, appointments), \
+general (anything else). Safety-critical categories (health, dietary, constraint) \
+are always surfaced during retrieval. \
+DISAMBIGUATION: food restrictions are ALWAYS 'dietary' regardless of motivation -- \
+vegetarian for ethics, kosher for religion, gluten-free by choice are all 'dietary'. \
+The downstream pipeline uses this category to surface facts during food-related queries."""
+
+[corpus]
+# Schema-required; surfacing path uses [surfacing].*_corpus_path instead.
+path = "packages/probe-cli/fixtures/eval_traces.jsonl"
+
+[surfacing]
+enabled = true
+db_url = "${RECOLLECT_PROBE_DB_URL}"
+traces_corpus_path = "packages/probe-cli/fixtures/eval_traces.jsonl"
+query_corpus_path = "packages/probe-cli/fixtures/eval_queries.jsonl"
+
+[recollect_overrides]
+# Holds token strength fixed across the query loop, as surfacing.toml does.
+"recall_tokens.reinforce_boost" = 0.0
+
+[output]
+dir = "out"

@@ -1,0 +1,2858 @@
+{
+  "control_label": "hist",
+  "candidate_labels": [],
+  "confidence_threshold": 0.6,
+  "readers": [
+    {
+      "reader": "a",
+      "labels": [
+        {
+          "label": "hist",
+          "context": {
+            "states": [
+              {
+                "statement_id": "might-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1a",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "will-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2a",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "might-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1b",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "will-2",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2b",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "will-3",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 2,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 2,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              }
+            ],
+            "counts": {
+              "pass": 21,
+              "fail": 5,
+              "unrepresented": 0
+            },
+            "added_claims": [
+              {
+                "item_id": "item-0001",
+                "statement_id": "might-1",
+                "quotes": [
+                  "so dates and reservations need coordinating early"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0002",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "suggested a queen check"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0005",
+                "statement_id": "screen-4",
+                "quotes": [
+                  "unavailable during part of her stay"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0012",
+                "statement_id": "will-3",
+                "quotes": [
+                  "this is a significant civic commitment shaping schedule and public-facing activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0015",
+                "statement_id": "screen-1",
+                "quotes": [
+                  "the planned October 2026 colony merger"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0016",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "so the ceremony and related family logistics center on that institution"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0019",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "so the user should plan to attend and arrange travel and accommodation to Bath around that date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0022",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "so the queen status should be verified before deciding on a merge"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0023",
+                "statement_id": "reported-1",
+                "quotes": [
+                  "settled in Halifax"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0025",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "which indicates she studied there",
+                  "the graduation trip"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0026",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "the user should plan around the corrected date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0031",
+                "statement_id": "might-3",
+                "quotes": [
+                  "one-time financial decision"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0032",
+                "statement_id": "reported-3",
+                "quotes": [
+                  "whose identification of wild fungi the user should weigh when deciding whether foraged mushrooms are safe to eat"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0038",
+                "statement_id": "reported-2",
+                "quotes": [
+                  "reported on 8 January 2027"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0040",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so it constrains weekly scheduling and evening availability"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0042",
+                "statement_id": "will-2",
+                "quotes": [
+                  "Noor Haddad works at Inkwell Parlour in Brighton"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0045",
+                "statement_id": "will-3",
+                "quotes": [
+                  "so it anchors campaign planning"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0048",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "which requires timing and preparation"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0052",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so she is a link between work and this dance activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0054",
+                "statement_id": "reported-2",
+                "quotes": [
+                  "so he is the reference point for any follow-up repair of the van"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0055",
+                "statement_id": "might-1",
+                "quotes": [
+                  "weather windows and operator availability constrain the date"
+                ],
+                "quote_missing": false
+              }
+            ]
+          },
+          "line": {
+            "states": [
+              {
+                "statement_id": "might-1",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1a",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "will-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-1",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2a",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "might-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1b",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "will-2",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2b",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "will-3",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 2,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 1,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 2,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              }
+            ],
+            "counts": {
+              "pass": 16,
+              "fail": 10,
+              "unrepresented": 0
+            },
+            "added_claims": [
+              {
+                "item_id": "item-0003",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "so the user should plan to attend and arrange travel and accommodation to Bath around that date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0004",
+                "statement_id": "reported-3",
+                "quotes": [
+                  "whose identification of wild fungi the user should weigh when deciding whether foraged mushrooms are safe to eat"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0006",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "so the queen status should be verified before deciding on a merge"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0008",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so it constrains weekly scheduling and evening availability"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0009",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "the user should plan around the corrected date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0013",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "scheduled_for",
+                  "which requires timing and preparation"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0017",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "studies University of Bath",
+                  "which indicates she studied there"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0018",
+                "statement_id": "might-1",
+                "quotes": [
+                  "so dates and reservations need coordinating early"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0020",
+                "statement_id": "will-3",
+                "quotes": [
+                  "so it anchors campaign planning"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0027",
+                "statement_id": "might-1",
+                "quotes": [
+                  "weather windows and operator availability constrain the date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0029",
+                "statement_id": "will-3",
+                "quotes": [
+                  "this is a significant civic commitment shaping schedule and public-facing activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0034",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "so the ceremony and related family logistics center on that institution"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0035",
+                "statement_id": "reported-1",
+                "quotes": [
+                  "lives_in Halifax"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0039",
+                "statement_id": "screen-1",
+                "quotes": [
+                  "the planned October 2026 colony merger"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0041",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so she is a link between work and this dance activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0046",
+                "statement_id": "might-3",
+                "quotes": [
+                  "user is_associated_with Pemberton and Lisle",
+                  "this is a conditional, one-time financial decision"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0049",
+                "statement_id": "will-1",
+                "quotes": [
+                  "takes_medication"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0051",
+                "statement_id": "will-2",
+                "quotes": [
+                  "Noor Haddad works at Inkwell Parlour in Brighton"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0056",
+                "statement_id": "reported-2",
+                "quotes": [
+                  "reported on 8 January 2027"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0060",
+                "statement_id": "screen-4",
+                "quotes": [
+                  "unavailable during part of her stay"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0064",
+                "statement_id": "reported-2",
+                "quotes": [
+                  "so he is the reference point for any follow-up repair of the van"
+                ],
+                "quote_missing": false
+              }
+            ]
+          },
+          "lines": {
+            "all_lines": {
+              "passing": 10,
+              "failing": 22,
+              "failing_only_through_triple": 1
+            },
+            "at_or_above_threshold": {
+              "passing": 10,
+              "failing": 21,
+              "failing_only_through_triple": 1
+            },
+            "weight_none": [],
+            "fails_only_through_triple": [
+              {
+                "item_id": "item-0013",
+                "statement_id": "screen-2",
+                "check": 1,
+                "context_item_id": "item-0048"
+              },
+              {
+                "item_id": "item-0013",
+                "statement_id": "screen-2",
+                "check": 2,
+                "context_item_id": "item-0048"
+              },
+              {
+                "item_id": "item-0027",
+                "statement_id": "might-1",
+                "check": 0,
+                "context_item_id": "item-0055"
+              },
+              {
+                "item_id": "item-0035",
+                "statement_id": "reported-1",
+                "check": 0,
+                "context_item_id": "item-0023"
+              },
+              {
+                "item_id": "item-0050",
+                "statement_id": "reported-3",
+                "check": 0,
+                "context_item_id": "item-0021"
+              }
+            ]
+          }
+        }
+      ],
+      "incomplete": [],
+      "regressions": [],
+      "unrepresented_where_control_passed": [],
+      "verdict": "not_applicable"
+    },
+    {
+      "reader": "b",
+      "labels": [
+        {
+          "label": "hist",
+          "context": {
+            "states": [
+              {
+                "statement_id": "might-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1a",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "will-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2a",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "might-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1b",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "will-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 1,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2b",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "will-3",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 1,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 2,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 2,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              }
+            ],
+            "counts": {
+              "pass": 15,
+              "fail": 11,
+              "unrepresented": 0
+            },
+            "added_claims": [
+              {
+                "item_id": "item-0001",
+                "statement_id": "might-1",
+                "quotes": [
+                  "so dates and reservations need coordinating early"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0002",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "suggested a queen check"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0005",
+                "statement_id": "screen-4",
+                "quotes": [
+                  "so the user will be unavailable during part of her stay"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0007",
+                "statement_id": "screen-3",
+                "quotes": [
+                  "making this role the central career goal behind the exam"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0012",
+                "statement_id": "will-3",
+                "quotes": [
+                  "this is a significant civic commitment shaping schedule and public-facing activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0015",
+                "statement_id": "screen-1",
+                "quotes": [
+                  "the planned October 2026 colony merger"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0016",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "so the ceremony and related family logistics center on that institution"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0019",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "so the user should plan to attend and arrange travel and accommodation to Bath around that date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0022",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "so the queen status should be verified before deciding on a merge"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0023",
+                "statement_id": "reported-1",
+                "quotes": [
+                  "settled in Halifax"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0024",
+                "statement_id": "might-2",
+                "quotes": [
+                  "so the decision is pending and financial stakes are unresolved"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0025",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "which indicates she studied there",
+                  "planning the graduation trip"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0026",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "the user should plan around the corrected date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0031",
+                "statement_id": "might-3",
+                "quotes": [
+                  "this is a conditional, one-time financial decision"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0032",
+                "statement_id": "reported-3",
+                "quotes": [
+                  "whose identification of wild fungi the user should weigh when deciding whether foraged mushrooms are safe to eat"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0037",
+                "statement_id": "screen-3",
+                "quotes": [
+                  "is preparing for"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0038",
+                "statement_id": "reported-2",
+                "quotes": [
+                  "reported on 8 January 2027"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0040",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so it constrains weekly scheduling and evening availability"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0045",
+                "statement_id": "will-3",
+                "quotes": [
+                  "so it anchors campaign planning"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0048",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "which requires timing and preparation"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0052",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so she is a link between work and this dance activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0054",
+                "statement_id": "reported-2",
+                "quotes": [
+                  "gave a preliminary assessment, so he is the reference point for any follow-up repair of the van"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0055",
+                "statement_id": "might-1",
+                "quotes": [
+                  "weather windows and operator availability constrain the date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0058",
+                "statement_id": "screen-1",
+                "quotes": [
+                  "is advising on whether to merge colonies"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0065",
+                "statement_id": "will-1",
+                "quotes": [
+                  "to plan around"
+                ],
+                "quote_missing": false
+              }
+            ]
+          },
+          "line": {
+            "states": [
+              {
+                "statement_id": "might-1",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1a",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "will-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-1",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2a",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "might-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1b",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "will-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 1,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2b",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "will-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 2,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 1,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 2,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              }
+            ],
+            "counts": {
+              "pass": 16,
+              "fail": 10,
+              "unrepresented": 0
+            },
+            "added_claims": [
+              {
+                "item_id": "item-0003",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "so the user should plan to attend and arrange travel and accommodation to Bath around that date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0004",
+                "statement_id": "reported-3",
+                "quotes": [
+                  "whose identification of wild fungi the user should weigh when deciding whether foraged mushrooms are safe to eat"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0006",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "so the queen status should be verified before deciding on a merge"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0008",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so it constrains weekly scheduling and evening availability"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0009",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "the user should plan around the corrected date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0010",
+                "statement_id": "might-2",
+                "quotes": [
+                  "financial stakes are unresolved"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0013",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "which requires timing and preparation"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0017",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "which indicates she studied there"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0018",
+                "statement_id": "might-1",
+                "quotes": [
+                  "so dates and reservations need coordinating early"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0020",
+                "statement_id": "will-3",
+                "quotes": [
+                  "so it anchors campaign planning"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0027",
+                "statement_id": "might-1",
+                "quotes": [
+                  "weather windows and operator availability constrain the date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0029",
+                "statement_id": "will-3",
+                "quotes": [
+                  "this is a significant civic commitment shaping schedule and public-facing activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0034",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "so the ceremony and related family logistics center on that institution"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0035",
+                "statement_id": "reported-1",
+                "quotes": [
+                  "user's great-grandfather lives_in Halifax"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0039",
+                "statement_id": "screen-1",
+                "quotes": [
+                  "the planned October 2026 colony merger"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0041",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so she is a link between work and this dance activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0046",
+                "statement_id": "might-3",
+                "quotes": [
+                  "this is a conditional, one-time financial decision",
+                  "user is_associated_with Pemberton and Lisle"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0049",
+                "statement_id": "will-1",
+                "quotes": [
+                  "takes_medication",
+                  "a scheduled activity with a set cost to plan around"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0053",
+                "statement_id": "screen-1",
+                "quotes": [
+                  "is advising on whether to merge colonies in October 2026"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0056",
+                "statement_id": "reported-2",
+                "quotes": [
+                  "reported on 8 January 2027"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0060",
+                "statement_id": "screen-4",
+                "quotes": [
+                  "the user will be unavailable during part of her stay"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0064",
+                "statement_id": "reported-2",
+                "quotes": [
+                  "so he is the reference point for any follow-up repair of the van"
+                ],
+                "quote_missing": false
+              }
+            ]
+          },
+          "lines": {
+            "all_lines": {
+              "passing": 9,
+              "failing": 23,
+              "failing_only_through_triple": 1
+            },
+            "at_or_above_threshold": {
+              "passing": 9,
+              "failing": 22,
+              "failing_only_through_triple": 1
+            },
+            "weight_none": [],
+            "fails_only_through_triple": [
+              {
+                "item_id": "item-0013",
+                "statement_id": "screen-2",
+                "check": 0,
+                "context_item_id": "item-0048"
+              },
+              {
+                "item_id": "item-0013",
+                "statement_id": "screen-2",
+                "check": 1,
+                "context_item_id": "item-0048"
+              },
+              {
+                "item_id": "item-0013",
+                "statement_id": "screen-2",
+                "check": 2,
+                "context_item_id": "item-0048"
+              },
+              {
+                "item_id": "item-0027",
+                "statement_id": "might-1",
+                "check": 0,
+                "context_item_id": "item-0055"
+              },
+              {
+                "item_id": "item-0033",
+                "statement_id": "reported-1",
+                "check": 0,
+                "context_item_id": "item-0011"
+              },
+              {
+                "item_id": "item-0035",
+                "statement_id": "reported-1",
+                "check": 0,
+                "context_item_id": "item-0023"
+              }
+            ]
+          }
+        }
+      ],
+      "incomplete": [],
+      "regressions": [],
+      "unrepresented_where_control_passed": [],
+      "verdict": "not_applicable"
+    },
+    {
+      "reader": "c",
+      "labels": [
+        {
+          "label": "hist",
+          "context": {
+            "states": [
+              {
+                "statement_id": "might-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1a",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "will-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2a",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1b",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "will-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2b",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "will-3",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 2,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 2,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              }
+            ],
+            "counts": {
+              "pass": 23,
+              "fail": 3,
+              "unrepresented": 0
+            },
+            "added_claims": [
+              {
+                "item_id": "item-0001",
+                "statement_id": "might-1",
+                "quotes": [
+                  "so dates and reservations need coordinating early"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0002",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "suggested a queen check"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0005",
+                "statement_id": "screen-4",
+                "quotes": [
+                  "the user will be unavailable during part of her stay"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0012",
+                "statement_id": "will-3",
+                "quotes": [
+                  "this is a significant civic commitment shaping schedule and public-facing activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0015",
+                "statement_id": "screen-1",
+                "quotes": [
+                  "the planned October 2026 colony merger"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0016",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "so the ceremony and related family logistics center on that institution"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0019",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "so the user should plan to attend and arrange travel and accommodation to Bath around that date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0022",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "so the queen status should be verified before deciding on a merge"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0025",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "which indicates she studied there"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0026",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "the user should plan around the corrected date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0031",
+                "statement_id": "might-3",
+                "quotes": [
+                  "this is a conditional, one-time financial decision."
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0032",
+                "statement_id": "reported-3",
+                "quotes": [
+                  "whose identification of wild fungi the user should weigh when deciding whether foraged mushrooms are safe to eat"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0038",
+                "statement_id": "reported-2",
+                "quotes": [
+                  "reported on 8 January 2027",
+                  "the diagnosis is unconfirmed"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0040",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so it constrains weekly scheduling and evening availability"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0045",
+                "statement_id": "will-3",
+                "quotes": [
+                  "the date on which the user's candidacy for Ashcombe Parish Council will be decided",
+                  "so it anchors campaign planning"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0048",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "which requires timing and preparation"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0052",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so she is a link between work and this dance activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0054",
+                "statement_id": "reported-2",
+                "quotes": [
+                  "so he is the reference point for any follow-up repair of the van"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0055",
+                "statement_id": "might-1",
+                "quotes": [
+                  "weather windows and operator availability constrain the date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0058",
+                "statement_id": "screen-1",
+                "quotes": [
+                  "is advising on whether to merge colonies"
+                ],
+                "quote_missing": false
+              }
+            ]
+          },
+          "line": {
+            "states": [
+              {
+                "statement_id": "might-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1a",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "will-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2a",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "might-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-1b",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "will-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-2",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "corrected-2b",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "might-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "will-3",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "reported-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-1",
+                "check": 2,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 0,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 1,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-2",
+                "check": 2,
+                "state": "fail",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-3",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 0,
+                "state": "pass",
+                "cause": null
+              },
+              {
+                "statement_id": "screen-4",
+                "check": 1,
+                "state": "pass",
+                "cause": null
+              }
+            ],
+            "counts": {
+              "pass": 19,
+              "fail": 7,
+              "unrepresented": 0
+            },
+            "added_claims": [
+              {
+                "item_id": "item-0003",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "so the user should plan to attend and arrange travel and accommodation to Bath around that date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0004",
+                "statement_id": "reported-3",
+                "quotes": [
+                  "whose identification of wild fungi the user should weigh when deciding whether foraged mushrooms are safe to eat"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0006",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "so the queen status should be verified before deciding on a merge"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0008",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so it constrains weekly scheduling and evening availability"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0009",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "the user should plan around the corrected date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0010",
+                "statement_id": "might-2",
+                "quotes": [
+                  "so the decision is pending and financial stakes are unresolved"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0013",
+                "statement_id": "screen-2",
+                "quotes": [
+                  "low-activity hive (user's hive) scheduled_for colony merge in October 2026",
+                  "which requires timing and preparation"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0017",
+                "statement_id": "corrected-1a",
+                "quotes": [
+                  "studies University of Bath",
+                  "which indicates she studied there"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0018",
+                "statement_id": "might-1",
+                "quotes": [
+                  "so dates and reservations need coordinating early"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0020",
+                "statement_id": "will-3",
+                "quotes": [
+                  "the date on which the user's candidacy for Ashcombe Parish Council will be decided",
+                  "so it anchors campaign planning"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0027",
+                "statement_id": "might-1",
+                "quotes": [
+                  "weather windows and operator availability constrain the date"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0029",
+                "statement_id": "will-3",
+                "quotes": [
+                  "this is a significant civic commitment shaping schedule and public-facing activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0034",
+                "statement_id": "corrected-1b",
+                "quotes": [
+                  "related family logistics center on that institution"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0035",
+                "statement_id": "reported-1",
+                "quotes": [
+                  "lives_in Halifax"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0039",
+                "statement_id": "screen-1",
+                "quotes": [
+                  "the planned October 2026 colony merger"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0041",
+                "statement_id": "corrected-2a",
+                "quotes": [
+                  "so she is a link between work and this dance activity"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0046",
+                "statement_id": "might-3",
+                "quotes": [
+                  "this is a conditional, one-time financial decision"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0049",
+                "statement_id": "will-1",
+                "quotes": [
+                  "user takes_medication fencing lessons"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0053",
+                "statement_id": "screen-1",
+                "quotes": [
+                  "is advising on whether to merge colonies in October 2026"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0060",
+                "statement_id": "screen-4",
+                "quotes": [
+                  "so the user will be unavailable during part of her stay"
+                ],
+                "quote_missing": false
+              },
+              {
+                "item_id": "item-0064",
+                "statement_id": "reported-2",
+                "quotes": [
+                  "so he is the reference point for any follow-up repair of the van"
+                ],
+                "quote_missing": false
+              }
+            ]
+          },
+          "lines": {
+            "all_lines": {
+              "passing": 11,
+              "failing": 21,
+              "failing_only_through_triple": 0
+            },
+            "at_or_above_threshold": {
+              "passing": 11,
+              "failing": 20,
+              "failing_only_through_triple": 0
+            },
+            "weight_none": [],
+            "fails_only_through_triple": [
+              {
+                "item_id": "item-0008",
+                "statement_id": "corrected-2a",
+                "check": 0,
+                "context_item_id": "item-0040"
+              },
+              {
+                "item_id": "item-0013",
+                "statement_id": "screen-2",
+                "check": 0,
+                "context_item_id": "item-0048"
+              },
+              {
+                "item_id": "item-0013",
+                "statement_id": "screen-2",
+                "check": 1,
+                "context_item_id": "item-0048"
+              },
+              {
+                "item_id": "item-0013",
+                "statement_id": "screen-2",
+                "check": 2,
+                "context_item_id": "item-0048"
+              }
+            ]
+          }
+        }
+      ],
+      "incomplete": [],
+      "regressions": [],
+      "unrepresented_where_control_passed": [],
+      "verdict": "not_applicable"
+    }
+  ],
+  "disagreements": [
+    {
+      "item_id": "item-0002",
+      "label": "hist",
+      "statement_id": "screen-2",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "not_applicable",
+          "yes",
+          "yes",
+          "no"
+        ],
+        "b": [
+          "yes",
+          "yes",
+          "yes",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes",
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0006",
+      "label": "hist",
+      "statement_id": "screen-2",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "yes",
+          "yes",
+          "yes",
+          "no"
+        ],
+        "b": [
+          "no",
+          "yes",
+          "no",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes",
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0007",
+      "label": "hist",
+      "statement_id": "screen-3",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "yes",
+          "yes",
+          "yes"
+        ],
+        "b": [
+          "yes",
+          "yes",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes",
+          "yes"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0010",
+      "label": "hist",
+      "statement_id": "might-2",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "yes",
+          "yes"
+        ],
+        "b": [
+          "yes",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0013",
+      "label": "hist",
+      "statement_id": "screen-2",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "not_applicable",
+          "no",
+          "no",
+          "no"
+        ],
+        "b": [
+          "no",
+          "no",
+          "no",
+          "no"
+        ],
+        "c": [
+          "no",
+          "no",
+          "no",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0016",
+      "label": "hist",
+      "statement_id": "corrected-1b",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "not_applicable",
+          "no"
+        ],
+        "b": [
+          "no",
+          "no"
+        ],
+        "c": [
+          "not_applicable",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0017",
+      "label": "hist",
+      "statement_id": "corrected-1a",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "no",
+          "no"
+        ],
+        "b": [
+          "not_applicable",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0020",
+      "label": "hist",
+      "statement_id": "will-3",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "no",
+          "no"
+        ],
+        "b": [
+          "yes",
+          "no"
+        ],
+        "c": [
+          "no",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0022",
+      "label": "hist",
+      "statement_id": "screen-2",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "yes",
+          "yes",
+          "yes",
+          "no"
+        ],
+        "b": [
+          "no",
+          "yes",
+          "no",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes",
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0023",
+      "label": "hist",
+      "statement_id": "reported-1",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "yes",
+          "no"
+        ],
+        "b": [
+          "yes",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0024",
+      "label": "hist",
+      "statement_id": "might-2",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "yes",
+          "yes"
+        ],
+        "b": [
+          "yes",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0025",
+      "label": "hist",
+      "statement_id": "corrected-1a",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "no",
+          "no"
+        ],
+        "b": [
+          "not_applicable",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0027",
+      "label": "hist",
+      "statement_id": "might-1",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "no",
+          "no"
+        ],
+        "b": [
+          "no",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0032",
+      "label": "hist",
+      "statement_id": "reported-3",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "not_applicable",
+          "not_applicable",
+          "no"
+        ],
+        "b": [
+          "no",
+          "no",
+          "no"
+        ],
+        "c": [
+          "not_applicable",
+          "not_applicable",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0033",
+      "label": "hist",
+      "statement_id": "reported-1",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "yes",
+          "yes"
+        ],
+        "b": [
+          "no",
+          "yes"
+        ],
+        "c": [
+          "yes",
+          "yes"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0035",
+      "label": "hist",
+      "statement_id": "reported-1",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "no",
+          "no"
+        ],
+        "b": [
+          "no",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0037",
+      "label": "hist",
+      "statement_id": "screen-3",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "yes",
+          "yes",
+          "yes"
+        ],
+        "b": [
+          "yes",
+          "yes",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes",
+          "yes"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0040",
+      "label": "hist",
+      "statement_id": "corrected-2a",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "no",
+          "no"
+        ],
+        "b": [
+          "no",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0042",
+      "label": "hist",
+      "statement_id": "will-2",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "no",
+          "no"
+        ],
+        "b": [
+          "yes",
+          "yes"
+        ],
+        "c": [
+          "yes",
+          "yes"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0048",
+      "label": "hist",
+      "statement_id": "screen-2",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "not_applicable",
+          "not_applicable",
+          "yes",
+          "no"
+        ],
+        "b": [
+          "yes",
+          "yes",
+          "yes",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes",
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0050",
+      "label": "hist",
+      "statement_id": "reported-3",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "no",
+          "yes",
+          "yes"
+        ],
+        "b": [
+          "yes",
+          "yes",
+          "yes"
+        ],
+        "c": [
+          "yes",
+          "yes",
+          "yes"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0051",
+      "label": "hist",
+      "statement_id": "will-2",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "no",
+          "no"
+        ],
+        "b": [
+          "yes",
+          "yes"
+        ],
+        "c": [
+          "yes",
+          "yes"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0053",
+      "label": "hist",
+      "statement_id": "screen-1",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "not_applicable",
+          "not_applicable",
+          "yes",
+          "yes"
+        ],
+        "b": [
+          "not_applicable",
+          "not_applicable",
+          "yes",
+          "no"
+        ],
+        "c": [
+          "not_applicable",
+          "not_applicable",
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0054",
+      "label": "hist",
+      "statement_id": "reported-2",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "yes",
+          "yes",
+          "no"
+        ],
+        "b": [
+          "no",
+          "no",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0056",
+      "label": "hist",
+      "statement_id": "reported-2",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "yes",
+          "yes",
+          "no"
+        ],
+        "b": [
+          "yes",
+          "yes",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes",
+          "yes"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0058",
+      "label": "hist",
+      "statement_id": "screen-1",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "not_applicable",
+          "not_applicable",
+          "yes",
+          "yes"
+        ],
+        "b": [
+          "not_applicable",
+          "not_applicable",
+          "yes",
+          "no"
+        ],
+        "c": [
+          "not_applicable",
+          "not_applicable",
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0064",
+      "label": "hist",
+      "statement_id": "reported-2",
+      "kind": "line",
+      "answers": {
+        "a": [
+          "yes",
+          "yes",
+          "no"
+        ],
+        "b": [
+          "no",
+          "no",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "item_id": "item-0065",
+      "label": "hist",
+      "statement_id": "will-1",
+      "kind": "context",
+      "answers": {
+        "a": [
+          "yes",
+          "yes"
+        ],
+        "b": [
+          "yes",
+          "no"
+        ],
+        "c": [
+          "yes",
+          "yes"
+        ]
+      }
+    }
+  ],
+  "verdict": "not_applicable"
+}

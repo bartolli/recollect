@@ -1,0 +1,25 @@
+{
+  "seed": 20261114,
+  "sources": [
+    {
+      "label": "hist",
+      "path": "out/qualification-haiku55/representations.json",
+      "sha256": "e09aa88fe3b1a3166e7f4dd26f8528c06dfb116e7e0531be92003fd9184e693b",
+      "validity": "absent"
+    }
+  ],
+  "reader_key_sha256": "2f34d64b66b1c7450cc25baaedadecf7386aefd1004b5fdce09d93b862e55fb3",
+  "items_by_kind": {
+    "context": 33,
+    "line": 32
+  },
+  "listing_counts": {
+    "hist": {
+      "fallback": 0,
+      "empty_source": 0,
+      "no_relation": 0,
+      "empty_context": 0,
+      "pin_findings": 1
+    }
+  }
+}

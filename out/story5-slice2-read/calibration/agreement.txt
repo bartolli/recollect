@@ -1,0 +1,13 @@
+Calibration of the reader seats on the historical 1.2.1 seeding (out/qualification-haiku55/representations.json), against the reviewed first reading (reading_first.json). Reader c is claude-haiku-5-5, read for comparison only; the frozen seats are a and b.
+first reading located in the packet: added-claim 14, hints 2, borderline 4; contexts 33, lines 32
+reader a anthropic:claude-opus-5-5: answered 65 failed 0 | contexts flagged 21/33: reviewed added-claim 14/14, hints 1/2, borderline 3/4, other 3 | lines flagged 21/32
+    flagged beyond the first reading: ['corrected-1a', 'reported-1', 'screen-1']
+reader b anthropic:claude-sonnet-5-5: answered 65 failed 0 | contexts flagged 25/33: reviewed added-claim 13/14, hints 1/2, borderline 4/4, other 7 | lines flagged 22/32
+    reviewed added-claim contexts not flagged: ['will-2']
+    flagged beyond the first reading: ['corrected-1a', 'might-2', 'reported-1', 'screen-1', 'screen-3', 'screen-3', 'will-1']
+reader c anthropic:claude-haiku-5-5: answered 65 failed 0 | contexts flagged 20/33: reviewed added-claim 13/14, hints 1/2, borderline 4/4, other 2 | lines flagged 21/32
+    reviewed added-claim contexts not flagged: ['will-2']
+    flagged beyond the first reading: ['corrected-1a', 'screen-1']
+readers a/b: added-claim check agrees on 56/65 items; every check agrees on 42/65
+readers a/c: added-claim check agrees on 58/65 items; every check agrees on 49/65
+readers b/c: added-claim check agrees on 59/65 items; every check agrees on 46/65

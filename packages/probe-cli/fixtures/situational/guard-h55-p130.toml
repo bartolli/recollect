@@ -1,0 +1,44 @@
+# Situational guard on claude-haiku-5-5 at the extraction prompt candidate 1.3.0, read through extraction.template_path.
+# The arm sends production's composition: the template plus the packaged extraction.instructions.
+# Settings equal guard-h55-p121.toml except template_path. The situational prompt is the packaged default in both.
+#   uv run --env-file .env probe run --arm packages/probe-cli/fixtures/situational/guard-h55-p130.toml --seeding s1
+# A seeding is selected with --seeding sN: the arm name, the evidence dir under out/ and the user_id take the suffix.
+# One attempt per seeding identifier: a rerun takes the next identifier.
+# DB: fresh probe_situational (make probe-situational-db-reset immediately before).
+# Code: the commit that adds this arm.
+
+[arm]
+name = "situational-guard-h55-p130"
+runs = 3
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-5-5"
+template_path = "packages/probe-cli/fixtures/qualification/extraction.1.3.0.md"
+# The packaged extraction.instructions, copied verbatim from config.toml: an arm
+# without this key sends the template alone.
+instructions = """
+Entity types: person, organization, place, food, cuisine, product, event, skill, condition.
+Concepts: abstract lowercase noun phrases that could recur across memories.
+Category must be the most specific match: health (allergies, conditions, phobias), \
+dietary (food restrictions, aversions, diet), constraint (limitations, requirements), \
+identity (career, education, beliefs), relationship (family, friends, social ties), \
+preference (likes, interests, hobbies), schedule (routines, plans, appointments), \
+general (anything else). Safety-critical categories (health, dietary, constraint) \
+are always surfaced during retrieval. \
+DISAMBIGUATION: food restrictions are ALWAYS 'dietary' regardless of motivation -- \
+vegetarian for ethics, kosher for religion, gluten-free by choice are all 'dietary'. \
+The downstream pipeline uses this category to surface facts during food-related queries."""
+
+# Required by Arm schema; unused for situational arms.
+[corpus]
+path = ""
+
+[output]
+dir = "out"
+
+[situational]
+enabled = true
+db_url = "${RECOLLECT_PROBE_SITUATIONAL_DB_URL}"
+seed_traces_path = "packages/probe-cli/fixtures/situational/seed_traces.jsonl"
+seed_groups_path = "packages/probe-cli/fixtures/situational/seed_groups.jsonl"
+eval_corpus_path = "packages/probe-cli/fixtures/situational/eval.jsonl"

@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import MagicMock
 
+import pytest
+from probe_cli.arm import load_arm
 from probe_cli.corpus import load_eval_corpus, load_seed_groups, load_seed_traces
+from probe_cli.situational_runner import SituationalArmRunner
+from recollect.prompts import load_packaged_default
 
 _FIX = Path(__file__).parent.parent / "fixtures" / "situational"
 
@@ -57,3 +62,34 @@ def test_eval_create_links_resolve_to_seed_traces() -> None:
             assert e.expected_linked_trace_ids
             for tid in e.expected_linked_trace_ids:
                 assert tid in trace_ids
+
+
+def test_h55_guard_arms_equal_the_guard_except_model_runs_prompt_and_template(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    url = "postgresql://localhost/probe_situational"
+    monkeypatch.setenv("RECOLLECT_PROBE_SITUATIONAL_DB_URL", url)
+    base = load_arm(_FIX / "gate-guard.toml")
+    packaged = load_packaged_default("extraction.default.md").version
+    for prompt in ("p121", "p130"):
+        stem = f"guard-h55-{prompt}"
+        arm = load_arm(_FIX / f"{stem}.toml")
+        assert (arm.name, arm.runs) == (f"situational-{stem}", 3)
+        assert arm.extraction.pydantic_ai_model == "anthropic:claude-haiku-5-5"
+        template = arm.extraction.template_path
+        assert bool(template) == (prompt == "p130")
+        assert template.endswith("qualification/extraction.1.3.0.md") == (
+            prompt == "p130"
+        )
+        runner = SituationalArmRunner.from_arm(arm, MagicMock(model_name="m"))
+        loaded = runner._extractor.template_version
+        assert loaded == ("1.3.0" if prompt == "p130" else packaged)
+        assert arm.extraction.instructions
+        same = {"pydantic_ai_model": "", "template_path": "", "instructions": ""}
+        assert arm.extraction.model_copy(update=same) == (
+            base.extraction.model_copy(update=same)
+        )
+        assert (arm.situational, arm.recollect_overrides) == (
+            base.situational,
+            base.recollect_overrides,
+        )

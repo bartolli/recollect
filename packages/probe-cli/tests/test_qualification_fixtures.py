@@ -11,6 +11,7 @@ import pytest
 from probe_cli.arm import load_arm
 from probe_cli.corpus import CorpusEntry, load_corpus, load_query_corpus
 from pydantic import BaseModel, ConfigDict, Field
+from recollect.prompts import load_prompt_file
 
 _FIX = Path(__file__).parent.parent / "fixtures" / "qualification"
 _IDS = {
@@ -123,3 +124,27 @@ def test_authored_statements_are_bounded_and_free_of_relative_dates() -> None:
     for t in authored:
         assert 15 <= len(t.text.split()) <= 35, f"{t.id} length"
         assert not _RELATIVE.search(t.text), f"{t.id} has a relative date"
+
+
+def test_p121_arm_equals_the_control_arm_except_name_and_instructions(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("RECOLLECT_PROBE_DB_URL", "postgresql://probe/probe_eval")
+    p121 = load_arm(_FIX / "arm-p121.toml")
+    control = load_arm(_FIX / "arm.toml")
+
+    assert p121.name == "qualification-p121-haiku55"
+    assert control.extraction.instructions == ""
+    blank = p121.extraction.model_copy(update={"instructions": ""})
+    renamed = p121.model_copy(update={"name": control.name, "extraction": blank})
+    assert renamed == control
+
+
+def test_candidate_prompt_loads_and_names_no_reported_source() -> None:
+    loaded = load_prompt_file(str(_FIX / "extraction.1.3.0.md"))
+
+    assert (loaded.version, loaded.applies_to) == ("1.3.0", "extraction-template")
+    sources = {row.source for row in _key_rows()} - {"user"}
+    assert sources
+    for source in sources:
+        assert source not in loaded.body, f"prompt names {source}"

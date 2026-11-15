@@ -1,0 +1,47 @@
+# Qualification statements under the extraction prompt candidate 1.3.0: relation context as stated evidence.
+#   uv run --env-file .env probe run --arm packages/probe-cli/fixtures/qualification/arm-p130.toml --seeding s1
+# The arm sends production's composition: the template plus the packaged extraction.instructions.
+# Settings equal arm-p121.toml except template_path. The packaged prompt stays 1.2.1: the candidate is read through the override.
+# A seeding is selected with --seeding sN: the arm name, the evidence dir under out/ and the user_id take the suffix.
+# One attempt per seeding identifier: a rerun takes the next identifier.
+# Code: the commit that adds this arm.
+
+[arm]
+name = "qualification-p130-haiku55"
+runs = 1
+
+[extraction]
+pydantic_ai_model = "anthropic:claude-haiku-5-5"
+template_path = "packages/probe-cli/fixtures/qualification/extraction.1.3.0.md"
+max_concepts = 5
+max_relations = 3
+# The packaged extraction.instructions, copied verbatim from config.toml: an arm
+# without this key sends the template alone.
+instructions = """
+Entity types: person, organization, place, food, cuisine, product, event, skill, condition.
+Concepts: abstract lowercase noun phrases that could recur across memories.
+Category must be the most specific match: health (allergies, conditions, phobias), \
+dietary (food restrictions, aversions, diet), constraint (limitations, requirements), \
+identity (career, education, beliefs), relationship (family, friends, social ties), \
+preference (likes, interests, hobbies), schedule (routines, plans, appointments), \
+general (anything else). Safety-critical categories (health, dietary, constraint) \
+are always surfaced during retrieval. \
+DISAMBIGUATION: food restrictions are ALWAYS 'dietary' regardless of motivation -- \
+vegetarian for ethics, kosher for religion, gluten-free by choice are all 'dietary'. \
+The downstream pipeline uses this category to surface facts during food-related queries."""
+
+[corpus]
+# Schema-required; retrieval path uses [retrieval].traces_corpus_path instead.
+path = "packages/probe-cli/fixtures/qualification/traces.jsonl"
+
+[retrieval]
+enabled = true
+db_url = "${RECOLLECT_PROBE_DB_URL}"
+traces_corpus_path = "packages/probe-cli/fixtures/qualification/traces.jsonl"
+query_corpus_path = "packages/probe-cli/fixtures/qualification/queries.jsonl"
+token_budget = 100000
+top_k = 5
+max_retrievals_buffer = 50
+
+[output]
+dir = "out"

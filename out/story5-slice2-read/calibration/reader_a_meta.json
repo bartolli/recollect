@@ -1,0 +1,12 @@
+{
+  "reader": "a",
+  "model": "anthropic:claude-opus-5-5",
+  "max_tokens": 16000,
+  "model_settings": {
+    "anthropic_effort": "high"
+  },
+  "brief_sha256": "0e32015c78e89b002c8a03a164410df69fe6185c6f99ec84fe76791e5c99bdbc",
+  "packet_sha256": "b0a0332a87ca4d77f2bf9a8b0851aadbc8bfce9362c21f4a573d30d6f781c795",
+  "answered": 65,
+  "failed": 0
+}
