@@ -359,6 +359,38 @@ class PgFactStore:
         except asyncpg.PostgresError as exc:
             raise StorageError(f"Failed to update fact status: {exc}") from exc
 
+    async def adopt_statement(self, fact_id: str, statement: PersonaFact) -> bool:
+        """Point a row at a newer statement of its triple.
+
+        Status and mention count are untouched. COALESCE: a statement whose
+        embedding failed never nulls the row's vector. False when no row
+        matched.
+        """
+        params = persona_fact_to_params(statement)
+        try:
+            pool = await self._pool_mgr.get_pool()
+            async with pool.acquire() as conn:
+                result = await conn.execute(
+                    """
+                    UPDATE persona_facts
+                    SET content = $2, context_tags = $3, source_trace_id = $4,
+                        embedding = COALESCE($5::vector, embedding),
+                        updated_at = $6
+                    WHERE id = $1
+                    """,
+                    fact_id,
+                    params["content"],
+                    params["context_tags"],
+                    params["source_trace_id"],
+                    params["embedding"],
+                    now_utc(),
+                )
+            return result != "UPDATE 0"
+        except StorageError:
+            raise
+        except asyncpg.PostgresError as exc:
+            raise StorageError(f"Failed to adopt statement: {exc}") from exc
+
     async def get_facts_by_context(
         self,
         concepts: list[str],

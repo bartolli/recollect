@@ -9,7 +9,15 @@ from collections.abc import Awaitable, Callable
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from recollect.models import ForgetResult, MemoryTrace, Session, Thought, ThoughtWindow
+from recollect.models import (
+    ExperienceResult,
+    ForgetResult,
+    MemoryTrace,
+    Session,
+    SurfacedFacts,
+    Thought,
+    ThoughtWindow,
+)
 from recollect_mcp.server import AppContext, forget, pin, recall, remember
 
 FULL = "3f2a9c1e-7b4d-4e6a-9c1f-2d8b5a7e4c10"
@@ -37,8 +45,8 @@ def memory(trace: MemoryTrace) -> AsyncMock:
     m.traces_by_id_prefix.side_effect = lambda prefix, user_id=None: (
         [trace] if trace.id.startswith(prefix) else []
     )
-    m.experience.return_value = trace
-    m.surface_relevant_facts.return_value = []
+    m.experience_result.return_value = ExperienceResult(trace=trace)
+    m.surface_relevant_facts_result.return_value = SurfacedFacts()
     m.think_about_window.return_value = ThoughtWindow(
         thoughts=[
             Thought(

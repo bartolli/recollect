@@ -12,11 +12,13 @@ from recollect.exceptions import (
     TraceNotFoundError,
 )
 from recollect.models import (
+    ExperienceResult,
     ForgetResult,
     HealthStatus,
     MemoryTrace,
     PersonaFact,
     Session,
+    SurfacedFacts,
     Thought,
     ThoughtWindow,
 )
@@ -36,8 +38,10 @@ from recollect_mcp.server import (
 @pytest.fixture
 def mock_memory() -> AsyncMock:
     memory = AsyncMock()
-    memory.experience.return_value = MemoryTrace(content="test")
-    memory.surface_relevant_facts.return_value = []
+    memory.experience_result.return_value = ExperienceResult(
+        trace=MemoryTrace(content="test")
+    )
+    memory.surface_relevant_facts_result.return_value = SurfacedFacts()
     memory.think_about_window.return_value = ThoughtWindow(
         thoughts=[
             Thought(
@@ -108,8 +112,8 @@ async def test_remember(ctx: MagicMock, mock_memory: AsyncMock) -> None:
     result = await remember("hello world", ctx)
     assert isinstance(result, str)
     assert "Remembered" in result
-    mock_memory.experience.assert_awaited_once()
-    call_kwargs = mock_memory.experience.call_args.kwargs
+    mock_memory.experience_result.assert_awaited_once()
+    call_kwargs = mock_memory.experience_result.call_args.kwargs
     assert call_kwargs["session_id"] == "sess-123"
     assert call_kwargs["user_id"] == "alex"
 
@@ -122,27 +126,29 @@ async def test_remember_with_context(
     result = await remember("hello", ctx, context=meta)
     assert isinstance(result, str)
     assert "Remembered" in result
-    assert mock_memory.experience.call_args.kwargs["context"] == meta
+    assert mock_memory.experience_result.call_args.kwargs["context"] == meta
 
 
 async def test_remember_surfaces_important_context(
     ctx: MagicMock,
     mock_memory: AsyncMock,
 ) -> None:
-    mock_memory.surface_relevant_facts.return_value = [
-        PersonaFact(
-            subject="Alex",
-            predicate="is_allergic_to",
-            object="peanuts",
-            content="Alex is allergic to peanuts",
-            status="pinned",
-        )
-    ]
+    mock_memory.surface_relevant_facts_result.return_value = SurfacedFacts(
+        facts=[
+            PersonaFact(
+                subject="Alex",
+                predicate="is_allergic_to",
+                object="peanuts",
+                content="Alex is allergic to peanuts",
+                status="pinned",
+            )
+        ]
+    )
     result = await remember("booking dinner at an Asian restaurant", ctx)
     assert "IMPORTANT CONTEXT:" in result
     assert "peanuts" in result
-    surfaced_trace = mock_memory.surface_relevant_facts.call_args.args[0]
-    assert surfaced_trace is mock_memory.experience.return_value
+    surfaced_trace = mock_memory.surface_relevant_facts_result.call_args.args[0]
+    assert surfaced_trace is mock_memory.experience_result.return_value.trace
 
 
 async def test_remember_no_context_block_when_empty(
@@ -297,7 +303,7 @@ async def test_remember_extraction_error(
     ctx: MagicMock,
     mock_memory: AsyncMock,
 ) -> None:
-    mock_memory.experience.side_effect = ExtractionError("LLM failed")
+    mock_memory.experience_result.side_effect = ExtractionError("LLM failed")
     result = await remember("test", ctx)
     assert "LLM failed" in result
     assert isinstance(result, str)
@@ -307,7 +313,7 @@ async def test_remember_storage_error(
     ctx: MagicMock,
     mock_memory: AsyncMock,
 ) -> None:
-    mock_memory.experience.side_effect = StorageError("db down")
+    mock_memory.experience_result.side_effect = StorageError("db down")
     result = await remember("test", ctx)
     assert "db down" in result
     assert isinstance(result, str)

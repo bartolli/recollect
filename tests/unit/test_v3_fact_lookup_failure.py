@@ -82,3 +82,32 @@ class TestWriteTimeSurfacingDegrades:
         memory = _memory(mock_storage, mock_embeddings)
         trace = MemoryTrace(content="x", pattern={"domains": ["finance"]})
         assert await memory.surface_relevant_facts(trace) == []
+
+    async def test_the_result_keeps_safety_facts_and_flags_the_failure(
+        self, mock_storage: MagicMock, mock_embeddings: AsyncMock
+    ) -> None:
+        allergy = PersonaFact(
+            subject="user",
+            predicate="is_allergic_to",
+            object="peanuts",
+            category="health",
+            content="The user is allergic to peanuts.",
+            status="promoted",
+        )
+        mock_storage.facts.get_persona_facts = AsyncMock(return_value=[allergy])
+        mock_storage.facts.search_facts_semantic = AsyncMock(
+            side_effect=StorageError("down")
+        )
+        memory = _memory(mock_storage, mock_embeddings)
+        trace = MemoryTrace(content="x", pattern={"domains": ["food"]})
+        surfaced = await memory.surface_relevant_facts_result(trace)
+        assert surfaced.facts == [allergy]
+        assert surfaced.lookup_failed is True
+
+    async def test_a_clean_lookup_is_not_flagged(
+        self, mock_storage: MagicMock, mock_embeddings: AsyncMock
+    ) -> None:
+        memory = _memory(mock_storage, mock_embeddings)
+        trace = MemoryTrace(content="x", pattern={"domains": ["finance"]})
+        surfaced = await memory.surface_relevant_facts_result(trace)
+        assert (surfaced.facts, surfaced.lookup_failed) == ([], False)

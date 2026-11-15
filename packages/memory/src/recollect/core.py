@@ -45,6 +45,7 @@ from recollect.models import (
     ConsolidationResult,
     EntityEdge,
     EntityRelation,
+    ExperienceResult,
     FactCategory,
     FactStatus,
     ForgetResult,
@@ -56,6 +57,7 @@ from recollect.models import (
     PersonaFact,
     RecallToken,
     Session,
+    SurfacedFacts,
     Thought,
     ThoughtWindow,
     TraceConcept,
@@ -508,7 +510,27 @@ class CognitiveMemory:
         context: dict[str, Any] | None = None,
         session_id: str | None = None,
         user_id: str | None = None,
+        supersedes: list[str] | None = None,
     ) -> MemoryTrace:
+        """The trace of `experience_result`; its steps and errors apply."""
+        result = await self.experience_result(
+            content,
+            context=context,
+            session_id=session_id,
+            user_id=user_id,
+            supersedes=supersedes,
+        )
+        return result.trace
+
+    async def experience_result(
+        self,
+        content: str,
+        *,
+        context: dict[str, Any] | None = None,
+        session_id: str | None = None,
+        user_id: str | None = None,
+        supersedes: list[str] | None = None,
+    ) -> ExperienceResult:
         """Encode a new experience as a memory trace.
 
         1. Extract patterns (concepts, entities, emotion)
@@ -516,6 +538,10 @@ class CognitiveMemory:
         3. Create trace and add to working memory
         4. Handle displacement decay if buffer was full
         5. Store in long-term storage with temporal association
+
+        supersedes: the user's traces this one corrects. Validated before
+        extraction (TraceNotFoundError: missing, another user's, forgotten),
+        forgotten after the store and before any projection is derived.
         """
         if not content or not content.strip():
             raise ValueError("Content must be a non-empty string")
@@ -532,6 +558,7 @@ class CognitiveMemory:
                 "persona facts are user-owned. Pass user_id or set "
                 "persona.auto_extract=false."
             )
+        originals = await self._supersede_targets(supersedes or [], user_id=user_id)
 
         result = await self._extract_pattern(content)
         embedding = await self._embeddings.generate_embedding(
@@ -568,9 +595,20 @@ class CognitiveMemory:
 
         displaced = self._buffer.add(trace)
         if displaced is not None:
-            await self._storage.traces.apply_strength_factor(
-                displaced.id, displacement_decay_factor()
-            )
+            try:
+                await self._storage.traces.apply_strength_factor(
+                    displaced.id, displacement_decay_factor()
+                )
+            except (StorageError, OSError):
+                # The trace is stored: a missed decay costs less than a write
+                # reported as failed and left without its projections.
+                logger.exception(
+                    "Displacement decay failed for trace %s", displaced.id[:8]
+                )
+
+        # Ahead of the link gathers: the evicted original is no temporal neighbor.
+        superseded, archived, unsuperseded = await self._supersede(originals)
+        retained = [f for outcome in superseded for f in outcome.retained_facts]
 
         # Independent operations: temporal link + extraction links + concept embeddings
         await asyncio.gather(
@@ -585,8 +623,12 @@ class CognitiveMemory:
             self._create_concept_associations(trace, result),
         )
 
+        unstored: list[PersonaFact] = []
         if self._config.get("persona.auto_extract", True):
-            await self._extract_persona_facts(trace, result)
+            unstored = await self._extract_persona_facts(
+                trace, result, archived=archived, retained=retained
+            )
+            superseded = await self._settle_retained(superseded, trace.id)
 
         await self._extract_entity_relations(trace, result)
 
@@ -594,7 +636,79 @@ class CognitiveMemory:
             await self._assess_recall_tokens(trace)
 
         logger.debug("Experienced: %s (strength=%.2f)", trace.id[:8], trace.strength)
-        return trace
+        return ExperienceResult(
+            trace=trace,
+            superseded=superseded,
+            unsuperseded=unsuperseded,
+            unstored_facts=unstored,
+        )
+
+    async def _supersede_targets(
+        self, trace_ids: list[str], *, user_id: str | None
+    ) -> list[MemoryTrace]:
+        targets: list[MemoryTrace] = []
+        for trace_id in dict.fromkeys(trace_ids):
+            if not trace_id:
+                raise ValueError("Trace ID must be a non-empty string")
+            trace = await self._storage.traces.get_trace(trace_id)
+            # One refusal for all three: another user's trace is not revealed.
+            if trace is None or trace.user_id != user_id or trace.status == "forgotten":
+                raise TraceNotFoundError(f"Trace {trace_id} not found")
+            targets.append(trace)
+        return targets
+
+    async def _supersede(
+        self, originals: list[MemoryTrace]
+    ) -> tuple[list[ForgetResult], list[PersonaFact], list[str]]:
+        """Forget each original: the outcomes, the archived rows, the failed ids.
+
+        The rows are read before forget() so each keeps the status it had:
+        the replacement's fact in the same slot inherits it.
+        """
+        outcomes: list[ForgetResult] = []
+        archived: list[PersonaFact] = []
+        failed: list[str] = []
+        facts = self._storage.facts
+        for original in originals:
+            try:
+                before = await facts.get_facts_by_source_trace_id(original.id)
+                outcome = await self.forget(original.id)
+            except TraceNotFoundError:
+                # Erased since validation: nothing is left to archive or retain.
+                outcomes.append(ForgetResult(trace_id=original.id))
+                continue
+            except (StorageError, OSError):
+                # The replacement is stored: raising here reads as a failed
+                # write and invites a second one. Reported, and the rest go on.
+                logger.exception("Supersede failed for trace %s", original.id[:8])
+                failed.append(original.id)
+                continue
+            archived.extend(f for f in before if f.id in outcome.archived_fact_ids)
+            outcomes.append(outcome)
+        return outcomes, archived, failed
+
+    async def _settle_retained(
+        self, outcomes: list[ForgetResult], replacement_id: str
+    ) -> list[ForgetResult]:
+        # Derivation can rewrite a retained row (same triple: it now names the
+        # replacement) or supersede it (a single-valued predicate). Each
+        # outcome lists the rows that still stand, as they stand.
+        if not any(outcome.retained_facts for outcome in outcomes):
+            return outcomes
+        facts = self._storage.facts
+        settled: list[ForgetResult] = []
+        try:
+            adopted = await facts.get_facts_by_source_trace_id(replacement_id)
+            for outcome in outcomes:
+                rows = await facts.get_facts_by_source_trace_id(outcome.trace_id)
+                live = {f.id: f for f in (*rows, *adopted) if f.status != "archived"}
+                kept = [live[f.id] for f in outcome.retained_facts if f.id in live]
+                settled.append(outcome.model_copy(update={"retained_facts": kept}))
+        except (StorageError, OSError):
+            # The write is done: the rows are listed as forget() retained them.
+            logger.exception("Retained facts not re-read for %s", replacement_id[:8])
+            return outcomes
+        return settled
 
     async def think_about(
         self,
@@ -870,8 +984,11 @@ class CognitiveMemory:
         returns on relevance). Hard-category facts (health/dietary/
         constraint) and pinned facts are retained unless force --
         explicit user state outranks the implicit trace cascade; retained
-        facts ride the result so the caller can surface them. Rows are
-        kept for audit; hard erasure is erase().
+        facts ride the result so the caller can surface them. On an
+        already-forgotten trace the fact pass runs again under the same
+        guard: it finishes a forget that stopped short, force reaches what
+        an earlier one retained, and a completed repeat changes nothing.
+        Rows are kept for audit; hard erasure is erase().
         """
         if not trace_id:
             raise ValueError("Trace ID must be a non-empty string")
@@ -879,7 +996,10 @@ class CognitiveMemory:
             trace_id, forgotten=True
         )
         if not retired:
-            raise TraceNotFoundError(f"Trace {trace_id} not found")
+            # No row flipped: a missing id, or a trace forgotten before.
+            trace = await self._storage.traces.get_trace(trace_id)
+            if trace is None or trace.status != "forgotten":
+                raise TraceNotFoundError(f"Trace {trace_id} not found")
         result = ForgetResult(trace_id=trace_id)
         facts = await self._storage.facts.get_facts_by_source_trace_id(trace_id)
         for fact in facts:
@@ -1535,12 +1655,26 @@ class CognitiveMemory:
                 )
 
     async def _extract_persona_facts(
-        self, trace: MemoryTrace, result: ExtractionResult
-    ) -> None:
-        """Extract persona facts from semantic-type traces with promotion gate."""
-        if result.fact_type != "semantic":
-            return
+        self,
+        trace: MemoryTrace,
+        result: ExtractionResult,
+        *,
+        archived: Sequence[PersonaFact] = (),
+        retained: Sequence[PersonaFact] = (),
+    ) -> list[PersonaFact]:
+        """Persona facts from semantic-type traces through the promotion gate.
+
+        archived / retained: the live facts of superseded originals, as
+        forget() archived or retained them. A replacement of an original
+        that carried one derives whatever its fact_type.
+
+        Returns the derived facts whose store write failed.
+        """
+        if result.fact_type != "semantic" and not (archived or retained):
+            return []
         threshold = float(self._config.get("persona.confidence_threshold", 0.6))
+        unstored: list[PersonaFact] = []
+        adopted: set[str] = set()
         for rel in result.relations:
             if rel.confidence < threshold:
                 continue
@@ -1550,9 +1684,66 @@ class CognitiveMemory:
                 else "candidate"
             )
             fact = await self._relation_to_fact(rel, trace, status=status)
-            stored = await self._store_or_promote_fact(fact)
-            if stored is not None:
-                await self._embed_fact_tags(stored)
+            try:
+                await self._derive_fact(
+                    fact, archived=archived, retained=retained, adopted=adopted
+                )
+            except (StorageError, OSError):
+                logger.exception(
+                    "Failed to store/promote fact: %s %s %s",
+                    fact.subject,
+                    fact.predicate,
+                    fact.object,
+                )
+                unstored.append(fact)
+        return unstored
+
+    async def _derive_fact(
+        self,
+        fact: PersonaFact,
+        *,
+        archived: Sequence[PersonaFact],
+        retained: Sequence[PersonaFact],
+        adopted: set[str],
+    ) -> None:
+        # Carried rows span subjects: the triple is compared whole.
+        triple = (fact.subject, fact.predicate, fact.object)
+        for row in retained:
+            if (row.subject, row.predicate, row.object) == triple:
+                # Once per row: a triple repeated in the replacement keeps
+                # its first context and earns no credit.
+                if row.id not in adopted:
+                    adopted.add(row.id)
+                    await self._adopt_statement(row, fact)
+                return
+        for row in archived:
+            if (row.subject, row.predicate) == triple[:2]:
+                fact = _inherit_surfacing_status(row, fact)
+        stored = await self._store_or_promote_fact(fact)
+        if stored is not None:
+            await self._embed_fact_tags(stored)
+
+    async def _adopt_statement(
+        self, row: PersonaFact, statement: PersonaFact
+    ) -> PersonaFact:
+        """The row takes the statement's text, vector, tags and source trace.
+
+        Status and mention count stay the row's. The row's tag embeddings
+        are replaced with the statement's tags.
+        """
+        if not await self._storage.facts.adopt_statement(row.id, statement):
+            raise StorageError(f"Fact {row.id} not found")
+        adopted = row.model_copy(
+            update={
+                "content": statement.content,
+                "embedding": statement.embedding or row.embedding,
+                "context_tags": statement.context_tags,
+                "source_trace_id": statement.source_trace_id,
+            }
+        )
+        await self._storage.concept_embeddings.delete_by_owner("fact", row.id)
+        await self._embed_fact_tags(adopted)
+        return adopted
 
     async def _relation_to_fact(
         self, rel: Relation, trace: MemoryTrace, *, status: FactStatus
@@ -1585,54 +1776,41 @@ class CognitiveMemory:
         """Store a new fact or promote an existing candidate.
 
         Returns the fact iff a new row was written; None on the duplicate
-        and failure paths. Derived writes (tag embeddings) key off this --
-        embedding tags for a never-stored fact id orphans them.
+        path. A storage failure raises. Derived writes (tag embeddings) key
+        off this -- embedding tags for a never-stored fact id orphans them.
         """
-        try:
-            # User-scoped like _pin_relation_fact: the dedup read must not
-            # cross users (adr-retrieval-user-isolation) -- an unscoped
-            # match credits another user's row with this user's mention and
-            # swallows this user's write, starving their fact channel.
-            # Unbounded: a windowed dedup read re-inserts any fact older
-            # than the window and never credits its restatement.
-            existing = await self._storage.facts.get_persona_facts(
-                subject=fact.subject, user_id=fact.user_id, limit=None
-            )
-            # Archived facts are retractions: matching them swallows the
-            # re-stated mention (increment-on-archived returns None) and
-            # supersede would chain onto a retracted row. Excluded, so new
-            # evidence enters as a fresh active candidate.
-            existing = [f for f in existing if f.status != "archived"]
-            duplicate = _find_exact_duplicate(existing, fact)
-            if duplicate:
-                new_count = await self._storage.facts.increment_mention_count(
-                    duplicate.id
+        # User-scoped like _pin_relation_fact: the dedup read must not
+        # cross users (adr-retrieval-user-isolation) -- an unscoped
+        # match credits another user's row with this user's mention and
+        # swallows this user's write, starving their fact channel.
+        # Unbounded: a windowed dedup read re-inserts any fact older
+        # than the window and never credits its restatement.
+        existing = await self._storage.facts.get_persona_facts(
+            subject=fact.subject, user_id=fact.user_id, limit=None
+        )
+        # Archived facts are retractions: matching them swallows the
+        # re-stated mention (increment-on-archived returns None) and
+        # supersede would chain onto a retracted row. Excluded, so new
+        # evidence enters as a fresh active candidate.
+        existing = [f for f in existing if f.status != "archived"]
+        duplicate = _find_exact_duplicate(existing, fact)
+        if duplicate:
+            new_count = await self._storage.facts.increment_mention_count(duplicate.id)
+            if new_count >= 2 and duplicate.status == "candidate":
+                await self._storage.facts.update_fact_status(duplicate.id, "promoted")
+                logger.debug(
+                    "Promoted fact: %s %s %s (mentions=%d)",
+                    duplicate.subject,
+                    duplicate.predicate,
+                    duplicate.object,
+                    new_count,
                 )
-                if new_count >= 2 and duplicate.status == "candidate":
-                    await self._storage.facts.update_fact_status(
-                        duplicate.id, "promoted"
-                    )
-                    logger.debug(
-                        "Promoted fact: %s %s %s (mentions=%d)",
-                        duplicate.subject,
-                        duplicate.predicate,
-                        duplicate.object,
-                        new_count,
-                    )
-                return None
-            contradicting = _find_contradicting_fact(existing, fact)
-            if contradicting:
-                return await self._check_predicate_similarity(contradicting, fact)
-            await self._storage.facts.store_persona_fact(fact)
-            return fact
-        except (StorageError, OSError):
-            logger.exception(
-                "Failed to store/promote fact: %s %s %s",
-                fact.subject,
-                fact.predicate,
-                fact.object,
-            )
             return None
+        contradicting = _find_contradicting_fact(existing, fact)
+        if contradicting:
+            return await self._check_predicate_similarity(contradicting, fact)
+        await self._storage.facts.store_persona_fact(fact)
+        return fact
 
     async def _check_predicate_similarity(
         self, old_fact: PersonaFact, new_fact: PersonaFact
@@ -2475,9 +2653,28 @@ class CognitiveMemory:
         `persona.surface_relevance_floor`, capped at `persona.max_surfaced_facts`.
         Safety facts are listed first.
         """
+        surfaced = await self.surface_relevant_facts_result(trace, user_id=user_id)
+        return surfaced.facts
+
+    async def surface_relevant_facts_result(
+        self,
+        trace: MemoryTrace,
+        *,
+        user_id: str | None = None,
+    ) -> SurfacedFacts:
+        """`surface_relevant_facts` with the lookup outcome beside the facts.
+
+        A failed safety lookup raises StorageError. A failed non-safety
+        lookup degrades to the safety facts alone and sets lookup_failed:
+        the trace is already stored, and the caller can say what is missing.
+        """
         safety = await self._surface_safety_facts(trace, user_id=user_id)
-        non_safety = await self._surface_non_safety_facts(trace, user_id=user_id)
-        return self._deduplicate_facts(safety + non_safety)
+        try:
+            non_safety = await self._surface_non_safety_facts(trace, user_id=user_id)
+        except StorageError:
+            logger.exception("Fact surfacing skipped for trace %s", trace.id[:8])
+            return SurfacedFacts(facts=safety, lookup_failed=True)
+        return SurfacedFacts(facts=self._deduplicate_facts(safety + non_safety))
 
     async def _surface_safety_facts(
         self, trace: MemoryTrace, *, user_id: str | None
@@ -2514,14 +2711,9 @@ class CognitiveMemory:
             )
         except EmbeddingError:
             return []
-        try:
-            facts, scores = await self._find_relevant_persona_facts(
-                trace.content, query_embedding, user_id=user_id
-            )
-        except StorageError:
-            # The trace is already stored: a failed lookup must not fail the write.
-            logger.exception("Fact surfacing skipped for trace %s", trace.id[:8])
-            return []
+        facts, scores = await self._find_relevant_persona_facts(
+            trace.content, query_embedding, user_id=user_id
+        )
         relevant = [
             f
             for f in facts

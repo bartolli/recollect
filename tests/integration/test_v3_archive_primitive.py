@@ -18,6 +18,7 @@ import asyncpg
 import pytest
 from recollect.core import CognitiveMemory
 from recollect.datetime_utils import now_utc
+from recollect.exceptions import TraceNotFoundError
 from recollect.models import ConceptEmbedding, MemoryTrace, PersonaFact
 
 if TYPE_CHECKING:
@@ -190,17 +191,52 @@ class TestForgetGuard:
         rows = await mem.storage.facts.get_facts_by_source_trace_id(trace.id)
         assert rows[0].status == "promoted"
 
-        # Forced re-forget: trace already archived -> not-found contract.
-        # Suppression of the retained fact goes through a fresh guard
-        # pass on a still-active trace, so seed a second trace.
-        trace2 = MemoryTrace(content="allergy restated", strength=0.5)
-        await mem.storage.traces.store_trace(trace2)
-        fact2 = fact.model_copy(
-            update={"id": "fact2-hard", "source_trace_id": trace2.id}
+        # A plain repeat changes nothing; force reaches the retained fact.
+        repeat = await mem.forget(trace.id)
+        assert repeat.archived_fact_ids == []
+        assert [f.id for f in repeat.retained_facts] == [fact.id]
+        forced = await mem.forget(trace.id, force=True)
+        assert forced.archived_fact_ids == [fact.id]
+        rows = await mem.storage.facts.get_facts_by_source_trace_id(trace.id)
+        assert rows[0].status == "archived"
+        with pytest.raises(TraceNotFoundError):
+            await mem.forget(str(uuid.uuid4()), force=True)
+
+    async def test_forget_resumes_after_a_flip_without_a_fact_pass(
+        self, mem: CognitiveMemory
+    ) -> None:
+        trace = MemoryTrace(content="likes cycling, allergic to nuts", strength=0.5)
+        await mem.storage.traces.store_trace(trace)
+        ordinary = PersonaFact(
+            subject="user",
+            predicate="likes",
+            object="cycling",
+            category="preference",
+            content="user likes cycling",
+            source_trace_id=trace.id,
+            status="promoted",
+            user_id="u1",
         )
-        await mem.storage.facts.store_persona_fact(fact2)
-        forced = await mem.forget(trace2.id, force=True)
-        assert forced.archived_fact_ids == ["fact2-hard"]
+        health = ordinary.model_copy(
+            update={
+                "id": str(uuid.uuid4()),
+                "predicate": "is_allergic_to",
+                "object": "nuts",
+                "category": "health",
+            }
+        )
+        await mem.storage.facts.store_persona_fact(ordinary)
+        await mem.storage.facts.store_persona_fact(health)
+        # A forget that failed between the trace flip and the fact pass.
+        assert await mem.storage.traces.forget_trace(trace.id)
+
+        result = await mem.forget(trace.id)
+
+        assert result.archived_fact_ids == [ordinary.id]
+        assert [f.id for f in result.retained_facts] == [health.id]
+        again = await mem.forget(trace.id)
+        assert again.archived_fact_ids == []
+        assert [f.id for f in again.retained_facts] == [health.id]
 
     async def test_restated_retraction_creates_fresh_fact(
         self, mem: CognitiveMemory

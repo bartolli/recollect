@@ -8,7 +8,13 @@ import re
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from recollect.models import MemoryTrace, PersonaFact, Session
+from recollect.models import (
+    ExperienceResult,
+    MemoryTrace,
+    PersonaFact,
+    Session,
+    SurfacedFacts,
+)
 from recollect_mcp.server import (
     AppContext,
     _format_facts,
@@ -52,8 +58,10 @@ def memory(fact: PersonaFact) -> AsyncMock:
     )
     m.facts.return_value = [fact]
     m.unpin.return_value = True
-    m.experience.return_value = MemoryTrace(content="climbing moved")
-    m.surface_relevant_facts.return_value = [fact]
+    m.experience_result.return_value = ExperienceResult(
+        trace=MemoryTrace(content="climbing moved")
+    )
+    m.surface_relevant_facts_result.return_value = SurfacedFacts(facts=[fact])
     m.start_session.return_value = Session(id="s1", user_id="alex")
     return m
 

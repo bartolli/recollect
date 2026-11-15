@@ -77,6 +77,7 @@ def mock_fact_store() -> AsyncMock:
     f.delete_persona_fact = AsyncMock(return_value=True)
     f.increment_mention_count = AsyncMock(return_value=2)
     f.update_fact_status = AsyncMock(return_value=True)
+    f.adopt_statement = AsyncMock(return_value=True)
     f.get_facts_by_context = AsyncMock(return_value=[])
     f.search_facts_semantic = AsyncMock(return_value=[])
     return f

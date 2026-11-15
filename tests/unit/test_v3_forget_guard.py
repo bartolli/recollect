@@ -12,7 +12,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from recollect.core import CognitiveMemory
-from recollect.models import FactCategory, FactStatus, PersonaFact
+from recollect.exceptions import TraceNotFoundError
+from recollect.models import FactCategory, FactStatus, MemoryTrace, PersonaFact
 
 
 @pytest.fixture()
@@ -100,6 +101,64 @@ class TestForgetFactArchival:
         mock_fact_store.update_fact_status.assert_not_awaited()
         assert result.archived_fact_ids == []
         assert result.retained_facts == []
+
+
+class TestForgetOfAForgottenTrace:
+    @pytest.fixture()
+    def forgotten(self, mock_trace_store: AsyncMock) -> None:
+        # No row flips: the trace was forgotten before.
+        mock_trace_store.forget_trace.return_value = False
+        mock_trace_store.get_trace.return_value = MemoryTrace(
+            id="t1", content="x", status="forgotten"
+        )
+
+    @pytest.mark.usefixtures("forgotten")
+    async def test_force_archives_what_the_first_forget_retained(
+        self, mem: CognitiveMemory, mock_fact_store: AsyncMock
+    ) -> None:
+        mock_fact_store.get_facts_by_source_trace_id.return_value = [
+            _fact(category="health"),
+            _fact(status="pinned", fact_id="f2"),
+        ]
+        result = await mem.forget("t1", force=True)
+        assert result.archived_fact_ids == ["f1", "f2"]
+        assert result.retained_facts == []
+
+    @pytest.mark.usefixtures("forgotten")
+    async def test_a_plain_repeat_finishes_the_fact_pass_under_the_guard(
+        self, mem: CognitiveMemory, mock_fact_store: AsyncMock
+    ) -> None:
+        # A forget that stopped after the trace flip left an ordinary fact live.
+        health = _fact(category="health", fact_id="f2")
+        mock_fact_store.get_facts_by_source_trace_id.return_value = [_fact(), health]
+        result = await mem.forget("t1")
+        assert result.archived_fact_ids == ["f1"]
+        assert result.retained_facts == [health]
+
+    @pytest.mark.usefixtures("forgotten")
+    async def test_a_completed_repeat_changes_nothing(
+        self, mem: CognitiveMemory, mock_fact_store: AsyncMock
+    ) -> None:
+        mock_fact_store.get_facts_by_source_trace_id.return_value = [
+            _fact(status="archived")
+        ]
+        result = await mem.forget("t1")
+        assert (result.archived_fact_ids, result.retained_facts) == ([], [])
+        mock_fact_store.update_fact_status.assert_not_awaited()
+
+    @pytest.mark.parametrize("force", [False, True])
+    async def test_a_missing_id_stays_not_found(
+        self,
+        force: bool,
+        mem: CognitiveMemory,
+        mock_trace_store: AsyncMock,
+        mock_fact_store: AsyncMock,
+    ) -> None:
+        mock_trace_store.forget_trace.return_value = False
+        mock_trace_store.get_trace.return_value = None
+        with pytest.raises(TraceNotFoundError):
+            await mem.forget("t1", force=force)
+        mock_fact_store.update_fact_status.assert_not_awaited()
 
 
 class TestDedupExcludesArchived:

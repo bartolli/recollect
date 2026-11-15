@@ -343,6 +343,8 @@ class FactStore(Protocol):
 
     async def update_fact_status(self, fact_id: str, status: FactStatus) -> bool: ...
 
+    async def adopt_statement(self, fact_id: str, statement: PersonaFact) -> bool: ...
+
     async def get_facts_by_context(
         self,
         concepts: list[str],

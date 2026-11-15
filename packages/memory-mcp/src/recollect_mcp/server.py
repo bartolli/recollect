@@ -32,9 +32,11 @@ from recollect.extraction import PatternExtractor
 from recollect.log_setup import configure_logging
 from recollect.models import (
     SURFACING_STATUSES,
+    ExperienceResult,
     HealthReport,
     MemoryTrace,
     PersonaFact,
+    SurfacedFacts,
     Thought,
     ThoughtWindow,
 )
@@ -66,6 +68,10 @@ _RECALL_FAILED = "Recall failed: memory error. Details are in the server log."
 # The write succeeded: a failure reply would invite a second write of the memory.
 _SURFACING_FAILED = (
     "Related persona facts could not be loaded: storage error. "
+    "The memory is stored; do not store it again."
+)
+_SURFACING_PARTIAL = (
+    "Other related persona facts could not be loaded: storage error. "
     "The memory is stored; do not store it again."
 )
 _MIN_RECALL_BUDGET = max(
@@ -363,6 +369,7 @@ async def remember(
     content: str,
     ctx: Ctx,
     context: dict[str, Any] | None = None,
+    supersedes: list[str] | None = None,
 ) -> str:
     """Store an experience in memory.
 
@@ -379,20 +386,35 @@ async def remember(
     Args:
         content: The experience to remember. Be specific and complete.
         context: Optional metadata dict attached to the memory trace.
+        supersedes: Ids of earlier memories this one replaces: the 8-character
+            ids printed by recall or remember, or full ids; each is forgotten
+            as part of this write.
     """
     app = _get_ctx(ctx)
     try:
+        # Resolved before any write: a refused id leaves the store untouched.
+        originals = await _resolve_traces(app, supersedes or [])
+        if isinstance(originals, str):
+            return originals
         session_id = await _ensure_session(ctx)
-        trace = await app.memory.experience(
+        result = await app.memory.experience_result(
             content,
             context=context,
             session_id=session_id,
             user_id=app.user_id or None,
+            supersedes=[t.id for t in originals],
         )
-        surfaced = await _surfaced_facts(app, trace)
+        echo = _write_echo(result, originals)
+        surfaced = await _surfaced_facts(app, result.trace)
         if surfaced is None:
-            return f"{_format_remember_result(trace)}\n\n{_SURFACING_FAILED}"
-        return _format_remember_result(trace, surfaced)
+            stored = _format_remember_result(result.trace, echo=echo)
+            return f"{stored}\n\n{_SURFACING_FAILED}"
+        stored = _format_remember_result(result.trace, surfaced.facts, echo=echo)
+        if surfaced.lookup_failed:
+            return f"{stored}\n\n{_SURFACING_PARTIAL}"
+        return stored
+    except TraceNotFoundError as exc:
+        return f"{exc}."
     except ExtractionError as exc:
         logger.exception("Extraction failed for remember")
         return f"Extraction failed: {exc}"
@@ -619,10 +641,10 @@ async def forget(
 
 async def _surfaced_facts(
     app: AppContext, trace: MemoryTrace
-) -> list[PersonaFact] | None:
-    """Write-time surfaced facts; None when the lookup failed after the write."""
+) -> SurfacedFacts | None:
+    """Write-time surfaced facts; None when the safety lookup failed after the write."""
     try:
-        return await app.memory.surface_relevant_facts(
+        return await app.memory.surface_relevant_facts_result(
             trace, user_id=app.user_id or None
         )
     except StorageError:
@@ -632,13 +654,78 @@ async def _surfaced_facts(
         return None
 
 
+async def _resolve_traces(
+    app: AppContext, raws: Sequence[str]
+) -> list[MemoryTrace] | str:
+    """Every trace `raws` names, else the first refusal text."""
+    traces: list[MemoryTrace] = []
+    for raw in raws:
+        target = await _resolve_trace(app, raw)
+        if isinstance(target, str):
+            return target
+        if target.status == "forgotten":
+            # A retracted memory has nothing to replace: the SDK's refusal,
+            # ahead of the session write.
+            return f"Trace {raw} not found."
+        traces.append(target)
+    return traces
+
+
+_RETAINED_HINT = "Retained facts stay live; remove one with unpin and its id."
+# forget resumes on either side of the trace flip, so one follow-up serves both.
+_UNSUPERSEDED_HINT = (
+    "This memory is stored; do not store it again. "
+    "Run forget on each memory listed as not superseded."
+)
+
+
+def _write_echo(
+    result: ExperienceResult, originals: Sequence[MemoryTrace]
+) -> list[str]:
+    """What the write did beside storing the trace, one line each."""
+    contents = {t.id: t.content for t in originals}
+    lines: list[str] = []
+    for outcome in result.superseded:
+        lines.append(
+            f"Superseded [{_short_id(outcome.trace_id)}] "
+            f'("{_opening(contents.get(outcome.trace_id))}"): '
+            f"{len(outcome.archived_fact_ids)} derived facts archived."
+        )
+        lines.extend(f"  {_retained_line(f)}" for f in outcome.retained_facts)
+    if any(outcome.retained_facts for outcome in result.superseded):
+        lines.append(_RETAINED_HINT)
+    lines.extend(
+        f"Not superseded [{_short_id(trace_id)}] "
+        f'("{_opening(contents.get(trace_id))}"): storage error.'
+        for trace_id in result.unsuperseded
+    )
+    if result.unsuperseded:
+        lines.append(_UNSUPERSEDED_HINT)
+    lines.extend(
+        f"Persona fact {f.subject} {f.predicate} {f.object} was not stored: "
+        "storage error. The memory itself is stored."
+        for f in result.unstored_facts
+    )
+    return lines
+
+
+def _retained_line(fact: PersonaFact) -> str:
+    tag = "pinned" if fact.status == "pinned" else fact.category
+    triple = f"{fact.subject} {fact.predicate} {fact.object}"
+    return f"[{_short_id(fact.id)}] [{tag}] {triple}"
+
+
 def _format_remember_result(
-    trace: MemoryTrace, surfaced_facts: list[PersonaFact] | None = None
+    trace: MemoryTrace,
+    surfaced_facts: list[PersonaFact] | None = None,
+    *,
+    echo: Sequence[str] = (),
 ) -> str:
     """Format a stored trace as a compact confirmation.
 
-    Prints the short trace id; pin and forget resolve it.
-    Write-time surfaced persona facts follow as an IMPORTANT CONTEXT block.
+    Prints the short trace id; pin and forget resolve it. The echo lines
+    follow the confirmation line. Write-time surfaced persona facts follow
+    as an IMPORTANT CONTEXT block.
     """
     entities = trace.pattern.get("entities", [])
     concepts = trace.pattern.get("concepts", [])
@@ -651,7 +738,7 @@ def _format_remember_result(
     else:
         parts.append(", extraction degraded")
     parts.append(")")
-    confirmation = "".join(parts)
+    confirmation = "\n".join(["".join(parts), *echo])
     if not surfaced_facts:
         return confirmation
     block = ["IMPORTANT CONTEXT:"]

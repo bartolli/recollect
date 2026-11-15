@@ -244,6 +244,23 @@ class ForgetResult(BaseModel):
     retained_facts: list[PersonaFact] = Field(default_factory=list)
 
 
+class ExperienceResult(BaseModel):
+    trace: MemoryTrace
+    # One forget outcome per superseded trace, in the order given.
+    superseded: list[ForgetResult] = Field(default_factory=list)
+    # Traces named in supersedes whose forget hit a storage failure. Each may
+    # still be live, or forgotten with facts the failure left unarchived.
+    unsuperseded: list[str] = Field(default_factory=list)
+    # Derived persona facts whose store write failed; the trace is stored.
+    unstored_facts: list[PersonaFact] = Field(default_factory=list)
+
+
+class SurfacedFacts(BaseModel):
+    facts: list[PersonaFact] = Field(default_factory=list)
+    # The non-safety lookup failed: facts holds the safety facts alone.
+    lookup_failed: bool = False
+
+
 class Session(BaseModel):
     """A conversation session grouping memory traces."""
 
