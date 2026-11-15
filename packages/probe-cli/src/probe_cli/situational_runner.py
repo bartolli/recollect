@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 from recollect.core import CognitiveMemory
@@ -21,8 +21,11 @@ from probe_cli.corpus import (
     load_seed_groups,
     load_seed_traces,
 )
+from probe_cli.provenance import PromptStamp, capture_swallowed, stamp_prompt
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from recollect.config import MemoryConfig
     from recollect.llm.protocol import LLMProvider
 
@@ -46,6 +49,8 @@ class EvalResult(BaseModel):
     success: bool = True
     error: str = ""
     latency_ms: float = 0.0
+    # count_degraded's predicate on the eval trace's own extraction.
+    extraction_degraded: bool = False
 
 
 class SituationalRunReport(BaseModel):
@@ -55,6 +60,21 @@ class SituationalRunReport(BaseModel):
     seed_groups_restored: int
     seed_traces_ingested: int
     eval_results: list[EvalResult] = Field(default_factory=list)
+    # count_degraded for the arm's user after seed ingest; one value per seeding.
+    seed_traces_degraded: int = Field(default=0, ge=0)
+    prompt: PromptStamp = Field(default_factory=PromptStamp)
+    # Log-and-continue failures: "<logger>: <message>" -> count. Seeding-wide
+    # counts ride on every run report of the seeding.
+    swallowed_failures: dict[str, int] = Field(default_factory=dict)
+
+
+def extraction_degraded(pattern: Mapping[str, Any]) -> bool:
+    # TraceStore.count_degraded's pattern terms: not a session summary, and
+    # concepts is not an array or an empty one.
+    if pattern.get("session_summary") is True:
+        return False
+    concepts = pattern.get("concepts")
+    return not (isinstance(concepts, list) and len(concepts) > 0)
 
 
 async def ingest_seed_traces(
@@ -195,6 +215,16 @@ class SituationalArmRunner:
         return getattr(self._provider, "model_name", "unknown")
 
     async def run_all(self) -> list[SituationalRunReport]:
+        with capture_swallowed() as swallowed:
+            reports = await self._run_seeding()
+        # Stamped after the span closes: run 0 carries the failures of later runs.
+        update = {
+            "prompt": stamp_prompt(self._extractor),
+            "swallowed_failures": dict(swallowed),
+        }
+        return [r.model_copy(update=update) for r in reports]
+
+    async def _run_seeding(self) -> list[SituationalRunReport]:
         # Seed once, eval N times: re-seeding per run pollutes the DB with stale
         # group instances ⇒ find_groups_for_traces surfaces tokens absent from
         # the current run's inverse_token_map ⇒ actual_group_id resolves to None.
@@ -212,6 +242,7 @@ class SituationalArmRunner:
                 memory, seed_traces,
                 session_id=seed_session_id, user_id=user_id,
             )
+            degraded = await memory.storage.traces.count_degraded(user_id=user_id)
             group_token_map = await restore_seed_groups(
                 memory, seed_groups, seed_id_map
             )
@@ -238,6 +269,7 @@ class SituationalArmRunner:
                     seed_groups_restored=len(group_token_map),
                     seed_traces_ingested=len(seed_id_map),
                     eval_results=results,
+                    seed_traces_degraded=degraded,
                 ))
         finally:
             await memory.close()
@@ -294,6 +326,7 @@ class SituationalArmRunner:
                 error=f"ingest: {exc}",
                 latency_ms=(time.perf_counter() - start) * 1000,
             )
+        degraded = extraction_degraded(trace.pattern)
         try:
             outcome = await memory.assess_situational(trace)
         except MemorySDKError as exc:
@@ -305,6 +338,7 @@ class SituationalArmRunner:
                 success=False,
                 error=f"assess: {exc}",
                 latency_ms=(time.perf_counter() - start) * 1000,
+                extraction_degraded=degraded,
             )
         await self._cleanup_eval_trace(memory, trace.id)
         if outcome is None:
@@ -314,6 +348,7 @@ class SituationalArmRunner:
                 expected_group_id=entry.expected_group_id,
                 actual_action="none",  # No related ⇒ implicit none
                 latency_ms=(time.perf_counter() - start) * 1000,
+                extraction_degraded=degraded,
             )
         actual_group_id = _resolve_actual_group(
             outcome.assessment.action,
@@ -340,6 +375,7 @@ class SituationalArmRunner:
             related_trace_ids=outcome.related_trace_ids,
             candidate_token_ids=outcome.candidate_token_ids,
             latency_ms=(time.perf_counter() - start) * 1000,
+            extraction_degraded=degraded,
         )
 
     @staticmethod

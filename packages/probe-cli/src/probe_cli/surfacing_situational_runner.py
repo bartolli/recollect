@@ -82,7 +82,7 @@ class SituationalSurfacingArmRunner(SurfacingArmRunner):
         # structure (mirrors the situational arm's seed discipline).
         self._config._set("recall_tokens.enabled", False)
         db_to_eval = await self._seed(memory, traces, user_id=user_id)
-        promoted = await self._promote_candidates(memory, user_id=user_id)
+        _, promoted = await self._promote_candidates(memory, user_id=user_id)
         seed_id_map = {ev: db for db, ev in db_to_eval.items()}
         return db_to_eval, seed_id_map, promoted
 

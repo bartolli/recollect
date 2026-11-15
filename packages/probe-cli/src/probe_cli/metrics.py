@@ -10,6 +10,8 @@ from pydantic import BaseModel, Field
 from recollect.llm.types import ExtractionResult, Predicate
 from recollect.models import FactCategory
 
+from probe_cli.provenance import PromptStamp
+
 ESCAPE_VALVE_PREDICATE = "is_associated_with"
 PREDICATE_VOCAB_SIZE = len(get_args(Predicate))
 FOREIGN_PREFIX = "__foreign__:"
@@ -193,6 +195,9 @@ class RetrievalRunReport(BaseModel):
     ingested: int = 0
     ingest_failures: int = 0
     queries: list[QueryResult] = Field(default_factory=list)
+    prompt: PromptStamp = Field(default_factory=PromptStamp)
+    # Log-and-continue failures during the run: "<logger>: <message>" -> count.
+    swallowed_failures: dict[str, int] = Field(default_factory=dict)
 
 
 class RetrievalMetrics(BaseModel):

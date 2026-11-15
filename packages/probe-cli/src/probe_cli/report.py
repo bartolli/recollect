@@ -16,6 +16,7 @@ from probe_cli.metrics import (
     RunReport,
 )
 from probe_cli.recall_answers import RecallAnswersReport
+from probe_cli.representations import RepresentationsReport
 from probe_cli.situational_metrics import SituationalAggregate
 from probe_cli.situational_runner import SituationalRunReport
 from probe_cli.surfacing_cases import CaseBreakdown
@@ -250,6 +251,17 @@ def write_recall_answers_report(
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / "recall_answers.json"
+    path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
+    logger.info("wrote %s", path)
+    return path
+
+
+def write_representations_report(
+    report: RepresentationsReport, output_dir: Path | str
+) -> Path:
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "representations.json"
     path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
     logger.info("wrote %s", path)
     return path

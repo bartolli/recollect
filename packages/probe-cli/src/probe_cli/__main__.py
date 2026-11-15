@@ -6,15 +6,18 @@ import argparse
 import asyncio
 import logging
 import os
+import re
 import sys
 from collections import Counter
 from contextlib import aclosing
 from pathlib import Path
 
 from recollect.exceptions import MemorySDKError
+from recollect.extraction import PatternExtractor
 from recollect.llm.pydantic_ai import PydanticAIProvider
 from recollect.llm.types import CompletionParams
 
+from probe_cli import compare_cli, reading_cli
 from probe_cli.aging import Aging, AgingReport, SweepPoint
 from probe_cli.arm import Arm, load_arm
 from probe_cli.corpus import (
@@ -36,6 +39,7 @@ from probe_cli.metrics import (
     aggregate_retrieval_runs,
     aggregate_runs,
 )
+from probe_cli.provenance import PromptStamp, stamp_prompt
 from probe_cli.recall_answers import RecallAnswersReport
 from probe_cli.recall_answers import read as read_recall_answers
 from probe_cli.report import (
@@ -43,6 +47,7 @@ from probe_cli.report import (
     write_entity_reach_report,
     write_fusion_screen_report,
     write_recall_answers_report,
+    write_representations_report,
     write_retrieval_run_report,
     write_retrieval_summary,
     write_run_report,
@@ -56,6 +61,8 @@ from probe_cli.report import (
     write_weak_label_answers_report,
     write_weak_match_screen_report,
 )
+from probe_cli.representations import RepresentationsReport
+from probe_cli.representations import read as read_representations
 from probe_cli.runner import ArmRunner, RetrievalArmRunner
 from probe_cli.situational_metrics import (
     SituationalAggregate,
@@ -63,7 +70,12 @@ from probe_cli.situational_metrics import (
 )
 from probe_cli.situational_runner import SituationalArmRunner, SituationalRunReport
 from probe_cli.surfacing_cases import CaseBreakdown, classify_cases
-from probe_cli.surfacing_metrics import SurfacingMetrics, compute_surfacing_metrics
+from probe_cli.surfacing_metrics import (
+    RequiredCoverage,
+    SurfacingMetrics,
+    compute_required_coverage,
+    compute_surfacing_metrics,
+)
 from probe_cli.surfacing_runner import SurfacingArmRunner, SurfacingRunReport
 from probe_cli.surfacing_situational import SituationalLift, compute_situational_lift
 from probe_cli.surfacing_situational_runner import (
@@ -77,12 +89,15 @@ from probe_cli.task_runner import (
     TaskVerifyReport,
     VerdictOracleReport,
 )
+from probe_cli.validity import check_seeding, validity_line, write_validity
 from probe_cli.weak_label_answers import QuestionAnswers, WeakLabelAnswersReport
 from probe_cli.weak_label_answers import compare as compare_weak_labels
 from probe_cli.weak_match_screen import WeakMatchScreenReport
 from probe_cli.weak_match_screen import screen as screen_weak_matches
 
 logger = logging.getLogger(__name__)
+
+_SEEDING = re.compile(r"s[1-9][0-9]?")
 
 
 def main() -> int:
@@ -147,6 +162,14 @@ def main() -> int:
         help=(
             "With --age-days: also evaluate the same seeding at age 0 with "
             "the recall token hop disabled at read time."
+        ),
+    )
+    run.add_argument(
+        "--seeding",
+        type=_seeding,
+        help=(
+            "Seeding identifier s1..s99: the arm name, evidence dir and user_id "
+            "take the suffix. One attempt per identifier."
         ),
     )
     reach = sub.add_parser(
@@ -285,6 +308,73 @@ def main() -> int:
         help="Path to .env file (default: ./.env). Pass empty string to skip.",
     )
     recall.set_defaults(verbose=False)
+    reps = sub.add_parser(
+        "representations",
+        help=(
+            "Write every stored representation of each corpus statement and its "
+            "fact lines after pin on a store copy (writes the copy only)."
+        ),
+    )
+    reps.add_argument(
+        "--arm", required=True, type=Path, help="Task arm TOML: config and DB URL."
+    )
+    reps.add_argument(
+        "--template-db",
+        required=True,
+        help="Store to copy from; never connected to.",
+    )
+    reps.add_argument(
+        "--traces",
+        required=True,
+        type=Path,
+        help="JSONL of {id, text} (traces corpus) the store was seeded from.",
+    )
+    reps.add_argument(
+        "--out-dir", required=True, type=Path, help="Directory for the artifact."
+    )
+    reps.add_argument("--user-id", help="Store user (default: probe-<arm name>).")
+    reps.add_argument(
+        "--env-file",
+        type=Path,
+        default=Path(".env"),
+        help="Path to .env file (default: ./.env). Pass empty string to skip.",
+    )
+    reps.set_defaults(verbose=False)
+    stamp = sub.add_parser(
+        "prompt-stamp",
+        help=(
+            "Print the arm's assembled extraction system message as "
+            "'<version> <sha256> <chars>' (no model call, no database)."
+        ),
+    )
+    stamp.add_argument("--arm", required=True, type=Path, help="Path to arm TOML.")
+    stamp.add_argument(
+        "--env-file",
+        type=Path,
+        default=Path(".env"),
+        help="Path to .env file (default: ./.env). Pass empty string to skip.",
+    )
+    stamp.set_defaults(verbose=False, seeding=None)
+    validity = sub.add_parser(
+        "validity",
+        help=(
+            "Check one seeding's evidence against its arm; writes validity.json "
+            "and prints 'VALID|INVALID <arm name> k=v ...' (exit 0 / 1)."
+        ),
+    )
+    validity.add_argument("--arm", required=True, type=Path, help="Path to arm TOML.")
+    validity.add_argument(
+        "--seeding", type=_seeding, help="Seeding identifier passed to probe run."
+    )
+    validity.add_argument(
+        "--env-file",
+        type=Path,
+        default=Path(".env"),
+        help="Path to .env file (default: ./.env). Pass empty string to skip.",
+    )
+    validity.set_defaults(verbose=False)
+    reading_cli.add_parsers(sub)
+    compare_cli.add_parsers(sub)
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -319,6 +409,7 @@ def main() -> int:
                 points=_points(
                     ages, args.passes_per_day, control=args.tokens_off_control
                 ),
+                seeding=args.seeding,
             )
         )
     if args.cmd == "entity-reach":
@@ -337,9 +428,54 @@ def main() -> int:
                 queries_path=args.queries,
             )
         )
-    if args.cmd in ("weak-label-answers", "recall-answers"):
-        return asyncio.run(_run_answers(args))
-    return 1
+    if args.cmd in ("weak-label-answers", "recall-answers", "representations"):
+        return asyncio.run(_run_copy_reads(args))
+    read = asyncio.run(_run_frozen_reads(args))
+    # prompt-stamp and validity: the subparsers are required, so nothing else remains.
+    return _run_arm_checks(args) if read is None else read
+
+
+async def _run_frozen_reads(args: argparse.Namespace) -> int | None:
+    # None when the command is neither a reading nor a comparison command.
+    read = await reading_cli.dispatch(args)
+    return await compare_cli.dispatch(args) if read is None else read
+
+
+def _run_arm_checks(args: argparse.Namespace) -> int:
+    # One branch for the commands that read an arm and call no model keeps main
+    # under the C901 cap.
+    try:
+        arm = _seeded(load_arm(args.arm), args.seeding)
+        expected = _arm_prompt(arm)
+        if args.cmd == "prompt-stamp":
+            print(f"{expected.version} {expected.sha256} {expected.chars}")
+            return 0
+        verdict = check_seeding(arm, expected_prompt=expected)
+    except (OSError, ValueError, MemorySDKError):
+        logger.exception("%s cannot read %s", args.cmd, args.arm)
+        return 2
+    write_validity(verdict, Path(arm.output.dir) / arm.name)
+    print(validity_line(verdict))
+    return 0 if verdict.state == "VALID" else 1
+
+
+def _arm_prompt(arm: Arm) -> PromptStamp:
+    # PatternExtractor only stores the provider: nothing is sent, no key is read.
+    provider = PydanticAIProvider(model=arm.extraction.pydantic_ai_model)
+    return stamp_prompt(PatternExtractor(provider, config=arm.to_memory_config()))
+
+
+def _seeding(value: str) -> str:
+    if not _SEEDING.fullmatch(value):
+        raise argparse.ArgumentTypeError(f"{value} is not a seeding s1..s99")
+    return value
+
+
+def _seeded(arm: Arm, seeding: str | None) -> Arm:
+    # The seeding keys the evidence dir and the user_id, as the aging suffix does.
+    if seeding is None:
+        return arm
+    return arm.model_copy(update={"name": f"{arm.name}-{seeding}"})
 
 
 def _non_negative(value: str) -> int:
@@ -387,11 +523,26 @@ def _prepared_arm(
     model_override: str | None,
     points: list[SweepPoint],
     answering: bool,
+    seeding: str | None = None,
 ) -> Arm | None:
     """The arm ready to run; None (after logging) on a usage error."""
     arm = load_arm(arm_path)
     if points and not (answering and arm.task.enabled):
         logger.error("--age-days applies to task-arm answering runs only")
+        return None
+    if points and seeding:
+        logger.error("--seeding and --age-days are exclusive")
+        return None
+    arm = _seeded(arm, seeding)
+    if seeding and (Path(arm.output.dir) / arm.name).exists():
+        # A failed or interrupted attempt is invalid evidence, never resumed:
+        # a rerun under its identifier would read as one seeding.
+        logger.error(
+            "evidence exists under %s for %s; one attempt per seeding identifier: "
+            "run the next one",
+            arm.output.dir,
+            arm.name,
+        )
         return None
     aging = _single_age(points)
     if aging is not None:
@@ -417,6 +568,7 @@ async def _run_arm(
     verify_reachability: bool = False,
     audit_fact_channel: bool = False,
     points: list[SweepPoint] | None = None,
+    seeding: str | None = None,
 ) -> int:
     points = points or []
     arm = _prepared_arm(
@@ -424,6 +576,7 @@ async def _run_arm(
         model_override=model_override,
         points=points,
         answering=not (verify_reachability or audit_fact_channel),
+        seeding=seeding,
     )
     if arm is None:
         return 2
@@ -627,8 +780,16 @@ async def _run_weak_match_screen(
     return 0 if report.validity.matched == report.validity.checks else 1
 
 
-async def _run_answers(args: argparse.Namespace) -> int:
-    # One branch for both answer commands keeps main under the C901 cap.
+async def _run_copy_reads(args: argparse.Namespace) -> int:
+    # One branch for the store-copy read commands keeps main under the C901 cap.
+    if args.cmd == "representations":
+        return await _run_representations(
+            args.arm,
+            template_db=args.template_db,
+            traces_path=args.traces,
+            out_dir=args.out_dir,
+            user_id=args.user_id,
+        )
     if args.cmd == "recall-answers":
         return await _run_recall_answers(
             args.arm,
@@ -707,6 +868,37 @@ async def _run_recall_answers(
     return 0 if report.validity.matched == report.validity.checks else 1
 
 
+async def _run_representations(
+    arm_path: Path,
+    *,
+    template_db: str,
+    traces_path: Path,
+    out_dir: Path,
+    user_id: str | None,
+) -> int:
+    arm = load_arm(arm_path)
+    if not arm.task.enabled:
+        logger.error("representations requires a task arm")
+        return 2
+    arm.apply_process_overrides()
+    try:
+        report = await read_representations(
+            arm,
+            template=template_db,
+            user_id=user_id or f"probe-{arm.name}",
+            traces_path=traces_path,
+        )
+    except ScreenPreconditionError as exc:
+        logger.error("%s", exc)
+        return 2
+    except MemorySDKError:
+        logger.exception("representations failed; no artifact written")
+        return 1
+    write_representations_report(report, out_dir)
+    _print_representations(report)
+    return 0
+
+
 async def _run_situational_arm(
     arm: Arm, provider: PydanticAIProvider, out_dir: Path
 ) -> int:
@@ -729,13 +921,17 @@ async def _run_surfacing_arm(
     report = await runner.run()
     write_surfacing_run_report(report, out_dir)
 
-    metrics = compute_surfacing_metrics(report)
-    write_surfacing_summary(metrics, out_dir)
-    _print_surfacing_summary(arm, report, metrics)
-
     # Story-3 spike: floor matches the production recall floor so the below-floor
     # band is exactly the set the live gate drops.
     floor = float(arm.to_memory_config().get("persona.recall_relevance_floor", 0.65))
+    queries = load_query_corpus(arm.surfacing.query_corpus_path).entries
+    coverage = compute_required_coverage(report, queries, floor=floor)
+    metrics = compute_surfacing_metrics(report).model_copy(
+        update={"required_coverage": coverage}
+    )
+    write_surfacing_summary(metrics, out_dir)
+    _print_surfacing_summary(arm, report, metrics)
+
     lift = compute_situational_lift(report, floor=floor)
     write_situational_lift(lift, out_dir)
     _print_situational_lift(lift)
@@ -828,7 +1024,8 @@ async def _run_retrieval_arm(
 
 
 def _load_dotenv(path: Path) -> None:
-    if not path.exists():
+    # is_file: `--env-file ""` parses to the current directory.
+    if not path.is_file():
         logger.debug(".env not found at %s; skipping", path)
         return
     loaded: list[str] = []
@@ -1187,6 +1384,16 @@ def _print_recall_answers(report: RecallAnswersReport) -> None:
         print(f"{q.query_id}  delivered={q.delivered}  {answers}")
 
 
+def _print_representations(report: RepresentationsReport) -> None:
+    for s in report.statements:
+        print(
+            f"{s.id}  relations={len(s.entity_relations)}"
+            f"  facts={len(s.persona_facts)}  pinned={len(s.pinned_fact_lines)}"
+            f"{'  degraded' if s.degraded else ''}"
+        )
+    print(f"degraded={len(report.degraded_statements)}/{len(report.statements)}")
+
+
 def _print_situational_summary(
     arm: Arm,
     summary: SituationalAggregate,
@@ -1220,6 +1427,23 @@ def _print_situational_summary(
         print("  WARN: no seed traces ingested in run 0", file=sys.stderr)
 
 
+def _print_surfacing_integrity(
+    report: SurfacingRunReport, coverage: RequiredCoverage | None
+) -> None:
+    population = report.fact_population
+    statuses = " ".join(f"{s}={n}" for s, n in sorted(population.by_status.items()))
+    covered = "-"
+    if coverage is not None:
+        covered = f"{coverage.covered_pairs}/{coverage.required_pairs}"
+    print(
+        f"  coverage={covered}  facts={population.total} ({statuses})"
+        f"  degraded={report.degraded_traces}"
+        f"  failed_seeds={len(report.failed_seed_ids)}"
+        f"  failed_queries={len(report.failed_query_ids)}",
+        file=sys.stderr,
+    )
+
+
 def _print_surfacing_summary(
     arm: Arm,
     report: SurfacingRunReport,
@@ -1231,6 +1455,7 @@ def _print_surfacing_summary(
         f"  promoted={report.promoted_facts}",
         file=sys.stderr,
     )
+    _print_surfacing_integrity(report, metrics.required_coverage)
     print(
         f"  relevant   S: n={metrics.relevant.n}"
         f"  mean={metrics.relevant.mean:.3f}  median={metrics.relevant.median:.3f}",

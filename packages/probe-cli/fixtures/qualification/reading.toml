@@ -1,0 +1,22 @@
+# Frozen before the runs: the first reading of relation contexts and pinned fact lines.
+# The readers are judges, not seats of the system under test: two models, neither the extractor's.
+# max_tokens covers thinking, which these models cannot turn off.
+
+[packet]
+seed = 20261114
+reader_key = "packages/probe-cli/fixtures/qualification/reader_key.jsonl"
+brief = "packages/probe-cli/fixtures/qualification/reader_brief.md"
+
+[readers.a]
+model = "anthropic:claude-opus-5-5"
+max_tokens = 16000
+
+[readers.a.model_settings]
+anthropic_effort = "high"
+
+[readers.b]
+model = "anthropic:claude-sonnet-5-5"
+max_tokens = 16000
+
+[readers.b.model_settings]
+anthropic_effort = "high"

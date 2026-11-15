@@ -1,0 +1,4 @@
+# Frozen before the runs: the surfacing read of the prompt candidate.
+queries = "packages/probe-cli/fixtures/eval_queries.jsonl"
+# Pairs beside the 1.3.0 exemplar's tags: coverage is reported with and without them, and a gain confined to them is not evidence for the candidate.
+overlap_pairs = [["q15", "p3"], ["q17", "c2"]]

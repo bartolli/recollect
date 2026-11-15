@@ -8,10 +8,17 @@ calibration). They are not the same "precision" -- do not conflate.
 from __future__ import annotations
 
 import statistics
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field
 
 from probe_cli.surfacing_runner import SurfacingRunReport
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from probe_cli.corpus import QueryEntry
+    from probe_cli.surfacing_runner import SurfacedFact
 
 _DEFAULT_THRESHOLDS: tuple[float, ...] = (0.45, 0.50, 0.55, 0.60, 0.65)
 
@@ -32,6 +39,30 @@ class ThresholdPoint(BaseModel):
     recall: float = Field(ge=0.0, le=1.0)
 
 
+class QueryCoverage(BaseModel):
+    query_id: str
+    required: list[str]
+    returned: list[str]
+    covered: list[str]
+
+
+class RequiredCoverage(BaseModel):
+    # The denominator is the query corpus's labels, not the surfaced facts: a
+    # query that loses every required source still counts its pairs. A pair is
+    # covered when a fact from that source passes the production recall gate.
+    floor: float
+    required_pairs: int = Field(ge=0)
+    returned_pairs: int = Field(ge=0)
+    covered_pairs: int = Field(ge=0)
+    coverage: float = Field(ge=0.0, le=1.0)
+    # Every fact the gate passes, distractor queries included.
+    gated_facts: int = Field(ge=0)
+    gated_relevant: int = Field(ge=0)
+    gated_precision: float = Field(ge=0.0, le=1.0)
+    queries: list[QueryCoverage]
+    queries_without_required_source: list[str]
+
+
 class SurfacingMetrics(BaseModel):
     relevant: ScoreStats
     distractor: ScoreStats
@@ -43,6 +74,7 @@ class SurfacingMetrics(BaseModel):
     distractor_query_count: int
     distractor_queries_with_surfaced: int
     threshold_sweep: list[ThresholdPoint] = Field(default_factory=list)
+    required_coverage: RequiredCoverage | None = None
 
 
 def _score_stats(values: list[float]) -> ScoreStats:
@@ -111,4 +143,51 @@ def compute_surfacing_metrics(
         distractor_query_count=len(distractor_queries),
         distractor_queries_with_surfaced=distractor_with_surfaced,
         threshold_sweep=sweep,
+    )
+
+
+def _query_coverage(
+    query: QueryEntry, surfaced: Sequence[SurfacedFact]
+) -> QueryCoverage:
+    required = list(query.relevant_trace_ids)
+    return QueryCoverage(
+        query_id=query.id,
+        required=required,
+        returned=[r for r in required if any(f.source_eval_id == r for f in surfaced)],
+        covered=[
+            r
+            for r in required
+            if any(f.source_eval_id == r and f.passes_gate for f in surfaced)
+        ],
+    )
+
+
+def compute_required_coverage(
+    report: SurfacingRunReport, queries: Sequence[QueryEntry], *, floor: float
+) -> RequiredCoverage:
+    """One (query, required id) pair per label; distractor queries add none.
+
+    floor is the configured recall floor, recorded beside the gate's verdicts.
+    """
+    surfaced = {q.query_id: q.surfaced for q in report.queries}
+    rows = [
+        _query_coverage(q, surfaced.get(q.id, []))
+        for q in queries
+        if q.relevant_trace_ids
+    ]
+    required = sum(len(r.required) for r in rows)
+    covered = sum(len(r.covered) for r in rows)
+    gated = [f for q in report.queries for f in q.surfaced if f.passes_gate]
+    gated_relevant = sum(1 for f in gated if f.relevant)
+    return RequiredCoverage(
+        floor=floor,
+        required_pairs=required,
+        returned_pairs=sum(len(r.returned) for r in rows),
+        covered_pairs=covered,
+        coverage=covered / required if required else 0.0,
+        gated_facts=len(gated),
+        gated_relevant=gated_relevant,
+        gated_precision=gated_relevant / len(gated) if gated else 0.0,
+        queries=rows,
+        queries_without_required_source=[r.query_id for r in rows if not r.covered],
     )

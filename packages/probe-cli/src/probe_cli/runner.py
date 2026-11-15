@@ -19,6 +19,7 @@ from probe_cli.metrics import (
     RetrievalRunReport,
     RunReport,
 )
+from probe_cli.provenance import capture_swallowed, stamp_prompt
 
 if TYPE_CHECKING:
     from recollect.llm.protocol import LLMProvider
@@ -137,16 +138,17 @@ class RetrievalArmRunner:
         # PoolManager reads global MemoryConfig — connect(db_url=...) is the only
         # path that rebuilds storage against the arm's URL.
         db_url = self._arm.retrieval.db_url or None
-        try:
-            await memory.connect(db_url=db_url)
-            id_map = await self._ingest(memory, traces_corpus, session_id)
-            ingest_failures = len(traces_corpus) - len(id_map)
-            inverse = {trace_id: corpus_id for corpus_id, trace_id in id_map.items()}
-            queries = await self._run_queries(
-                memory, query_corpus, inverse, session_id
-            )
-        finally:
-            await memory.close()
+        with capture_swallowed() as swallowed:
+            try:
+                await memory.connect(db_url=db_url)
+                id_map = await self._ingest(memory, traces_corpus, session_id)
+                ingest_failures = len(traces_corpus) - len(id_map)
+                inverse = {tid: corpus_id for corpus_id, tid in id_map.items()}
+                queries = await self._run_queries(
+                    memory, query_corpus, inverse, session_id
+                )
+            finally:
+                await memory.close()
 
         return RetrievalRunReport(
             arm_name=self._arm.name,
@@ -157,6 +159,8 @@ class RetrievalArmRunner:
             ingested=len(id_map),
             ingest_failures=ingest_failures,
             queries=queries,
+            prompt=stamp_prompt(self._extractor),
+            swallowed_failures=dict(swallowed),
         )
 
     async def run_all(
