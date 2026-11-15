@@ -173,7 +173,7 @@ _CYCLING = Relation(
     source="user",
     relation="prefers",
     target="cycling",
-    confidence=0.5,  # below persona.confidence_threshold: extraction skips it
+    confidence=0.5,  # below persona.confidence_threshold: extraction and pin skip it
     category="preference",
     context="user prefers cycling on weekends",
 )
@@ -217,31 +217,49 @@ _REL_BROTHER = Relation(
 
 
 class TestPinPromotesRelations:
-    async def test_pin_promotes_extracted_relations(
+    async def test_pin_under_threshold_falls_back_to_noted(
         self, mem: tuple[CognitiveMemory, AsyncMock],
     ) -> None:
-        # The relation persists in trace.pattern even when the
-        # confidence gate skipped it at write time -- pin is the user
-        # saying "this matters", so it promotes what was extracted.
         m, extractor = mem
         _wire_extraction(extractor, _CYCLING)
         trace = await m.experience("I love cycling on weekends", user_id="u1")
         assert await m.facts(user_id="u1") == []
 
         pinned = await m.pin(trace.id)
-        assert [f.object for f in pinned] == ["cycling"]
+        assert [f.predicate for f in pinned] == ["noted"]
 
         facts = await m.facts(user_id="u1")
         assert len(facts) == 1
         fact = facts[0]
         assert (fact.subject, fact.predicate, fact.object) == (
             "user",
-            "prefers",
-            "cycling",
+            "noted",
+            "I love cycling on weekends",
         )
-        assert fact.category == "preference"
+        assert fact.content == "I love cycling on weekends"
         assert fact.status == "pinned"
-        assert fact.embedding is not None
+
+    async def test_repeated_fallback_pin_reuses_the_row_and_unpin_reasserts(
+        self, mem: tuple[CognitiveMemory, AsyncMock],
+    ) -> None:
+        m, extractor = mem
+        _wire_extraction(extractor, _CYCLING)
+        trace = await m.experience("I love cycling on weekends", user_id="u1")
+
+        (first,) = await m.pin(trace.id)
+        (second,) = await m.pin(trace.id)
+        assert second.id == first.id
+        rows = await m.storage.facts.get_persona_facts(user_id="u1", limit=None)
+        assert [(f.id, f.status) for f in rows] == [(first.id, "pinned")]
+
+        await m.unpin(first.id)
+        (third,) = await m.pin(trace.id)
+        assert third.id != first.id
+        rows = await m.storage.facts.get_persona_facts(user_id="u1", limit=None)
+        assert {(f.id, f.status) for f in rows} == {
+            (first.id, "archived"),
+            (third.id, "pinned"),
+        }
 
     async def test_pin_flips_existing_candidate_without_duplicating(
         self, mem: tuple[CognitiveMemory, AsyncMock],
@@ -272,9 +290,16 @@ class TestPinPromotesRelations:
         other = await _seed_fact(
             m, obj="cycling", status="pinned", predicate="prefers", user_id="u2"
         )
-        _wire_extraction(extractor, _CYCLING)
+        extractor.extract = AsyncMock(
+            return_value=ExtractionResult(
+                concepts=["relocation"],
+                relations=[_CYCLING.model_copy(update={"confidence": 0.9})],
+                significance=0.5,
+                fact_type="episodic",
+            )
+        )
         trace = await m.experience("I love cycling on weekends", user_id="u1")
-        assert await m.facts(user_id="u1") == []  # confidence-gated: no u1 fact yet
+        assert await m.facts(user_id="u1") == []  # episodic: no u1 fact yet
 
         await m.pin(trace.id)
 

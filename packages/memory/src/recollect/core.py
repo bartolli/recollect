@@ -1159,18 +1159,25 @@ class CognitiveMemory:
     async def pin(self, trace_id: str) -> list[PersonaFact]:
         """Pin a trace's extracted relations as permanent persona facts.
 
-        Promotes what extraction persisted in trace.pattern, bypassing
-        the confidence gate -- pin is the user saying "this matters".
+        Promotes the relations in trace.pattern that pass
+        persona.confidence_threshold, the gate extraction applies.
         Reconciles against existing facts (flip a live twin to pinned,
         insert only an unmatched relation) so re-pin does not duplicate.
-        The generic `user noted` SPO is only the empty-extraction fallback.
+        When no relation passes, the trace content is pinned as `user noted`.
         """
         if not trace_id:
             raise ValueError("Trace ID must be a non-empty string")
         trace = await self._storage.traces.get_trace(trace_id)
         if trace is None:
             raise TraceNotFoundError(f"Trace {trace_id} not found")
-        relations = _relations_from_pattern(trace.pattern)
+        threshold = float(self._config.get("persona.confidence_threshold", 0.6))
+        relations = [
+            rel
+            for rel in _relations_from_pattern(trace.pattern)
+            if rel.confidence >= threshold
+        ]
+        # A forgotten trace's statement is retracted: it never rewrites a live row.
+        adopt = trace.status != "forgotten"
         if not relations:
             fallback = PersonaFact(
                 subject="user",
@@ -1182,10 +1189,8 @@ class CognitiveMemory:
                 confidence=1.0,
                 status="pinned",
             )
-            await self._storage.facts.store_persona_fact(fallback)
-            return [fallback]
-        # A forgotten trace's statement is retracted: it never rewrites a live row.
-        adopt = trace.status != "forgotten"
+            # Reconciled like a relation: a second pin reuses the live row.
+            return [await self._pin_relation_fact(fallback, adopt=adopt)]
         facts: list[PersonaFact] = []
         for rel in relations:
             fact = await self._relation_to_fact(rel, trace, status="pinned")
