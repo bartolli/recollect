@@ -109,7 +109,7 @@ def _semantic_extractor() -> AsyncMock:
 
 
 class TestFactTagEmbeddingGate:
-    async def test_duplicate_mention_embeds_no_tags(
+    async def test_duplicate_mention_embeds_tags_only_for_the_existing_row(
         self,
         mock_storage: MagicMock,
         mock_embeddings: AsyncMock,
@@ -129,7 +129,8 @@ class TestFactTagEmbeddingGate:
         )
         await mem.experience("Sarah noted the shellfish allergy again", user_id="u1")
         mock_fact_store.increment_mention_count.assert_awaited_once()
-        mock_storage.concept_embeddings.store_concept_embeddings.assert_not_awaited()
+        ce_store = mock_storage.concept_embeddings.store_concept_embeddings
+        assert {e.owner_id for e in ce_store.await_args.args[0]} == {existing.id}
 
     async def test_new_fact_embeds_tags_for_stored_id(
         self,

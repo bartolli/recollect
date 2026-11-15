@@ -1184,13 +1184,17 @@ class CognitiveMemory:
             )
             await self._storage.facts.store_persona_fact(fallback)
             return [fallback]
+        # A forgotten trace's statement is retracted: it never rewrites a live row.
+        adopt = trace.status != "forgotten"
         facts: list[PersonaFact] = []
         for rel in relations:
             fact = await self._relation_to_fact(rel, trace, status="pinned")
-            facts.append(await self._pin_relation_fact(fact))
+            facts.append(await self._pin_relation_fact(fact, adopt=adopt))
         return facts
 
-    async def _pin_relation_fact(self, fact: PersonaFact) -> PersonaFact:
+    async def _pin_relation_fact(
+        self, fact: PersonaFact, *, adopt: bool
+    ) -> PersonaFact:
         """Flip an existing non-archived twin to pinned, else insert.
 
         Matches _store_or_promote_fact's key (subject+predicate+object over
@@ -1200,7 +1204,8 @@ class CognitiveMemory:
         every relation under subject "user" would otherwise collide
         table-wide. Archived rows are retractions -- never flipped; absent a
         live twin a fresh pinned row re-asserts, retaining the archived row
-        for audit (adr-pin-upsert-semantics).
+        for audit (adr-pin-upsert-semantics). With adopt, a twin stated by
+        another trace adopts the pinned statement before the flip.
         """
         existing = await self._storage.facts.get_persona_facts(
             subject=fact.subject, user_id=fact.user_id, limit=None
@@ -1208,6 +1213,8 @@ class CognitiveMemory:
         live = [f for f in existing if f.status != "archived"]
         match = _find_exact_duplicate(live, fact)
         if match is not None:
+            if adopt and match.source_trace_id != fact.source_trace_id:
+                match = await self._adopt_statement(match, fact)
             await self._storage.facts.update_fact_status(match.id, "pinned")
             return match.model_copy(update={"status": "pinned"})
         await self._storage.facts.store_persona_fact(fact)
@@ -1778,6 +1785,7 @@ class CognitiveMemory:
         Returns the fact iff a new row was written; None on the duplicate
         path. A storage failure raises. Derived writes (tag embeddings) key
         off this -- embedding tags for a never-stored fact id orphans them.
+        A duplicate stated by another trace adopts the statement first.
         """
         # User-scoped like _pin_relation_fact: the dedup read must not
         # cross users (adr-retrieval-user-isolation) -- an unscoped
@@ -1795,22 +1803,29 @@ class CognitiveMemory:
         existing = [f for f in existing if f.status != "archived"]
         duplicate = _find_exact_duplicate(existing, fact)
         if duplicate:
-            new_count = await self._storage.facts.increment_mention_count(duplicate.id)
-            if new_count >= 2 and duplicate.status == "candidate":
-                await self._storage.facts.update_fact_status(duplicate.id, "promoted")
-                logger.debug(
-                    "Promoted fact: %s %s %s (mentions=%d)",
-                    duplicate.subject,
-                    duplicate.predicate,
-                    duplicate.object,
-                    new_count,
-                )
+            await self._credit_restatement(duplicate, fact)
             return None
         contradicting = _find_contradicting_fact(existing, fact)
         if contradicting:
             return await self._check_predicate_similarity(contradicting, fact)
         await self._storage.facts.store_persona_fact(fact)
         return fact
+
+    async def _credit_restatement(
+        self, duplicate: PersonaFact, fact: PersonaFact
+    ) -> None:
+        if duplicate.source_trace_id != fact.source_trace_id:
+            await self._adopt_statement(duplicate, fact)
+        new_count = await self._storage.facts.increment_mention_count(duplicate.id)
+        if new_count >= 2 and duplicate.status == "candidate":
+            await self._storage.facts.update_fact_status(duplicate.id, "promoted")
+            logger.debug(
+                "Promoted fact: %s %s %s (mentions=%d)",
+                duplicate.subject,
+                duplicate.predicate,
+                duplicate.object,
+                new_count,
+            )
 
     async def _check_predicate_similarity(
         self, old_fact: PersonaFact, new_fact: PersonaFact
