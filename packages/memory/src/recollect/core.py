@@ -1576,7 +1576,7 @@ class CognitiveMemory:
                 for c, v in zip(phrases, vectors, strict=True)
             ]
             await self._storage.concept_embeddings.store_concept_embeddings(embeddings)
-        except (StorageError, OSError):
+        except (StorageError, EmbeddingError, OSError):
             logger.exception("Failed to embed concepts for trace %s", trace.id[:8])
 
     async def _embed_fact_tags(self, fact: PersonaFact) -> None:
@@ -1597,7 +1597,7 @@ class CognitiveMemory:
                 for tag, v in zip(fact.context_tags, vectors, strict=True)
             ]
             await self._storage.concept_embeddings.store_concept_embeddings(embeddings)
-        except (StorageError, OSError):
+        except (StorageError, EmbeddingError, OSError):
             logger.exception("Failed to embed tags for fact %s", fact.id[:8])
 
     async def _create_entity_associations(
@@ -1767,7 +1767,8 @@ class CognitiveMemory:
             fact_embedding = await self._embeddings.generate_embedding(
                 content, task="search_document"
             )
-        except (ValueError, RuntimeError, OSError):
+        except (EmbeddingError, ValueError, RuntimeError, OSError):
+            # The provider raises EmbeddingError: the fact is kept without a vector.
             fact_embedding = None
         return PersonaFact(
             subject=rel.source,

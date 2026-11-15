@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from recollect.core import CognitiveMemory
-from recollect.exceptions import StorageError
+from recollect.exceptions import EmbeddingError, StorageError
 from recollect.llm.types import ExtractionResult, Relation
 from recollect.models import MemoryTrace
 from recollect_mcp.server import AppContext, remember
@@ -102,3 +102,57 @@ class TestDisplacementDecayFailure:
         assert "Storage failed" not in reply
         mock_storage.traces.apply_strength_factor.assert_awaited()
         assert mock_storage.facts.store_persona_fact.await_count > derived
+
+
+class TestPostStoreEmbeddingFailure:
+    @pytest.fixture()
+    def tagged(
+        self, mock_storage: MagicMock, mock_embeddings: AsyncMock
+    ) -> CognitiveMemory:
+        relation = _relation("green tea").model_copy(
+            update={"context_tags": ["morning"]}
+        )
+        extractor = AsyncMock()
+        extractor.extract = AsyncMock(
+            return_value=ExtractionResult(
+                fact_type="semantic",
+                concepts=["tea"],
+                relations=[relation],
+                significance=0.5,
+            )
+        )
+        return CognitiveMemory(
+            storage=mock_storage, embeddings=mock_embeddings, extractor=extractor
+        )
+
+    async def test_a_failed_batch_embedding_leaves_the_write_standing(
+        self,
+        tagged: CognitiveMemory,
+        mock_storage: MagicMock,
+        mock_embeddings: AsyncMock,
+    ) -> None:
+        mock_embeddings.generate_embeddings_batch.side_effect = EmbeddingError("onnx")
+        result = await tagged.experience_result("I prefer green tea", user_id="u1")
+        mock_storage.traces.store_trace.assert_awaited_once_with(result.trace)
+        # The fact row is written; only its tag embeddings are missing.
+        assert result.unstored_facts == []
+        mock_storage.facts.store_persona_fact.assert_awaited_once()
+
+    async def test_a_failed_fact_embedding_stores_the_fact_without_a_vector(
+        self,
+        tagged: CognitiveMemory,
+        mock_storage: MagicMock,
+        mock_embeddings: AsyncMock,
+    ) -> None:
+        vector = mock_embeddings.generate_embedding.return_value
+
+        async def embed(text: str, **_: object) -> list[float]:
+            if text == "I prefer green tea":
+                return list(vector)
+            raise EmbeddingError("onnx")
+
+        mock_embeddings.generate_embedding.side_effect = embed
+        result = await tagged.experience_result("I prefer green tea", user_id="u1")
+        assert result.unstored_facts == []
+        (stored,) = mock_storage.facts.store_persona_fact.await_args_list
+        assert stored.args[0].embedding is None
