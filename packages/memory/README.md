@@ -36,13 +36,15 @@ asyncio.run(main())
 | Method | Description |
 |--------|-------------|
 | `connect(db_url=None)` | Connect to PostgreSQL. Uses `DATABASE_URL` env var if no argument. |
-| `experience(content)` | Store a memory trace. LLM extracts entities, concepts, significance. |
-| `think_about(query, token_budget)` | Retrieve memories that fit within a token limit. Returns `list[Thought]`. |
+| `experience(content, supersedes=None)` | Store a memory trace. LLM extracts entities, concepts, significance. `supersedes` lists the trace ids this statement corrects: each is forgotten as part of the write, and an unknown or already-forgotten id raises `TraceNotFoundError` before any write. |
+| `experience_result(content, supersedes=None)` | `experience` with the write outcome. Returns `ExperienceResult`: the trace, a `ForgetResult` per superseded trace, the traces a storage failure left unsuperseded, and the derived facts that failed to store. |
+| `think_about(query, token_budget)` | Retrieve memories that fit within a token limit. Returns `list[Thought]`. Raises `StorageError` when the persona fact lookup fails. |
+| `think_about_window(query, token_budget)` | `think_about` with the budget outcome. Returns `ThoughtWindow`: the thoughts and the count withheld because they did not fit. |
 | `consolidate(threshold=None)` | Decay, consolidate, or archive traces past their grace period. |
-| `forget(trace_id, force=False)` | Forget a trace: it stops surfacing and never auto-revives. Derived facts archive; safety-critical and pinned facts are retained unless `force=True`. Returns `ForgetResult`. |
+| `forget(trace_id, force=False)` | Forget a trace: it stops surfacing and never auto-revives. Derived facts archive; safety-critical and pinned facts are retained unless `force=True`. On an already-forgotten trace it completes the fact pass instead of raising. Returns `ForgetResult`. |
 | `erase(trace_id)` | Hard-delete a trace and its derived rows. The escape hatch; `forget()` is the normal path. |
 | `reinforce(trace_id, factor=1.1)` | Strengthen a trace. |
-| `pin(trace_id)` | Promote a trace's extracted relations to permanent persona facts. Returns the promoted facts. |
+| `pin(trace_id)` | Promote a trace's extracted relations at or above `persona.confidence_threshold` to permanent persona facts. When none passes, the trace content is pinned as a `user noted` fact. Returns the promoted facts. |
 | `unpin(fact_id)` | Archive a persona fact. It stops surfacing but is retained. |
 | `facts(subject=None, statuses=None, limit=50)` | List persona facts, newest first. `statuses` filters before the limit; `limit=None` reads all. |
 | `entities(user_id=None, limit=50)` | List known entities, most-mentioned first. Each `KnownEntity` carries its id, type, every name it was mentioned by, and its trace count. |

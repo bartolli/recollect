@@ -25,14 +25,14 @@ recollect-mcp --log-file logs/mcp.jsonl --verbose
 
 | Tool | Parameters | Description |
 |------|------------|-------------|
-| `remember` | `content: str` | Store an experience. LLM extracts entities, concepts, significance, and persona facts. |
-| `recall` | `query: str`, `token_budget: int = 2000` | Retrieve relevant memories. Returns persona facts as context followed by matching traces. |
+| `remember` | `content: str`, `supersedes: list[str] = None` | Store an experience. LLM extracts entities, concepts, significance, and persona facts. `supersedes` names earlier memories this one replaces: each is forgotten as part of the write, and the reply lists the derived facts archived and retained. |
+| `recall` | `query: str`, `token_budget: int = 2000` | Retrieve relevant memories. Returns persona facts as context followed by matching traces. `token_budget` is at least 23. |
 | `reflect` | -- | Load persona context for the current session. Call before responding to any user message. |
 | `pin` | `trace_id: str` | Promote a memory's extracted relations to permanent persona facts. |
 | `unpin` | `fact_id: str` | Archive a persona fact. It stops surfacing in recall and reflect; the row is retained. |
 | `forget` | `trace_id: str`, `force: bool = false` | Forget a memory trace: it stops surfacing in recall and never auto-revives. Derived facts archive; safety-critical (health/dietary/constraint) and pinned facts are retained unless `force=true`. Nothing is hard-deleted. |
 
-Memories and facts are printed with an 8-character id (`[3f2a9c1e]`). `pin`, `unpin`, and `forget` take that id or the full one, and refuse an id that matches more than one row instead of choosing.
+Memories and facts are printed with an 8-character id (`[3f2a9c1e]`). `pin`, `unpin`, `forget`, and `remember`'s `supersedes` take that id or the full one, and refuse an id that matches more than one row instead of choosing.
 
 ## Resources
 

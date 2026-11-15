@@ -1,5 +1,38 @@
 # Changelog
 
+## [v0.21.0] - 2026-11-15
+
+### Added
+- correction: `CognitiveMemory.experience(content, supersedes=[trace ids])` and MCP `remember(content, supersedes=[ids])`. Every id is validated before extraction: a missing trace, another user's trace or a forgotten trace raises `TraceNotFoundError` with no model call and no write. Then the replacement is stored, each original is forgotten through `forget`, and the replacement's persona facts are derived
+- the replacement stands where the original stood: when an original carried a live persona fact, the replacement's relations pass the fact gate whatever its `fact_type`, and a derived fact with an archived original's subject and predicate inherits that status; a pinned or safety fact of an original is retained, and restated with the same triple it takes the replacement's content, embedding, tags and source trace once, with no mention credit
+- `CognitiveMemory.experience_result` -> `ExperienceResult`: `trace`, `superseded` (one `ForgetResult` per original), `unsuperseded` (originals whose forget hit a storage failure; the others are still attempted) and `unstored_facts` (derived persona facts whose store write failed); `experience` returns the trace
+- `CognitiveMemory.think_about_window` -> `ThoughtWindow`: the thoughts and `withheld`, the items the budget kept out; `render` applies the budget to the token estimate of the rendered text
+- `CognitiveMemory.surface_relevant_facts_result` -> `SurfacedFacts` (`facts`, `lookup_failed`): a failed non-safety lookup keeps the safety facts and sets the flag; `surface_relevant_facts` returns the facts alone
+- `ExperienceResult`, `SurfacedFacts` and `ThoughtWindow` are exported from `recollect`
+- MCP `remember` prints after its confirmation each superseded memory with its archived fact count, each retained fact with its id, each memory not superseded with the instruction to run `forget` on it, and each persona fact that was not stored; `supersedes` takes the 8-character id or the full one
+- server instructions and the `remember` tool description: one memory holds one fact or one situation useful on its own, with the context needed to find it; unrelated topics split into separate memories
+
+### Changed
+- BREAKING: `forget` on an already-forgotten trace reruns the fact pass under the guard (was: `TraceNotFoundError`): ordinary facts are archived, pinned and safety facts are retained, `force` archives those too; a missing id stays not-found; MCP `forget` on an already-forgotten memory answers with its counts
+- BREAKING: `pin` pins the relations at or above `persona.confidence_threshold`, the gate extraction applies (was: every extracted relation); when none passes, the trace content is pinned as one `user noted` fact, and a second `pin` of the trace reuses that row
+- BREAKING: `think_about` raises `StorageError` when the persona fact lookup fails (was: logged, thoughts returned without persona facts); MCP `recall` replies a fixed storage-failure notice and keeps the safety net pending
+- BREAKING: the `FactStore` protocol gains `adopt_statement(fact_id, statement)`; a custom fact store implements it
+- a restated persona fact adopts the newest statement: when another trace restates its triple, the row takes that statement's content, embedding, context tags and source trace; the mention count and promotion at the second mention are unchanged; `pin` adopts on the same rule, and a forgotten trace never rewrites a live row; a triple repeated inside one trace keeps its first context
+- a fact's source is its latest stating trace: forgetting an earlier stating trace leaves the fact, forgetting the latest archives it
+- `think_about` assembles persona facts and traces together: an item enters only when the complete response with it fits `token_budget`; one that does not fit is skipped, never truncated; retrieval credit and revival follow the returned window
+- MCP `recall`: the printed text, safety net included, is within every accepted `token_budget`; the minimum is 23; a budget under it and an empty query are tool errors raised before the safety net is claimed; a safety net that does not fit stays pending behind a notice; matched memories that do not fit read as budget exhaustion, not as no match
+- after the trace is stored, a failed step is reported or logged and the write continues: a displacement decay write, a concept, fact-tag or persona-fact embedding (the fact is stored without a vector), a supersession, a persona fact store write; MCP `remember` confirms the stored memory and says what did not complete (was: a failure reply for a memory it had stored)
+- MCP `remember`: a failed fact surfacing after the write replies with the confirmation and says the related persona facts could not be loaded; a partial lookup prints the loaded facts and says the others could not be loaded
+- `entity_relations.context` holds the extractor's relation context verbatim, with the literal triple as the fallback for a blank context; rows written earlier keep the literal triple
+- dev gate tools are capped at the locked minor: `mypy>=1.19.1,<1.20`, `ruff>=0.15.5,<0.16`
+- version lockstep 0.21.0; `recollect-mcp` requires `recollect>=0.21.0`
+
+### Fixed
+- `PydanticAIProvider` retries a rejected `temperature` by the settings its own request sent: concurrent requests on a cold provider each retry without it, and the rejection is logged once per provider
+
+### Removed
+- BREAKING: `mark_activated` is removed from the trace store, the storage protocol and `PostgresStorage`; `activation_boost_factor`, `apply_activation_boost` and the `retrieval.activation_boost` key are removed
+
 ## [v0.20.0] - 2026-11-13
 
 ### Added
